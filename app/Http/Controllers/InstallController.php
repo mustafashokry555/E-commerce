@@ -9,11 +9,14 @@ use App\Models\HelpTopic;
 use App\Models\Product;
 use App\Models\VendorRegistrationReason;
 use App\Traits\EmailTemplateTrait;
+use App\Traits\SettingsTrait;
+use App\Traits\UpdateClass;
 use App\Utils\Helpers;
 use App\Models\ShippingType;
 use App\Models\BusinessSetting;
 use App\Models\NotificationMessage;
 use App\Traits\ActivationClass;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -23,7 +26,7 @@ use Illuminate\Support\Facades\URL;
 
 class InstallController extends Controller
 {
-    use ActivationClass,EmailTemplateTrait;
+    use ActivationClass, EmailTemplateTrait, SettingsTrait, UpdateClass;
 
     public function step0()
     {
@@ -55,13 +58,19 @@ class InstallController extends Controller
 
     public function step5()
     {
-        //start symlink
-        if(DOMAIN_POINTED_DIRECTORY == 'public' && function_exists('shell_exec')) {
+        // Start symlink
+        if (DOMAIN_POINTED_DIRECTORY == 'public' && function_exists('shell_exec')) {
             shell_exec('ln -s ../resources/themes themes');
             Artisan::call('storage:link');
         }
-        //end symlink
+        // End symlink
+        try {
+            $this->setEnvironmentValue(envKey: 'APP_URL', envValue: url('/'));
+        } catch (Exception $exception) {
+        }
 
+        self::updateRobotTexFile();
+        Artisan::call('file:permission');
         Artisan::call('config:cache');
         Artisan::call('config:clear');
         return view('installation.step5');
@@ -98,14 +107,6 @@ class InstallController extends Controller
             'updated_at' => now()
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['type' => 'company_name'], [
-            'value' => $request['company_name']
-        ]);
-
-        DB::table('business_settings')->updateOrInsert(['type' => 'currency_model'], [
-            'value' => $request['currency_model']
-        ]);
-
         DB::table('admin_wallets')->insert([
             'admin_id' => 1,
             'withdrawn' => 0,
@@ -117,160 +118,49 @@ class InstallController extends Controller
             'updated_at' => now(),
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['type' => 'product_brand'], [
-            'value' => 1
+        $this->businessSettingGetOrInsert(type: 'company_name', value: $request['company_name']);
+        $this->businessSettingGetOrInsert(type: 'product_brand', value: 1);
+        $this->businessSettingGetOrInsert(type: 'digital_product', value: 1);
+        $this->businessSettingGetOrInsert(type: 'delivery_boy_expected_delivery_date_message', value: json_encode(['status' => 0, 'message' => '']));
+        $this->businessSettingGetOrInsert(type: 'order_canceled', value: json_encode(['status' => 0, 'message' => '']));
+        $this->businessSettingGetOrInsert(type: 'offline_payment', value: json_encode(['status' => 0]));
+
+        DB::table('business_settings')->updateOrInsert(['type' => 'currency_model'], [
+            'value' => $request['currency_model']
         ]);
 
-        DB::table('business_settings')->updateOrInsert(['type' => 'digital_product'], [
-            'value' => 1
-        ]);
+        $this->updateOrInsertPolicy(type: 'refund-policy');
+        $this->updateOrInsertPolicy(type: 'return-policy');
+        $this->updateOrInsertPolicy(type: 'cancellation-policy');
 
-        DB::table('business_settings')->updateOrInsert(['type' => 'delivery_boy_expected_delivery_date_message'], [
-            'value' => json_encode([
-                'status' => 0,
-                'message' => ''
-            ])
-        ]);
+        $this->businessSettingGetOrInsert(type: 'temporary_close', value: json_encode(['status' => 0]));
+        $this->businessSettingGetOrInsert(type: 'vacation_add', value: json_encode([
+            'status' => 0,
+            'vacation_start_date' => null,
+            'vacation_end_date' => null,
+            'vacation_note' => null
+        ]));
 
-        DB::table('business_settings')->updateOrInsert(['type' => 'order_canceled'], [
-            'value' => json_encode([
-                'status' => 0,
-                'message' => ''
-            ])
-        ]);
+        $this->businessSettingGetOrInsert(type: 'cookie_setting', value: json_encode([
+            'status' => 0,
+            'cookie_text' => null
+        ]));
 
-        DB::table('business_settings')->updateOrInsert(['type' => 'offline_payment'], [
-            'value' => json_encode([
-                'status' => 0
-            ])
-        ]);
+        DB::table('colors')->whereIn('id', [16, 38, 93])->delete();
 
-        $refund_policy = BusinessSetting::where(['type' => 'refund-policy'])->first();
-        if ($refund_policy) {
-            $refund_value = json_decode($refund_policy['value'], true);
-            if (!isset($refund_value['status'])) {
-                BusinessSetting::where(['type' => 'refund-policy'])->update([
-                    'value' => json_encode([
-                        'status' => 1,
-                        'content' => $refund_policy['value'],
-                    ]),
-                ]);
-            }
-        } elseif (!$refund_policy) {
-            BusinessSetting::insert([
-                'type' => 'refund-policy',
-                'value' => json_encode([
-                    'status' => 1,
-                    'content' => '',
-                ]),
-            ]);
-        }
+        $this->businessSettingGetOrInsert(type: 'apple_login', value: json_encode([[
+            'login_medium' => 'apple',
+            'client_id' => '',
+            'client_secret' => '',
+            'status' => 0,
+            'team_id' => '',
+            'key_id' => '',
+            'service_file' => '',
+            'redirect_url' => '',
+        ]]));
 
-        $return_policy = BusinessSetting::where(['type' => 'return-policy'])->first();
-        if ($return_policy) {
-            $return_value = json_decode($return_policy['value'], true);
-            if (!isset($return_value['status'])) {
-                BusinessSetting::where(['type' => 'return-policy'])->update([
-                    'value' => json_encode([
-                        'status' => 1,
-                        'content' => $return_policy['value'],
-                    ]),
-                ]);
-            }
-        } elseif (!$return_policy) {
-            BusinessSetting::insert([
-                'type' => 'return-policy',
-                'value' => json_encode([
-                    'status' => 1,
-                    'content' => '',
-                ]),
-            ]);
-        }
-
-        $cancellation_policy = BusinessSetting::where(['type' => 'cancellation-policy'])->first();
-        if ($cancellation_policy) {
-            $cancellation_value = json_decode($cancellation_policy['value'], true);
-            if (!isset($cancellation_value['status'])) {
-                BusinessSetting::where(['type' => 'cancellation-policy'])->update([
-                    'value' => json_encode([
-                        'status' => 1,
-                        'content' => $cancellation_policy['value'],
-                    ]),
-                ]);
-            }
-        } elseif (!$cancellation_policy) {
-            BusinessSetting::insert([
-                'type' => 'cancellation-policy',
-                'value' => json_encode([
-                    'status' => 1,
-                    'content' => '',
-                ]),
-            ]);
-        }
-
-        DB::table('business_settings')->updateOrInsert(['type' => 'temporary_close'], [
-            'type' => 'temporary_close',
-            'value' => json_encode([
-                'status' => 0,
-            ])
-        ]);
-
-        DB::table('business_settings')->updateOrInsert(['type' => 'vacation_add'], [
-            'type' => 'vacation_add',
-            'value' => json_encode([
-                'status' => 0,
-                'vacation_start_date' => null,
-                'vacation_end_date' => null,
-                'vacation_note' => null
-            ])
-        ]);
-
-        DB::table('business_settings')->updateOrInsert(['type' => 'cookie_setting'], [
-            'type' => 'cookie_setting',
-            'value' => json_encode([
-                'status' => 0,
-                'cookie_text' => null
-            ])
-        ]);
-
-        DB::table('colors')
-            ->whereIn('id', [16, 38, 93])
-            ->delete();
-
-        //apple login information insert
-        if (BusinessSetting::where(['type' => 'apple_login'])->first() == false) {
-            DB::table('business_settings')->insert([
-                'type' => 'apple_login',
-                'value' => json_encode([
-                    [
-                        'login_medium' => 'apple',
-                        'client_id' => '',
-                        'client_secret' => '',
-                        'status' => 0,
-                        'team_id' => '',
-                        'key_id' => '',
-                        'service_file' => '',
-                        'redirect_url' => '',
-                    ]
-                ]),
-                'updated_at' => now()
-            ]);
-        }
-
-        DB::table('business_settings')->updateOrInsert(['type' => 'ref_earning_status'],
-            [
-                'type' => 'ref_earning_status',
-                'value' => 0,
-                'updated_at' => now()
-            ]
-        );
-
-        DB::table('business_settings')->updateOrInsert(['type' => 'ref_earning_exchange_rate'],
-            [
-                'type' => 'ref_earning_exchange_rate',
-                'value' => 0,
-                'updated_at' => now()
-            ]);
+        $this->businessSettingGetOrInsert(type: 'ref_earning_status', value: 0);
+        $this->businessSettingGetOrInsert(type: 'ref_earning_exchange_rate', value: 0);
 
         // new payment module necessary table insert
         try {
@@ -279,187 +169,32 @@ class InstallController extends Controller
                 DB::unprepared($sql);
             }
 
-
             if (!Schema::hasTable('payment_requests')) {
                 $sql = File::get(base_path('database/migrations/payment_requests.sql'));
                 DB::unprepared($sql);
             }
 
             $this->set_data();
-
-
         } catch (\Exception $exception) {
             //
         }
 
-        // guest checkout add
-//        DB::table('business_settings')->updateOrInsert([
-//            'type' => 'guest_checkout',
-//            'value' => 0,
-//            'updated_at' => now()
-//        ]);
-//
-//        // minimum_order_amount
-//        DB::table('business_settings')->updateOrInsert([
-//            'type' => 'minimum_order_amount',
-//            'value' => 0,
-//            'updated_at' => now()
-//        ]);
-//
-//        DB::table('business_settings')->updateOrInsert([
-//            'type' => 'minimum_order_amount_by_seller',
-//            'value' => 0,
-//            'updated_at' => now()
-//        ]);
-//
-//        DB::table('business_settings')->updateOrInsert([
-//            'type' => 'minimum_order_amount_status',
-//            'value' => 0,
-//            'updated_at' => now()
-//        ]);
-//
-//        //admin_login_url
-//        DB::table('business_settings')->updateOrInsert([
-//            'type' => 'admin_login_url',
-//            'value' => 'admin',
-//            'updated_at' => now()
-//        ]);
-//
-//        //employee_login_url
-//        DB::table('business_settings')->updateOrInsert([
-//            'type' => 'employee_login_url',
-//            'value' => 'employee',
-//            'updated_at' => now()
-//        ]);
-//
-//        //free_delivery_status
-//        DB::table('business_settings')->updateOrInsert([
-//            'type' => 'free_delivery_status',
-//            'value' => 0,
-//            'updated_at' => now()
-//        ]);
-//
-//        //free_delivery_responsibility
-//        DB::table('business_settings')->updateOrInsert([
-//            'type' => 'free_delivery_responsibility',
-//            'value' => 'admin',
-//            'updated_at' => now()
-//        ]);
-//
-//        //free_delivery_over_amount
-//        DB::table('business_settings')->updateOrInsert([
-//            'type' => 'free_delivery_over_amount',
-//            'value' => 0,
-//            'updated_at' => now()
-//        ]);
-//
-//        //free_delivery_over_amount
-//        DB::table('business_settings')->updateOrInsert([
-//            'type' => 'free_delivery_over_amount_seller',
-//            'value' => 0,
-//            'updated_at' => now()
-//        ]);
-//
-//        //add_funds_to_wallet
-//        DB::table('business_settings')->updateOrInsert([
-//            'type' => 'add_funds_to_wallet',
-//            'value' => 0,
-//            'updated_at' => now()
-//        ]);
-//
-//        //minimum_add_fund_amount
-//        DB::table('business_settings')->updateOrInsert([
-//            'type' => 'minimum_add_fund_amount',
-//            'value' => 0,
-//            'updated_at' => now()
-//        ]);
-//
-//        //maximum_add_fund_amount
-//        DB::table('business_settings')->updateOrInsert([
-//            'type' => 'maximum_add_fund_amount',
-//            'value' => 0,
-//            'updated_at' => now()
-//        ]);
-//
-//        //user_app_version_control
-//        DB::table('business_settings')->updateOrInsert([
-//            'type' => 'user_app_version_control',
-//            'value' => 0,
-//            'updated_at' => now()
-//        ]);
-//
-//        //user_app_version_control
-//        DB::table('business_settings')->insert([
-//            'type' => 'user_app_version_control',
-//            'value' => json_encode([
-//                "for_android" => [
-//                    "status" => 1,
-//                    "version" => "14.1",
-//                    "link" => ""
-//                ],
-//                "for_ios" => [
-//                    "status" => 1,
-//                    "version" => "14.1",
-//                    "link" => ""
-//                ]
-//            ]),
-//            'updated_at' => now()
-//        ]);
-//
-//        //seller_app_version_control
-//        DB::table('business_settings')->insert([
-//            'type' => 'seller_app_version_control',
-//            'value' => json_encode([
-//                "for_android" => [
-//                    "status" => 1,
-//                    "version" => "14.1",
-//                    "link" => ""
-//                ],
-//                "for_ios" => [
-//                    "status" => 1,
-//                    "version" => "14.1",
-//                    "link" => ""
-//                ]
-//            ]),
-//            'updated_at' => now()
-//        ]);
-//
-//        //Delivery_man_app_version_control
-//        DB::table('business_settings')->insert([
-//            'type' => 'delivery_man_app_version_control',
-//            'value' => json_encode([
-//                "for_android" => [
-//                    "status" => 1,
-//                    "version" => "14.1",
-//                    "link" => ""
-//                ],
-//                "for_ios" => [
-//                    "status" => 1,
-//                    "version" => "14.1",
-//                    "link" => ""
-//                ]
-//            ]),
-//            'updated_at' => now()
-//        ]);
-//
-//        //whatsapp
-//        DB::table('business_settings')->insert([
-//            'type' => 'whatsapp',
-//            'value' => json_encode([
-//                "status"=>1,
-//                "phone"=>"00000000000"
-//                ]),
-//            'updated_at' => now()
-//        ]);
-//
-//        //currency_symbol_position
-//        DB::table('business_settings')->insert([
-//            'type' => 'currency_symbol_position',
-//            'value' => "left",
-//            'updated_at' => now()
-//        ]);
+        $this->businessSettingGetOrInsert(type: 'guest_checkout', value: 0);
+        $this->businessSettingGetOrInsert(type: 'minimum_order_amount', value: 0);
+        $this->businessSettingGetOrInsert(type: 'minimum_order_amount_by_seller', value: 0);
+        $this->businessSettingGetOrInsert(type: 'minimum_order_amount_status', value: 0);
+        $this->businessSettingGetOrInsert(type: 'admin_login_url', value: 'admin');
+        $this->businessSettingGetOrInsert(type: 'employee_login_url', value: 'employee');
+        $this->businessSettingGetOrInsert(type: 'free_delivery_status', value: 0);
+        $this->businessSettingGetOrInsert(type: 'free_delivery_responsibility', value: 'admin');
+        $this->businessSettingGetOrInsert(type: 'free_delivery_over_amount', value: 0);
+        $this->businessSettingGetOrInsert(type: 'free_delivery_over_amount_seller', value: 0);
+        $this->businessSettingGetOrInsert(type: 'add_funds_to_wallet', value: 0);
+        $this->businessSettingGetOrInsert(type: 'minimum_add_fund_amount', value: 0);
+        $this->businessSettingGetOrInsert(type: 'whatsapp', value: json_encode(['status' => 1, 'phone' => '00000000000']));
+        $this->businessSettingGetOrInsert(type: 'currency_symbol_position', value: 'left');
 
-        // data insert into shipping table
+        // Data insert into shipping table
         $new_shipping_type = new ShippingType;
         $new_shipping_type->seller_id = 0;
         $new_shipping_type->shipping_type = 'order_wise';
@@ -468,16 +203,7 @@ class InstallController extends Controller
         self::notification_message_import(); // notification message add in the new table
         self::company_riliability_import(); // company riliability add in the new table
 
-        DB::table('business_settings')->updateOrInsert(['type' => 'app_activation',],
-            [
-                'type' => 'app_activation',
-                'value' => json_encode([
-                    'software_id' => '',
-                    'is_active' => 0
-                ]),
-                'updated_at' => now()
-            ]
-        );
+        $this->businessSettingGetOrInsert(type: 'app_activation', value: json_encode(['software_id' => '', 'is_active' => 0]));
 
         if (!NotificationMessage::where(['key' => 'product_request_approved_message'])->first()) {
             DB::table('notification_messages')->updateOrInsert([
@@ -507,227 +233,49 @@ class InstallController extends Controller
             );
         }
 
-        DB::table('business_settings')->updateOrInsert(['type' => 'map_api_status',],
-            [
-                'type' => 'map_api_status',
-                'value' => 1,
-                'updated_at' => now()
-            ]
-        );
+        $this->businessSettingGetOrInsert(type: 'map_api_status', value: 1);
 
-        //priority setup and vendor registration data process
+        // Priority setup and vendor registration data process
         $this->getPrioritySetupAndVendorRegistrationData();
 
-        if(Admin::count()>0 && EmailTemplate::count()<1){
+        if (Admin::count() > 0 && EmailTemplate::count() < 1) {
             $emailTemplateUserData = [
                 'admin',
                 'customer',
                 'vendor',
                 'delivery-man',
             ];
-            foreach ($emailTemplateUserData as $key=>$value){
+            foreach ($emailTemplateUserData as $key => $value) {
                 $this->getEmailTemplateDataForUpdate($value);
             }
         }
 
-        $previousRouteServiceProvier = base_path('app/Providers/RouteServiceProvider.php');
-        $newRouteServiceProvier = base_path('app/Providers/RouteServiceProvider.txt');
-        copy($newRouteServiceProvier, $previousRouteServiceProvier);
+        $this->businessSettingGetOrInsert(type: 'storage_connection_type', value: 'public');
+        $this->businessSettingGetOrInsert(type: 'google_search_console_code', value: '');
+        $this->businessSettingGetOrInsert(type: 'bing_webmaster_code', value: '');
+        $this->businessSettingGetOrInsert(type: 'baidu_webmaster_code', value: '');
+        $this->businessSettingGetOrInsert(type: 'yandex_webmaster_code', value: '');
+
+        $previousRouteServiceProvider = base_path('app/Providers/RouteServiceProvider.php');
+        $newRouteServiceProvider = base_path('app/Providers/RouteServiceProvider.txt');
+        copy($newRouteServiceProvider, $previousRouteServiceProvider);
         //sleep(5);
         return view('installation.step6');
     }
 
-    public static function getPrioritySetupAndVendorRegistrationData()
+    public static function updateRobotTexFile(): void
     {
-        if (BusinessSetting::where(['type' => 'vendor_registration_header'])->first() == false) {
-            DB::table('business_settings')->updateOrInsert(["type" => "vendor_registration_header"], [
-                "value" => json_encode([
-                    "title" => "Vendor Registration",
-                    "sub_title" => "Create your own store.Already have store?",
-                    "image" => ""
-                ]),
-            ]);
-        }
-
-        if (BusinessSetting::where(['type' => 'vendor_registration_sell_with_us'])->first() == false) {
-            DB::table('business_settings')->updateOrInsert(["type" => "vendor_registration_sell_with_us"], [
-                "value" => json_encode([
-                    "title" => "Why Sell With Us",
-                    "sub_title" => "Boost your sales! Join us for a seamless, profitable experience with vast buyer reach and top-notch support. Sell smarter today!",
-                    "image" => ""
-                ]),
-            ]);
-        }
-
-        if (BusinessSetting::where(['type' => 'download_vendor_app'])->first() == false) {
-            DB::table('business_settings')->updateOrInsert(["type" => "download_vendor_app"], [
-                "value" => json_encode([
-                    "title" => "Download Free Vendor App",
-                    "sub_title" => "Download our free seller app and start reaching millions of buyers on the go! Easy setup, manage listings, and boost sales anywhere.",
-                    "image" => null,
-                    "download_google_app" => null,
-                    "download_google_app_status" => 0,
-                    "download_apple_app" => null,
-                    "download_apple_app_status" => 0,
-                ]),
-            ]);
-        }
-
-        if (BusinessSetting::where(['type' => 'business_process_main_section'])->first() == false) {
-            DB::table('business_settings')->updateOrInsert(["type" => "business_process_main_section"], [
-                "value" => json_encode([
-                    "title" => "3 Easy Steps To Start Selling",
-                    "sub_title" => "Start selling quickly! Register, upload your products with detailed info and images, and reach millions of buyers instantly.",
-                    "image" => ""
-                ]),
-            ]);
-        }
-
-        if (BusinessSetting::where(['type' => 'business_process_step'])->first() == false) {
-            DB::table('business_settings')->updateOrInsert(["type" => "business_process_step"], [
-                "value" => json_encode(
-                    [
-                        [
-                            "title" => "Get Registered",
-                            "description" => "Sign up easily and create your seller account in just a few minutes. It's fast and simple to get started.",
-                            "image" => "",
-                        ],
-                        [
-                            "title" => "Upload Products",
-                            "description" => "List your products with detailed descriptions and high-quality images to attract more buyers effortlessly.",
-                            "image" => "",
-                        ],
-                        [
-                            "title" => "Start Selling",
-                            "description" => "Go live and start reaching millions of potential buyers immediately. Watch your sales grow with our vast audience.",
-                            "image" => "",
-                        ]
-                    ]
-                ),
-            ]);
-        }
-
-        //registration data insert start
-        $vendorRegistrationReason = [
-            [
-                "title" => "Millions of Users",
-                "description" => "Access a vast audience with millions of active users ready to buy your products.",
-                "priority" => 1,
-                "status" => 1,
-            ],
-            [
-                "title" => "Free Marketing",
-                "description" => "Benefit from our extensive, no-cost marketing efforts to boost your visibility and sales.",
-                "priority" => 2,
-                "status" => 1,
-            ],
-            [
-                "title" => "SEO Friendly",
-                "description" => "Enjoy enhanced search visibility with our SEO-friendly platform, driving more traffic to your listings.",
-                "priority" => 3,
-                "status" => 1,
-            ],
-            [
-                "title" => "24/7 Support",
-                "description" => "Get round-the-clock support from our dedicated team to resolve any issues and assist you anytime.",
-                "priority" => 4,
-                "status" => 1,
-            ],
-            [
-                "title" => "Easy Onboarding",
-                "description" => "Start selling quickly with our user-friendly onboarding process designed to get you up and running fast.",
-                "priority" => 5,
-                "status" => 1,
-            ],
-        ];
-
-        if (VendorRegistrationReason::count()<1) {
-            foreach($vendorRegistrationReason as $reason){
-                DB::table('vendor_registration_reasons')->updateOrInsert(["title" => $reason['title']], [
-                    "description" => $reason['description'],
-                    "priority" => $reason['priority'],
-                    "status" => $reason['status'],
-                ]);
+        try {
+            $path = DOMAIN_POINTED_DIRECTORY == 'public' ? public_path('robots.txt') : base_path('robots.txt');
+            if (!File::exists($path)) {
+                fopen($path, "w") or die("Unable to open file!");
             }
-        }
-        //registration data insert end
-
-
-        //faq for vendor registration start
-        $faqVendorRegistration = [
-            [
-                "type" => "vendor_registration",
-                "question" => "How do I register as a seller?",
-                "answer" => 'To register, click on the "Sign Up" button, fill in your details, and verify your account via email.',
-                'ranking' => 1,
-                'status' => 1,
-            ],
-            [
-                'type' => 'vendor_registration',
-                'question' => 'What are the fees for selling?',
-                'answer' => 'Our platform charges a small commission on each sale. There are no upfront listing fees.',
-                'ranking' => 2,
-                'status' => 1,
-            ],
-            [
-                'type' => 'vendor_registration',
-                'question' => 'How do I upload products?',
-                'answer' => 'Log in to your seller account, go to the "Upload Products" section, and fill in the product details and images.',
-                'ranking' => 3,
-                'status' => 1,
-            ],
-            [
-                'type' => 'vendor_registration',
-                'question' => 'How do I handle customer inquiries?',
-                'answer' => "You can manage customer inquiries directly through our platform's messaging system, ensuring quick and efficient communication.",
-                'ranking' => 4,
-                'status' => 1,
-            ],
-        ];
-
-        if(HelpTopic::where('type', 'vendor_registration')->count()<5){
-            foreach($faqVendorRegistration as $faq){
-                DB::table('help_topics')->insert([
-                    "type" => $faq['type'],
-                    "question" => $faq['question'],
-                    "answer" => $faq['answer'],
-                    "ranking" => $faq['ranking'],
-                    "status" => $faq['status'],
-                ]);
+            $content = "User-agent: *\nDisallow: /login/admin/\nSitemap: " . url('/sitemap.xml');
+            if (!File::exists($path)) {
+                File::put($path, $content);
             }
-        }
-        //faq for vendor registration start
-
-
-
-        Product::where(['product_type' => 'digital'])->update(['current_stock' => 999999999]);
-        $prioritySetupKeyArray = [
-            'brand_list_priority',
-            'category_list_priority',
-            'vendor_list_priority',
-            'flash_deal_priority',
-            'featured_product_priority',
-            'feature_deal_priority',
-            'new_arrival_product_list_priority',
-            'top_vendor_list_priority',
-            'category_wise_product_list_priority',
-            'top_rated_product_list_priority',
-            'best_selling_product_list_priority',
-            'searched_product_list_priority',
-            'vendor_product_list_priority'
-        ];
-        foreach ($prioritySetupKeyArray as $key=>$value){
-            if (BusinessSetting::where(['type' => $value])->first() == false) {
-                DB::table('business_settings')->updateOrInsert(['type' => $value],
-                    [
-                        'type' => $value,
-                        'value' => '',
-                        'created_at' => now(),
-                        'updated_at' => now(),
-
-                    ]
-                );
-            }
+            File::put($path, $content);
+        } catch (\Exception $exception) {
         }
     }
 
@@ -829,7 +377,7 @@ class InstallController extends Controller
 
     public static function company_riliability_import()
     {
-        $datas = [
+        $data = [
             [
                 'item' => 'delivery_info',
                 'title' => 'Fast Delivery all across the country',
@@ -858,7 +406,7 @@ class InstallController extends Controller
 
         if (BusinessSetting::where(['type' => 'company_reliability'])->first() == false) {
             BusinessSetting::insert(['type' => 'company_reliability'], [
-                'value' => json_encode($datas),
+                'value' => json_encode($data),
             ]);
         }
     }

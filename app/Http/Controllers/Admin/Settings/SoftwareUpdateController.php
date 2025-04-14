@@ -93,15 +93,7 @@ class SoftwareUpdateController extends Controller
                 Artisan::call('config:cache');
                 Artisan::call('config:clear');
 
-                $this->insert_data_of('13.0');
-                $this->insert_data_of('13.1');
-                $this->insert_data_of('14.0');
-                $this->insert_data_of('14.1');
-                $this->insert_data_of('14.2');
-                $this->insert_data_of('14.3');
-                $this->insert_data_of('14.3.1');
-                $this->insert_data_of('14.4');
-                $this->insert_data_of('14.5');
+                $this->getProcessAllVersionsUpdates();
             }
 
             $this->setEnvironmentValue(envKey: 'SOFTWARE_VERSION', envValue: SOFTWARE_VERSION);

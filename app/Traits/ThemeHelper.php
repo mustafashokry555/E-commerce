@@ -2,21 +2,24 @@
 
 namespace App\Traits;
 
-use Illuminate\Support\Facades\File;
-
 trait ThemeHelper
 {
-    public function get_theme_routes(): array
+    public function getThemeRoutesArray(): array
     {
-        $theme_routes = [];
+        $themeRoutes = [];
         try {
-            if (theme_root_path() != 'default' && is_file(base_path('resources/themes/'.theme_root_path().'/public/addon/theme_routes.php'))) {
-                $theme_routes = include('resources/themes/'.theme_root_path().'/public/addon/theme_routes.php'); // theme_root_path()
+            if (DOMAIN_POINTED_DIRECTORY == 'public') {
+                if (theme_root_path() != 'default' && is_file(base_path('public/themes/'.theme_root_path().'/public/addon/theme_routes.php'))) {
+                    $themeRoutes = include(base_path('public/themes/'.theme_root_path().'/public/addon/theme_routes.php')); // theme_root_path()
+                }
+            } else {
+                if (theme_root_path() != 'default' && is_file(base_path('resources/themes/'.theme_root_path().'/public/addon/theme_routes.php'))) {
+                    $themeRoutes = include('resources/themes/'.theme_root_path().'/public/addon/theme_routes.php'); // theme_root_path()
+                }
             }
         } catch (\Exception $exception) {
-
         }
 
-        return $theme_routes;
+        return $themeRoutes;
     }
 }

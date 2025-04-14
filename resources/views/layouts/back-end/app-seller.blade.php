@@ -1,3 +1,6 @@
+@php
+    use App\Utils\Helpers;
+@endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ Session::get('direction') }}"
     style="text-align: {{ Session::get('direction') === 'rtl' ? 'right' : 'left' }};">
@@ -5,15 +8,18 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="robots" content="nofollow, noindex ">
     <title>@yield('title')</title>
     <meta name="_token" content="{{ csrf_token() }}">
-    <link rel="shortcut icon" href="{{dynamicStorage(path: 'storage/app/public/company/'.getWebConfig(name: 'company_fav_icon'))}}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="shortcut icon" href="{{getStorageImages(path: getWebConfig(name: 'company_fav_icon'), type:'backend-logo')}}">
 
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/bootstrap.min.css')}}">
     <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/vendor.min.css') }}">
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/google-fonts.css')}}">
     <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/vendor/icon-set/style.css') }}">
     <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/theme.minc619.css?v=1.0') }}">
+    <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/daterangepicker.css')}}">
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/style.css')}}">
     @if (Session::get('direction') === 'rtl')
         <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/menurtl.css')}}">
@@ -79,12 +85,14 @@
     <span id="message-you-will-not-be-able-to-revert-this"
           data-text="{{ translate('you_will_not_be_able_to_revert_this') }}"></span>
     <span id="getChattingNewNotificationCheckRoute" data-route="{{ route('vendor.messages.new-notification') }}"></span>
+    <span id="get-search-vendor-product-for-clearnace-route" data-action="{{route('vendor.clearance-sale.search-product-for-clearance')}}"></span>
+    <span id="get-multiple-clearance-product-details-route" data-action="{{route('vendor.clearance-sale.multiple-clearance-product-details')}}"></span>
 
     <span id="get-stock-limit-status" data-action="{{route('vendor.products.stock-limit-status')}}"></span>
     <span id="get-product-stock-limit-title" data-title="{{translate('warning')}}"></span>
     <span id="get-product-stock-limit-image" data-warning-image="{{ dynamicAsset(path: 'public/assets/back-end/img/warning-2.png') }}"></span>
     <span id="get-product-stock-limit-message"
-          data-message-for-multiple="{{ translate('there_isn’t_enough_quantity_on_stock').' . '.translate('please_check_products_in_limited_stock').'.' }}"
+          data-message-for-multiple="{{ translate('there_is_not_enough_quantity_on_stock').' . '.translate('please_check_products_in_limited_stock').'.' }}"
           data-message-for-three-plus-product="{{translate('_more_products_have_low_stock') }}"
           data-message-for-one-product="{{translate('this_product_is_low_on_stock')}}">
     </span>
@@ -92,6 +100,10 @@
           data-stock-limit-page="{{route('vendor.products.stock-limit-list')}}"
     >
     </span>
+    <span id="route-for-real-time-activities" data-route="{{ route('vendor.dashboard.real-time-activities') }}"></span>
+    <span id="get-confirm-and-cancel-button-text-for-delete-all-products" data-sure ="{{translate('are_you_sure').'?'}}"
+          data-text="{{translate('want_to_clear_all_stock_clearance_products?').'!'}}"
+          data-confirm="{{translate('yes_delete_it')}}" data-cancel="{{translate('cancel')}}"></span>
 
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/vendor.min.js') }}"></script>
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/theme.min.js') }}"></script>
@@ -119,19 +131,9 @@
 
     <script>
         'use strict'
-        setInterval(function() {
-            $.get({
-                url: '{{ route('vendor.get-order-data') }}',
-                dataType: 'json',
-                success: function(response) {
-                    let data = response.data;
-                    if (data.new_order > 0) {
-                        playAudio();
-                        $('#popup-modal').appendTo("body").modal('show');
-                    }
-                },
-            });
-        }, 10000);
+        setInterval(function () {
+            getInitialDataForPanel();
+        }, 5000);
     </script>
 
     <script>
@@ -181,7 +183,6 @@
         </script>
     @endif
     @stack('script')
-
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/common-script.js') }}"></script>
     @stack('script_2')
 

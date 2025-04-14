@@ -87,8 +87,8 @@
                                     <td>
                                         <a href="{{route('admin.products.view',['addedBy'=>($product['added_by']=='seller'?'vendor' : 'in-house'),'id'=>$product['id']]) }}"
                                            class="media align-items-center gap-2">
-                                            <img src="{{ getValidImage(path:'storage/app/public/product/thumbnail/'.$product['thumbnail'],type: 'backend-product')}}"
-                                                class="avatar border" alt="">
+                                            <img src="{{ getStorageImages(path:$product->thumbnail_full_url,type: 'backend-product')}}"
+                                                class="avatar border object-fit-cover" alt="">
                                             <span class="media-body title-color hover-c1">
                                                 {{ Str::limit($product['name'], 20) }}
                                             </span>
@@ -105,7 +105,7 @@
                                                     id="{{ $product['id'] }}"
                                                     data-url="{{ route('admin.products.get-variations').'?id='.$product['id'] }}"
                                                     type="button"
-                                                    data-toggle="modal" data-target="#update-quantity"
+                                                    data-target="#update-quantity"
                                                     title="{{ translate('update_quantity') }}">
                                                 <i class="tio-add-circle c1"></i>
                                             </button>
@@ -182,13 +182,13 @@
         </div>
     </div>
 
-    <div class="modal fade" id="update-quantity" tabindex="-1">
+    <div class="modal fade update-stock-modal" id="update-quantity" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <form action="{{ route('admin.products.update-quantity') }}" method="post" class="row">
                     <div class="modal-body">
                         @csrf
-                        <div class="rest-part"></div>
+                        <div class="rest-part-content"></div>
                         <div class="d-flex justify-content-end gap-10 flex-wrap align-items-center">
                             <button type="button" class="btn btn-danger px-4" data-dismiss="modal" aria-label="Close">
                                 {{ translate('close') }}

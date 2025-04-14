@@ -105,9 +105,17 @@
                                 <div class="col-12">
                                     <div class="d-flex justify-content-center">
                                         <h3>{{translate('send_Mail')}}</h3>
-                                        <label class="badge-soft-danger px-1">{{translate('configure_your_mail_setup_first').'.'}}</label>
+                                        <?php
+                                            $emailServices_smtp = getWebConfig(name: 'mail_config');
+                                            if ($emailServices_smtp['status'] == 0) {
+                                                $emailServices_smtp = getWebConfig(name: 'mail_config_sendgrid');
+                                            }
+                                        ?>
+                                        @if($emailServices_smtp['status'] != 1)
+                                            <label class="badge-soft-danger px-1">{{translate('configure_your_mail_setup_first').'.'}}</label>
+                                        @endif
                                     </div>
-                                    <form action="{{route('admin.contact.send-mail',$contact->id)}}" method="post">
+                                    <form action="{{route('admin.contact.send-mail', $contact->id)}}" method="post">
                                         @csrf
                                         <div class="form-group mt-2">
                                             <div class="row">

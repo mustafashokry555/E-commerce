@@ -22,7 +22,7 @@
                          alt="">
                     <p class="mb-0">
                         <strong>{{translate('NB').':'}}</strong>
-                        {{ translate('Please_re-check_if_you’ve_put_all_the_data_correctly_or_contact_your_SMS_gateway_provider_for_assistance').'.'}}
+                        {{ translate('Please_re_check_if_you_have_put_all_the_data_correctly_or_contact_your_SMS_gateway_provider_for_assistance').'.'}}
                     </p>
                 </div>
             </div>

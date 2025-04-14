@@ -172,22 +172,12 @@
                                 </div>
                             </form>
                             <div>
-                                <button type="button" class="btn btn-outline--primary text-nowrap btn-block"
-                                        data-toggle="dropdown">
-                                    <i class="tio-download-to"></i>
-                                    {{translate('export')}}
-                                    <i class="tio-chevron-down"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-right">
-                                    <li>
-                                        <a class="dropdown-item"
-                                           href="{{ route('admin.coupon.export',['searchValue'=>request('searchValue')]) }}">
-                                            <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}"
-                                                 alt="">
-                                            {{translate('excel')}}
-                                        </a>
-                                    </li>
-                                </ul>
+                                <div class="dropdown">
+                                    <a type="button" class="btn btn-outline--primary text-nowrap btn-block" href="{{ route('admin.coupon.export',['searchValue'=>request('searchValue')]) }}">
+                                        <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
+                                        <span class="ps-2">{{ translate('export') }}</span>
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </div>

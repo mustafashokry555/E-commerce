@@ -140,20 +140,10 @@
                                     </div>
                                 </form>
                                 <div class="dropdown">
-                                    <button type="button" class="btn btn-outline--primary" data-toggle="dropdown">
-                                        <i class="tio-download-to"></i>
-                                        {{translate('export')}}
-                                        <i class="tio-chevron-down"></i>
-                                    </button>
-
-                                    <ul class="dropdown-menu dropdown-menu-right">
-                                        <li>
-                                            <a type="submit" class="dropdown-item d-flex align-items-center gap-2" href="{{ route('admin.orders.export-excel', ['delivery_man_id' => request('delivery_man_id'), 'status' => $status, 'from' => $from, 'to' => $to, 'filter' => $filter, 'searchValue' => $searchValue,'seller_id'=>$vendorId,'customer_id'=>$customerId, 'date_type'=>$dateType]) }}">
-                                                <img width="14" src="{{asset('public/assets/back-end/img/excel.png')}}" alt="">
-                                                {{translate('excel')}}
-                                            </a>
-                                        </li>
-                                    </ul>
+                                    <a type="button" class="btn btn-outline--primary text-nowrap" href="{{ route('admin.orders.export-excel', ['delivery_man_id' => request('delivery_man_id'), 'status' => $status, 'from' => $from, 'to' => $to, 'filter' => $filter, 'searchValue' => $searchValue,'seller_id'=>$vendorId,'customer_id'=>$customerId, 'date_type'=>$dateType]) }}">
+                                        <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
+                                        <span class="ps-2">{{ translate('export') }}</span>
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -207,15 +197,17 @@
                                                     <a class="d-block title-color" href="mailto:{{ $order->customer['email'] }}">{{ $order->customer['email'] }}</a>
                                                 @endif
                                             @else
-                                                <label class="badge badge-danger fz-12">{{translate('invalid_customer_data')}}</label>
+                                                <label class="badge badge-danger fz-12">
+                                                    {{ translate('customer_not_found') }}
+                                                </label>
                                             @endif
                                         @endif
                                     </td>
                                     <td>
-                                        @if(isset($order->seller->shop))
-                                            <a href="{{$order->seller_is == 'seller' && $order->seller->shop ? route('admin.vendors.view',['id'=>$order->seller->shop->id]) : 'javascript:' }}" class="store-name font-weight-medium">
+                                        @if(isset($order->seller_id) && isset($order->seller_is))
+                                            <a href="{{$order->seller_is == 'seller' && $order->seller?->shop ? route('admin.vendors.view', ['id'=>$order->seller->shop->id]) : 'javascript:' }}" class="store-name font-weight-medium">
                                                 @if($order->seller_is == 'seller')
-                                                    {{ isset($order->seller->shop) ? $order->seller->shop->name : translate('Store_not_found') }}
+                                                    {{ isset($order->seller?->shop) ? $order->seller?->shop?->name : translate('Store_not_found') }}
                                                 @elseif($order->seller_is == 'admin')
                                                     {{translate('in_House')}}
                                                 @endif
@@ -226,20 +218,11 @@
                                     </td>
                                     <td>
                                         <div>
-                                            @php($discount = 0)
-                                            @if($order->order_type == 'default_type' && $order->coupon_discount_bearer == 'inhouse' && !in_array($order['coupon_code'], [0, NULL]))
-                                                @php($discount = $order->discount_amount)
-                                            @endif
-
-                                            @php($free_shipping = 0)
-                                            @if($order->is_shipping_free)
-                                                @php($free_shipping = $order->shipping_cost)
-                                            @endif
-
-                                            {{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $order->order_amount), currencyCode: getCurrencyCode())}}
+                                            @php($orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(order: $order))
+                                            {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount:  $orderTotalPriceSummary['totalAmount']), currencyCode: getCurrencyCode()) }}
                                         </div>
 
-                                        @if($order->payment_status=='paid')
+                                        @if($order->payment_status == 'paid')
                                             <span class="badge badge-soft-success">{{translate('paid')}}</span>
                                         @else
                                             <span class="badge badge-soft-danger">{{translate('unpaid')}}</span>
@@ -251,7 +234,6 @@
                                                 <span class="badge badge-soft-info fz-12">
                                                     {{translate($order['order_status'])}}
                                                 </span>
-
                                             @elseif($order['order_status']=='processing' || $order['order_status']=='out_for_delivery')
                                                 <span class="badge badge-soft-warning fz-12">
                                                     {{str_replace('_',' ',$order['order_status'] == 'processing' ? translate('packaging'):translate($order['order_status']))}}

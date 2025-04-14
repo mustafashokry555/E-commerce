@@ -5,9 +5,9 @@
         $totalShippingCost = 0;
         $orderWiseShippingDiscount = \App\Utils\CartManager::order_wise_shipping_discount();
         $totalDiscountOnProduct = 0;
-        $cart = \App\Utils\CartManager::get_cart();
+        $cart = \App\Utils\CartManager::getCartListQuery(type: 'checked');
         $shippingCost = \App\Utils\CartManager::get_shipping_cost(type: 'checked');
-        $getShippingCostSavedForFreeDelivery = \App\Utils\CartManager::get_shipping_cost_saved_for_free_delivery();
+        $getShippingCostSavedForFreeDelivery = \App\Utils\CartManager::getShippingCostSavedForFreeDelivery();
         $couponDiscount = session()->has('coupon_discount') ? session('coupon_discount') : 0;
         if ($cart->count() > 0) {
             foreach ($cart as $key => $cartItem) {

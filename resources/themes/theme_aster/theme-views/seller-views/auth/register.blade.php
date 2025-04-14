@@ -1,5 +1,5 @@
 @extends('theme-views.layouts.app')
-@section('title', translate('vendor_Apply').' | '.$web_config['name']->value.' '.translate('ecommerce'))
+@section('title', translate('vendor_Apply').' | '.$web_config['company_name'].' '.translate('ecommerce'))
 @push('css_or_js')
     <link rel="stylesheet" href="{{ theme_asset(path: 'assets/plugins/intl-tel-input/css/intlTelInput.css') }}">
 @endpush
@@ -101,7 +101,7 @@
                         <div class="d-flex flex-column align-items-center text-center gap-2 mb-2">
                             <img src="{{theme_asset('assets/img/congratulations.png')}}" width="70" class="mb-3 mb-20" alt="">
                             <h5 class="modal-title">{{translate('congratulations')}}</h5>
-                            <div class="text-center">{{translate('your_registration_is_successful').', '.translate('please-wait_for_admin_approval').'.'.translate(' you’ll_get_a_mail_soon')}}</div>
+                            <div class="text-center">{{translate('your_registration_is_successful').', '.translate('please-wait_for_admin_approval').'.'.translate(' you_will_get_a_mail_soon')}}</div>
                         </div>
                     </div>
                 </div>
@@ -128,8 +128,8 @@
         <script>
             "use strict";
             var onloadCallback = function () {
-                let reg_id = grecaptcha.render('recaptcha-element-vendor-register', {'sitekey': '{{ $web_config['recaptcha']['site_key'] }}'});
-                let login_id = grecaptcha.render('recaptcha_element_seller_login', {'sitekey': '{{ $web_config['recaptcha']['site_key'] }}'});
+                var reg_id = grecaptcha.render('recaptcha-element-vendor-register', {'sitekey': '{{ $web_config['recaptcha']['site_key'] }}'});
+                var login_id = grecaptcha.render('recaptcha_element_seller_login', {'sitekey': '{{ $web_config['recaptcha']['site_key'] }}'});
 
                 $('#recaptcha-element-vendor-register').attr('data-reg-id', reg_id);
                 $('#recaptcha_element_seller_login').attr('data-login-id', login_id);
@@ -141,7 +141,7 @@
             $('#re-captcha-vendor-register').on('click',function () {
                 let genUrl = "{{ route('vendor.auth.recaptcha', ['tmp'=>':dummy-id']) }}";
                 genUrl = genUrl.replace(":dummy-id", Math.random());
-                genUrl = genUrl + '?captcha_session_id=sellerRecaptchaSessionKey';
+                genUrl = genUrl + '?captcha_session_id=vendorRecaptchaSessionKey';
                 document.getElementById('default_recaptcha_id_regi').src = genUrl;
             })
         </script>
@@ -166,7 +166,6 @@
             }
             @endif
         });
-        initializePhoneInput(".phone-input-with-country-picker", ".country-picker-phone-number");
     </script>
     <script src="{{theme_asset('assets/js/password-strength.js')}}"></script>
 @endpush

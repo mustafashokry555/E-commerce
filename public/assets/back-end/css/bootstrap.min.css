@@ -4,7 +4,7 @@
  * Copyright 2011-2020 Twitter, Inc.
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/main/LICENSE)
  */
- :root {
+:root {
     --blue: #377dff;
     --indigo: #6610f2;
     --purple: #6f42c1;
@@ -15823,8 +15823,12 @@ input[type=number] {
     border-bottom-width: 0
 }
 
-.navbar-vertical .navbar-nav.nav-tabs .nav-item:not(:last-child) {
+/* .navbar-vertical .navbar-nav.nav-tabs .nav-item:not(:last-child) {
     margin: 0
+} */
+
+.navbar-vertical .navbar-nav.nav-tabs > .nav-item {
+    margin-inline: 1rem;
 }
 
 .navbar-vertical .navbar-nav.nav-tabs .nav-link {
@@ -15842,7 +15846,7 @@ input[type=number] {
 }
 
 .navbar-vertical .navbar-nav.nav-tabs .nav-link {
-    border-width: 0 0 0 .2rem;
+    border-width: 0 0 0 1px;
     margin-bottom: 0
 }
 
@@ -15921,8 +15925,7 @@ input[type=number] {
 }
 
 .navbar-vertical:not([class*=container]) .navbar-nav.navbar-nav-lg .nav-link {
-    margin-top: .375rem;
-    margin-bottom: .375rem
+    margin: .375rem 1rem;
 }
 
 .navbar-vertical:not([class*=container]) .navbar-nav .nav-link {
@@ -15932,8 +15935,7 @@ input[type=number] {
 .navbar-vertical:not([class*=container]) .navbar-nav .nav .nav-link {
     padding-right: 1.75rem;
     padding-left: 3.25rem;
-    margin-top: 0;
-    margin-bottom: 0
+    margin: 0;
 }
 
 .navbar-vertical:not([class*=container]) .navbar-nav .nav .nav .nav-link {
@@ -17170,10 +17172,10 @@ input[type=number] {
     .navbar-vertical-aside-show-xl.navbar-vertical-aside-compact-mini-mode.splitted-content .navbar:not(.navbar-vertical) {
         margin-left: 2rem
     }
-
-    .navbar-vertical-aside-show-xl.navbar-vertical-aside-mini-mode .navbar-vertical-aside-mini-mode-hidden-elements {
-        display: none
-    }
+    /*
+        .navbar-vertical-aside-show-xl.navbar-vertical-aside-mini-mode .navbar-vertical-aside-mini-mode-hidden-elements {
+            display: none
+        } */
 
     .navbar-vertical-aside-show-xl.navbar-vertical-aside-mini-mode .navbar-vertical-aside .navbar-brand-logo-mini {
         display: block
@@ -17221,7 +17223,7 @@ input[type=number] {
     .navbar-vertical-aside-show-xl.navbar-vertical-aside-mini-mode .navbar-vertical-content > .navbar-nav > .navbar-vertical-aside-has-menu > .nav {
         position: absolute;
         top: 0;
-        left: calc(100% + .9125rem);
+        left: calc(100% + .5rem);
         z-index: 2;
         min-width: 15rem;
         background-color: #fff;

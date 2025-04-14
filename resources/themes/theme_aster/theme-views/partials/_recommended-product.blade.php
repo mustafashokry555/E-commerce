@@ -50,7 +50,7 @@
                             </a>
                         </div>
                         <div class="auto-col mobile-items-2 gap-2 gap-sm-3 recommended-product-grid minWidth-12rem">
-                            @foreach($latest_products as $product)
+                            @foreach($latestProductsList as $product)
                                 @if($product)
                                     @include('theme-views.partials._product-large-card',['product'=>$product])
                                 @endif

@@ -36,7 +36,7 @@
                         <div class="modal-body px-4 px-sm-5 pt-0 text-center">
                             <div class="row g-2 g-sm-3 mt-lg-0">
                                 <div class="col-12">
-                                    <div class="swiper mySwiper pb-3">
+                                    <div class="swiper instruction-carousel pb-3">
                                         <div class="swiper-wrapper">
                                             <div class="swiper-slide">
                                                 <img
@@ -62,7 +62,7 @@
                                                         loading="lazy"
                                                         alt="" class="dark-support rounded mb-4">
                                                     <p>
-                                                        {{ translate('now_you’ll_be_successfully_able_to_use_the_addons_for_your_6Valley_website') }}
+                                                        {{ translate('now_you_will_be_successfully_able_to_use_the_addons_for_your_6Valley_website') }}
                                                     </p>
                                                     <p>
                                                         {{ translate('N:B you_can_upload_only_6Valley’s_theme_templates').'.' }}
@@ -73,7 +73,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="swiper-pagination"></div>
+                                    <div class="instruction-pagination-custom my-2"></div>
                                 </div>
                             </div>
                         </div>
@@ -169,7 +169,7 @@
         </div>
         <div class="row g-1 g-sm-2">
             @foreach($addons as $key => $addon)
-                @php($data = include $addon.'/Addon/info.php')
+                @php($data = include(base_path($addon.'/Addon/info.php')))
                 <div class="col-6 col-md-4 col-xxl-4">
                     <div class="card theme-card {{ theme_root_path() == $key ? 'theme-active':'' }}">
                         <div class="card-header">
@@ -271,7 +271,7 @@
                         <div class="p-2 p-sm-3">
                             <div class="aspect-ration-3:2 border border-color-primary-light radius-10">
                                 <img class="img-fit radius-10" alt=""
-                                     src="{{ getValidImage(path: $addon.'/public/addon.png', type: 'backend-basic') }}">
+                                     src="{{ getStorageImages(path: null, type: 'backend-basic', source: $addon.'/public/addon.png') }}">
                             </div>
                         </div>
                     </div>

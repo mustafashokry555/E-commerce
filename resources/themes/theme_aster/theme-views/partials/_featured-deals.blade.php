@@ -16,7 +16,7 @@
                              data-swiper-navigation-prev=".top-rated-nav-prev"
                              data-swiper-breakpoints='{"0": {"slidesPerView": "1"}, "340": {"slidesPerView": "2"}, "992": {"slidesPerView": "3"}, "1200": {"slidesPerView": "4"}, "1400": {"slidesPerView": "5"}}'>
                             <div class="swiper-wrapper swiper-wrapper-rtl">
-                                @foreach($featured_deals as $key=>$product)
+                                @foreach($web_config['featured_deals'] as $key=>$product)
                                     <div class="swiper-slide mx-w300">
                                         @include('theme-views.partials._product-large-card',['product'=>$product])
                                     </div>

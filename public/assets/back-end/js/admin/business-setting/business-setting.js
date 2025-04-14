@@ -1,14 +1,10 @@
 'use strict';
-$(document).on('ready',function (){
-    initAutocomplete()
-})
 
 $("#update-error-message").hide();
 
-$("#update-button-message").click(function(){
+$("#update-button-message").click(function () {
     $("#update-error-message").slideDown();
 });
-
 
 $('#free-delivery-responsibility').on('change', function () {
     let getAmountAdminArea = $('#free-delivery-over-amount-admin-area');
@@ -18,39 +14,41 @@ $('#free-delivery-responsibility').on('change', function () {
         getAmountAdminArea.fadeOut();
     }
 });
-$('#background-color').on('change', function(){
+
+$('#background-color').on('change', function () {
     let background_color = $('#background-color').val();
     $('#background-color-set').text(background_color);
 });
-$('#text-color').on('change', function(){
+
+$('#text-color').on('change', function () {
     let text_color = $('#text-color').val();
     $('#text-color-set').text(text_color);
 });
 
 $('#maintenance-mode-form').on('submit', function (e) {
+    let maintenanceModeForm = $('#maintenance-mode-form');
     e.preventDefault();
-    if($('#get-application-environment-mode').data('value') !== 'demo'){
+    if ($('#get-application-environment-mode').data('value') === 'demo') {
         callDemo()
         setTimeout(() => {
             location.reload();
         }, 3000);
-    }
-
-    else{
+    } else {
         $.ajaxSetup({
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="_token"]').attr('content')
             }
         });
         $.ajax({
-            url: $(this).attr('action'),
-            method: $(this).attr('method'),
-            data: $(this).serialize(),
+            url: maintenanceModeForm.attr('action'),
+            method: maintenanceModeForm.attr('method'),
+            data: maintenanceModeForm.serialize(),
             beforeSend: function () {
                 $('#loading').fadeIn();
             },
             success: function (data) {
-                toastr.success(data.message);
+                data.status?.toString() === 'success' ? toastr.success(data.message) : toastr.error(data.message);
+                location.reload();
             },
             complete: function () {
                 $('#loading').fadeOut();
@@ -127,7 +125,7 @@ $('#software-update-form').on('submit', function (e) {
         success: function (response) {
         },
         complete: function () {
-            location.href = getSoftwareUpdate.data('redirect-route')+'/'+$('#update_key').val()
+            location.href = getSoftwareUpdate.data('redirect-route') + '/' + $('#update_key').val()
         },
         error: function (xhr, ajaxOption, thrownError) {
         }
@@ -141,8 +139,8 @@ async function initAutocomplete() {
         lat: latitude,
         lng: longitude
     };
-    const { Map } = await google.maps.importLibrary("maps");
-    const { AdvancedMarkerElement } = await google.maps.importLibrary("marker");
+    const {Map} = await google.maps.importLibrary("maps");
+    const {AdvancedMarkerElement} = await google.maps.importLibrary("marker");
     const map = new google.maps.Map(document.getElementById("location-map-canvas"), {
         center: {
             lat: latitude,
@@ -163,7 +161,7 @@ async function initAutocomplete() {
         var coordinates = JSON.stringify(mapsMouseEvent.latLng.toJSON(), null, 2);
         var coordinates = JSON.parse(coordinates);
         var latlng = new google.maps.LatLng(coordinates['lat'], coordinates['lng']);
-        marker.position={lat:coordinates['lat'], lng:coordinates['lng']};
+        marker.position = {lat: coordinates['lat'], lng: coordinates['lng']};
         map.panTo(latlng);
 
         document.getElementById('latitude').value = coordinates['lat'];
@@ -224,4 +222,12 @@ async function initAutocomplete() {
         });
         map.fitBounds(bounds);
     });
-};
+}
+
+$(document).on('ready', function () {
+    try {
+        initAutocomplete()
+    } catch (e) {
+        console.log(e)
+    }
+})

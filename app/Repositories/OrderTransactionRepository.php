@@ -63,7 +63,7 @@ class OrderTransactionRepository implements OrderTransactionRepositoryInterface
         return $dataLimit == 'all' ? $query->get() : $query->paginate($dataLimit)->appends($filters);
     }
 
-    public function getListWhereBetween(array $filters = [], string $selectColumn = null, string $whereBetween = null, array $whereBetweenFilters = [], array $relations = [], int|string $dataLimit = DEFAULT_DATA_LIMIT, int $offset = null): Collection|LengthAwarePaginator
+    public function getListWhereBetween(array $filters = [], string $selectColumn = null, string $whereBetween = null, string $groupBy = null, array $whereBetweenFilters = [], array $relations = [], int|string $dataLimit = DEFAULT_DATA_LIMIT, int $offset = null): Collection|LengthAwarePaginator
     {
         return $this->orderTransaction->with($relations)->where($filters)
             ->when($selectColumn == 'seller_amount', function ($query) {
@@ -79,7 +79,15 @@ class OrderTransactionRepository implements OrderTransactionRepositoryInterface
                 );
             })
             ->whereBetween($whereBetween, $whereBetweenFilters)
-            ->groupby('year', 'month')
+            ->when($groupBy == 'month', function ($query) use ($filters) {
+                return $query->groupBy('year', 'month');
+            })
+            ->when($groupBy == 'day', function ($query) use ($filters) {
+                return $query->groupBy('month', 'day');
+            })
+            ->when($groupBy == 'day_of_week', function ($query) use ($filters) {
+                return $query->groupBy('day_of_week');
+            })
             ->get();
     }
 

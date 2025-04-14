@@ -3,59 +3,31 @@
 namespace App\Http\Controllers\RestAPI\v1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Banner;
 use App\Models\Product;
+use App\Traits\CacheManagerTrait;
 use App\Utils\Helpers;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class BannerController extends Controller
 {
-    public function get_banners(Request $request)
+    use CacheManagerTrait;
+
+    public function getBannerList(Request $request): JsonResponse
     {
-        $theme_name = theme_root_path();
-
-        $banner_array = match ($theme_name) {
-            'default' => array(
-                'Main Banner',
-                'Footer Banner',
-                'Popup Banner',
-                'Main Section Banner'
-            ),
-            'theme_aster' => array(
-                'Main Banner',
-                'Footer Banner',
-                'Popup Banner',
-                'Header Banner',
-                'Sidebar Banner',
-                'Top Side Banner',
-                'Main Section Banner'
-            ),
-            'theme_fashion' => array(
-                'Main Banner',
-                'Footer Banner',
-                'Popup Banner',
-                'Main Section Banner',
-                'Promo Banner Left',
-                'Promo Banner Middle Top',
-                'Promo Banner Middle Bottom',
-                'Promo Banner Right',
-                'Promo Banner Bottom'
-            ),
-        };
-
-        $banners = Banner::whereIn('banner_type',$banner_array)->where(['published' => 1, 'theme'=>$theme_name])->get();
-        $pro_ids = [];
-        $data = [];
+        $banners = $this->cacheBannerTable();
+        $productIds = [];
+        $bannerData = [];
         foreach ($banners as $banner) {
-            if ($banner['resource_type'] == 'product' && !in_array($banner['resource_id'], $pro_ids)) {
-                array_push($pro_ids,$banner['resource_id']);
+            if ($banner['resource_type'] == 'product' && !in_array($banner['resource_id'], $productIds)) {
+                $productIds[] = $banner['resource_id'];
                 $product = Product::find($banner['resource_id']);
                 $banner['product'] = Helpers::product_data_formatting($product);
             }
-            $data[] = $banner;
+            $bannerData[] = $banner;
         }
 
-        return response()->json($data, 200);
+        return response()->json($bannerData, 200);
 
     }
 }

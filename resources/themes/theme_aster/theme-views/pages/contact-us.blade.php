@@ -1,6 +1,6 @@
 @extends('theme-views.layouts.app')
 
-@section('title', translate('contact_us').' | '.$web_config['name']->value.' '.translate('ecommerce'))
+@section('title', translate('contact_us').' | '.$web_config['company_name'].' '.translate('ecommerce'))
 
 @section('content')
     <main class="main-content d-flex flex-column gap-3 pt-3 mb-sm-5">
@@ -18,7 +18,7 @@
                                 <div class="media-body">
                                     <h4 class="mb-2">{{ translate('call_us') }}</h4>
                                     <a class="fs-18"
-                                       href="tel:{{$web_config['phone']->value}}">{{$web_config['phone']->value}}</a>
+                                       href="tel:{{ $web_config['phone'] }}">{{ $web_config['phone'] }}</a>
                                 </div>
                             </div>
                         </div>

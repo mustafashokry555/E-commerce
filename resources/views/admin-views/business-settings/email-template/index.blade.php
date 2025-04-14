@@ -22,7 +22,6 @@
     <link rel="stylesheet"
           href="{{ dynamicAsset(path: 'public/assets/back-end/vendor/swiper/swiper-bundle.min.css')}}"/>
     <link href="{{ dynamicAsset(path: 'public/assets/back-end/plugins/summernote/summernote.min.css') }}" rel="stylesheet">
-
 @endpush
 
 @section('content')

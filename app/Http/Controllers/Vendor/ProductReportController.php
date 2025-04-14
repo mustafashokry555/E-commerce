@@ -360,7 +360,7 @@ class ProductReportController extends Controller
         $category_id = $request['category_id'] ?? 'all';
         $query_param = ['search' => $search, 'sort' => $sort, 'category_id'=>$category_id];
 
-        $stock_limit = \App\Utils\Helpers::get_business_settings('stock_limit');
+        $stock_limit = getWebConfig(name: 'stock_limit');
         $categories = Category::where(['position'=>0])->get();
         $products = self::stock_product_common_query($request)
             ->paginate(Helpers::pagination_limit())->appends($query_param);
@@ -371,7 +371,7 @@ class ProductReportController extends Controller
 
     public function productStockExport(Request $request):BinaryFileResponse
     {
-        $stock_limit = Helpers::get_business_settings('stock_limit');
+        $stock_limit = getWebConfig(name: 'stock_limit');
         $products = self::stock_product_common_query($request)->get();
         $vendorId = auth('seller')->id();
         $vendor = $this->vendorRepo->getFirstWhere(params:['id' => $vendorId]);

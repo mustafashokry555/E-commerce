@@ -10,16 +10,16 @@
                         <div class="media gap-3 align-items-center mn-w200">
                             <div class="avatar border rounded size-3-437rem">
                                 <img class="img-fit dark-support rounded aspect-1" alt=""
-                                    src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$product['thumbnail'], type: 'product') }}">
+                                    src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'product') }}">
                             </div>
                             <div class="media-body">
                                 <a href="{{route('product',$product['slug'])}}">
-                                    <h6 class="text-truncate text-capitalize width--20ch">{{$product['name']}}</h6>
+                                    <h6 class="text-truncate text-capitalize width--20ch link-hover-base">{{$product['name']}}</h6>
                                 </a>
                             </div>
-                            @if($brand_setting)
+                            @if($brand_setting && $product->product_type != 'digital')
                                 <div class="media-body">
-                                    <h6 class="text-truncate width--10">{{$product->brand?$product->brand['name']:''}} </h6>
+                                    <h6 class="text-truncate width--10">{{$product?->brand ? $product->brand['name']:'' }} </h6>
                                 </div>
                             @endif
                         </div>
@@ -32,10 +32,10 @@
                         </div>
                     </td>
                     <td>
-                        @php($compare_list = count($product->compareList)>0 ? 1 : 0)
+
                         <div class="d-flex justify-content-center gap-2 align-items-center">
                             <a href="javascript:"
-                               class="btn btn-outline-success rounded-circle btn-action add-to-compare compare_list-{{$product['id']}} {{($compare_list == 1?'compare_list_icon_active':'')}}"
+                               class="btn btn-outline-success rounded-circle btn-action add-to-compare compare_list-{{$product['id']}} {{ isProductInCompareList($product->id) ?'compare_list_icon_active':'' }}"
                                data-product-id ="{{$product['id']}}" data-action="{{route('product-compare.index')}}"
                                id="compare_list-{{$product['id']}}">
                                 <i class="bi bi-repeat"></i>
@@ -74,12 +74,12 @@
                 <div class="media gap-3 bg-light p-3 rounded">
                     <div class="avatar border rounded size-3-437rem">
                         <img
-                            src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$product['thumbnail'], type: 'product') }}"
+                            src="{{ getStorageImages(path:$product->thumbnail_full_url, type: 'product') }}"
                             class="img-fit dark-support rounded" alt="">
                     </div>
                     <div class="media-body d-flex flex-column gap-1">
                         <a href="{{route('product',$product['slug'])}}">
-                            <h6 class="text-truncate text-capitalize width--20ch">{{$product['name']}}</h6>
+                            <h6 class="text-truncate text-capitalize width--20ch link-hover-base">{{$product['name']}}</h6>
                         </a>
                         <div>
                             {{ translate('price') }} :
@@ -90,10 +90,9 @@
                             </div>
                         </div>
 
-                        @php($compare_list = count($product->compareList)>0 ? 1 : 0)
                         <div class="d-flex gap-2 align-items-center mt-1">
                             <a href="javascript:"
-                               class="btn btn-outline-success rounded-circle btn-action add-to-compare compare_list-{{$product['id']}} {{($compare_list == 1?'compare_list_icon_active':'')}}"
+                               class="btn btn-outline-success rounded-circle btn-action add-to-compare compare_list-{{$product['id']}} {{ isProductInCompareList($product->id) ?'compare_list_icon_active':'' }}"
                                data-product-id ="{{$product['id']}}" data-action="{{route('product-compare.index')}}">
                                 <i class="bi bi-repeat"></i>
                             </a>

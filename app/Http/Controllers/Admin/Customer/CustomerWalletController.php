@@ -25,7 +25,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
-use function Laravel\Prompts\alert;
 
 class CustomerWalletController extends BaseController
 {

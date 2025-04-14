@@ -44,9 +44,9 @@ class UpdateController extends Controller
         }
 
         Artisan::call('migrate', ['--force' => true]);
-        $previousRouteServiceProvier = base_path('app/Providers/RouteServiceProvider.php');
-        $newRouteServiceProvier = base_path('app/Providers/RouteServiceProvider.txt');
-        copy($newRouteServiceProvier, $previousRouteServiceProvier);
+        $previousRouteServiceProvider = base_path('app/Providers/RouteServiceProvider.php');
+        $newRouteServiceProvider = base_path('app/Providers/RouteServiceProvider.txt');
+        copy($newRouteServiceProvider, $previousRouteServiceProvider);
 
         //start symlink
         if(DOMAIN_POINTED_DIRECTORY == 'public'){
@@ -61,16 +61,7 @@ class UpdateController extends Controller
         Artisan::call('config:cache');
         Artisan::call('config:clear');
 
-        $this->insert_data_of('13.0');
-        $this->insert_data_of('13.1');
-        $this->insert_data_of('14.0');
-        $this->insert_data_of('14.1');
-        $this->insert_data_of('14.2');
-        $this->insert_data_of('14.3');
-        $this->insert_data_of('14.3.1');
-        $this->insert_data_of('14.4');
-        $this->insert_data_of('14.5');
-        $this->insert_data_of('14.6');
+        $this->getProcessAllVersionsUpdates();
 
         return redirect(env('APP_URL'));
     }

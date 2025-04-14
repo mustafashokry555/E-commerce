@@ -1,6 +1,6 @@
 @extends('theme-views.layouts.app')
 
-@section('title', translate('Personal_Details').' | '.$web_config['name']->value.' '.translate('ecommerce'))
+@section('title', translate('Personal_Details').' | '.$web_config['company_name'].' '.translate('ecommerce'))
 @section('content')
     <main class="main-content d-flex flex-column gap-3 py-3 mb-5">
         <div class="container">
@@ -22,26 +22,64 @@
                                         <div class="col-sm-6">
                                             <div class="form-group">
                                                 <label class="text-capitalize" for="f_name2">{{translate('first_name')}}</label>
-                                                <input type="text" id="f_name" class="form-control" value="{{$customerDetail['f_name']}}" name="f_name" placeholder="{{translate('ex').':'.translate('jhon')}}">
+                                                <input type="text" id="f_name" class="form-control" value="{{$customerDetail['f_name']}}" name="f_name" placeholder="{{translate('ex').':'.translate('jhon')}}" required>
                                             </div>
                                         </div>
                                         <div class="col-sm-6">
                                             <div class="form-group">
                                                 <label class="text-capitalize" for="l_name2">{{translate('last_name')}}</label>
-                                                <input type="text" id="l_name" class="form-control" value="{{$customerDetail['l_name']}}" name="l_name" placeholder="{{translate('ex').':'.translate('doe')}}">
+                                                <input type="text" id="l_name" class="form-control" value="{{$customerDetail['l_name']}}" name="l_name" placeholder="{{translate('ex').':'.translate('doe')}}" required>
                                             </div>
                                         </div>
                                         <div class="col-sm-6">
                                             <div class="form-group">
                                                 <label for="phone2">{{translate('phone')}}</label>
-                                                <input type="text" id="phone" class="form-control profile-phone-with-country-picker" value="{{$customerDetail['phone']}}" placeholder="{{translate('ex').':'.'01xxxxxxxxx'}}">
-                                                <input type="hidden" name="phone" class="profile-phone-country-picker-hidden" value="{{$customerDetail['phone']}}">
+                                                <div class="position-relative d-flex align-items-center">
+                                                    <input type="text" id="phone" class="form-control profile-phone-with-country-picker" value="{{$customerDetail['phone']}}" placeholder="{{translate('ex').':'.'01xxxxxxxxx'}}" {{ $customerDetail['is_phone_verified'] ? 'disabled' : '' }}>
+                                                    <input type="hidden" name="phone" class="profile-phone-country-picker-hidden" value="{{$customerDetail['phone']}}">
+
+                                                    @if($customerDetail['phone'] && getLoginConfig(key: 'phone_verification'))
+                                                        @if($customerDetail['is_phone_verified'])
+                                                            <span class="position-absolute inset-inline-end-10px cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ translate('Your_phone_is_verified') }}">
+                                                                <img width="16"
+                                                                     src="{{theme_asset('assets/img/icons/verified.svg')}}"
+                                                                     class="dark-support" alt="">
+                                                            </span>
+                                                        @else
+                                                            <span class="position-absolute inset-inline-end-10px cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top"
+                                                                  title="{{ translate('Phone_not_verified.') }} {{ translate('Please_verify_through_the_user_app') }}">
+                                                                <img width="16"
+                                                                     src="{{ theme_asset('assets/img/icons/verified-error.svg') }}"
+                                                                     class="dark-support" alt="">
+                                                            </span>
+                                                        @endif
+                                                    @endif
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="col-sm-6">
                                             <div class="form-group">
                                                 <label for="email2">{{translate('email')}}</label>
-                                                <input type="email" id="email2" class="form-control" value="{{$customerDetail['email']}}" disabled>
+                                                <div class="position-relative d-flex align-items-center">
+                                                    <input type="email" id="email2" class="form-control" value="{{$customerDetail['email']}}" name="email">
+
+                                                    @if($customerDetail['email'] && getLoginConfig(key: 'email_verification'))
+                                                        @if($customerDetail['is_email_verified'])
+                                                            <span class="position-absolute inset-inline-end-10px cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ translate('Your_email_is_verified') }}">
+                                                            <img width="16"
+                                                                 src="{{theme_asset('assets/img/icons/verified.svg')}}"
+                                                                 class="dark-support" alt="">
+                                                            </span>
+                                                        @else
+                                                            <span class="position-absolute inset-inline-end-10px cursor-pointer" data-bs-toggle="tooltip" data-bs-placement="top"
+                                                                  title="{{ translate('Email_not_verified.') }} {{ translate('Please_verify_through_the_user_app.') }}">
+                                                            <img width="16"
+                                                                 src="{{theme_asset('assets/img/icons/verified-error.svg')}}"
+                                                                 class="dark-support" alt="">
+                                                            </span>
+                                                        @endif
+                                                    @endif
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="col-sm-6">

@@ -1,6 +1,6 @@
 @extends('theme-views.layouts.app')
 
-@section('title', translate('order_Details').' | '.$web_config['name']->value.' '.translate('ecommerce'))
+@section('title', translate('order_Details').' | '.$web_config['company_name'].' '.translate('ecommerce'))
 
 @section('content')
     <main class="main-content d-flex flex-column gap-3 py-3 mb-sm-4">
@@ -18,7 +18,7 @@
                                         <div class="media align-items-center gap-3">
                                             <div class="avatar rounded store-avatar overflow-hidden d-flex align-items-center justify-content-center">
                                                 <img alt="" class="dark-support rounded img-fit"
-                                                    src="{{ getValidImage(path: 'storage/app/public/shop/'.($order?->seller?->shop->image), type:'shop') }}">
+                                                    src="{{ getStorageImages(path: $order?->seller?->shop->image_full_url, type:'shop') }}">
                                             </div>
                                             <div class="media-body d-flex flex-column gap-2">
                                                 <h4>{{ $order?->seller?->shop->name}}</h4>
@@ -78,10 +78,10 @@
                                             <div class="media align-items-center gap-3">
                                                 <div class="avatar rounded store-avatar overflow-hidden d-flex align-items-center justify-content-center">
                                                     <img  class="dark-support rounded img-fit" alt=""
-                                                         src="{{ getValidImage(path: 'storage/app/public/company/'.($web_config['fav_icon']->value), type:'shop') }}">
+                                                         src="{{ getStorageImages(path: $web_config['fav_icon'], type:'shop') }}">
                                                 </div>
                                                 <div class="media-body d-flex flex-column gap-2">
-                                                    <h4> {{ $web_config['name']->value}}</h4>
+                                                    <h4> {{ $web_config['company_name']}}</h4>
                                                     <div class="d-flex gap-2 align-items-center">
                                                         <div class="star-rating text-gold fs-12">
                                                             @for($inc=1;$inc<=5;$inc++)

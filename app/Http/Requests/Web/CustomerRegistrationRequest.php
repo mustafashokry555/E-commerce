@@ -55,11 +55,11 @@ class CustomerRegistrationRequest extends FormRequest
                             'recaptcha', translate('ReCAPTCHA_Failed') . '!'
                         );
                     }
-                } else if ($recaptcha['status'] != 1 && strtolower($this['default_recaptcha_value_customer_regi']) != strtolower(Session('default_recaptcha_id_customer_regi'))) {
+                } else if ($recaptcha['status'] != 1 && strtolower($this['default_recaptcha_value_customer_regi']) != strtolower(session('default_recaptcha_id_customer_regi'))) {
                     $validator->errors()->add(
                         'g-recaptcha-response', translate('ReCAPTCHA_Failed') . '!'
                     );
-                } else if ($recaptcha['status'] != 1 && strtolower($this['default_recaptcha_value_customer_regi']) == strtolower(Session('default_recaptcha_id_customer_regi'))) {
+                } else if ($recaptcha['status'] != 1 && strtolower($this['default_recaptcha_value_customer_regi']) == strtolower(session('default_recaptcha_id_customer_regi'))) {
                     Session::forget('default_recaptcha_id_customer_regi');
                 }
 

@@ -1,5 +1,4 @@
 @if(count($products) > 0)
-
     @php($decimal_point_settings = getWebConfig(name: 'decimal_point_settings'))
     @foreach($products as $product)
         @if(!empty($product['product_id']))

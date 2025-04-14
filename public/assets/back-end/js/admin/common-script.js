@@ -1,4 +1,4 @@
-$(document).ready(function (){
+$(document).ready(function () {
     'use strict'
     let getChattingNewNotificationCheckRoute = $('#getChattingNewNotificationCheckRoute').data('route');
     let chattingNewNotificationAlert = $('#chatting-new-notification-check');
@@ -12,7 +12,7 @@ $(document).ready(function (){
                     chattingNewNotificationAlertMsg.html(response.message)
                     chattingNewNotificationAlert.addClass('active');
                     playAudio();
-                    setTimeout(function (){
+                    setTimeout(function () {
                         chattingNewNotificationAlert.removeClass('active')
                     }, 5000);
                 }

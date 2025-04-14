@@ -3,8 +3,8 @@
 @section('title', translate('my_Wallet'))
 
 @push('css_or_js')
-    <link rel="stylesheet" href="{{theme_asset(path: 'public/assets/front-end/css/owl.carousel.min.css')}}">
-    <link rel="stylesheet" href="{{theme_asset(path: 'public/assets/front-end/css/owl.theme.default.min.css')}}">
+    <link rel="stylesheet" href="{{theme_asset(path: 'public/assets/front-end/css/owl.carousel.min.css') }}">
+    <link rel="stylesheet" href="{{theme_asset(path: 'public/assets/front-end/css/owl.theme.default.min.css') }}">
 @endpush
 
 @section('content')
@@ -17,7 +17,7 @@
                     <div class="card-body">
 
                         <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
-                            <h5 class="font-bold m-0 fs-16">{{translate('wallet')}}</h5>
+                            <h5 class="font-bold m-0 fs-16">{{ translate('wallet') }}</h5>
 
                             <button class="profile-aside-btn btn btn--primary px-2 rounded px-2 py-1 d-lg-none">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 15 15" fill="none">
@@ -32,65 +32,94 @@
 
                             <div class="col-md-12">
                                 <div class="row  g-3">
-                                    <div class="col-md-5">
-                                        <div class="card btn--primary h-100 position-relative mx-h-200">
-                                            <div class="card-body d-flex align-items-center z-2">
-                                                <div class="d-flex flex-wrap justify-content-between align-items-center w-100 py-3">
-                                                    <div class="text-white">
-                                                        <p class="mb-0">{{translate('wallet')}}</p>
-                                                        <p class="mb-2">{{translate('amount')}}</p>
-                                                    </div>
-                                                    @if ($addFundsToWallet)
-                                                    <div class="mx-3">
-                                                        <button class="btn btn-light align-items-center fs-14 font-semi-bold py-2 px-4" data-toggle="modal" data-target="#addFundToWallet">
-                                                            <span><i class="tio-add-circle text-accent"></i></span>
-                                                            <span class="text-primary">{{ translate('add_Fund') }}</span>
-                                                        </button>
-                                                    </div>
-                                                    @endif
-
-                                                    <h2 class="fs-36 text-white d-flex align-items-center m-0 w-100">
-                                                        {{ webCurrencyConverter(amount: $total_wallet_balance ?? 0) }}
-
+                                    @if(!$addFundsToWallet || count($add_fund_bonus_list) <= 0)
+                                        <div class="col-12">
+                                            <div class="card btn--primary h-100 position-relative mx-h-200">
+                                                <div class="card-body d-flex align-items-center z-2">
+                                                    <div class="align-items-center d-flex flex-wrap gap-2 justify-content-between py-3 w-100">
+                                                        <div class="text-white">
+                                                            <p class="mb-0">{{ translate('wallet') }}</p>
+                                                            <p class="mb-2">{{ translate('amount') }}</p>
+                                                        </div>
+                                                        <h2 class="align-items-center d-flex fs-36 m-0 text-white">
+                                                            $1,875.00
+                                                            <span class="ml-2 fs-18">
+                                                                <i class="tio-info-outined" data-toggle="tooltip" data-placement="bottom" title="" data-original-title="If you want to add fund to your wallet then click add fund button"></i>
+                                                            </span>
+                                                        </h2>
                                                         @if ($addFundsToWallet)
-                                                        <span class="ml-2 fs-18">
-                                                            <i class="tio-info-outined" data-toggle="tooltip" data-placement="bottom" title="{{ translate('if_you_want_to_add_fund_to_your_wallet_then_click_add_fund_button') }}"></i>
-                                                        </span>
+                                                        <div>
+                                                            <button class="btn btn-light align-items-center fs-14 font-semi-bold py-2 px-4" data-toggle="modal" data-target="#addFundToWallet">
+                                                                <span><i class="tio-add-circle text-accent"></i></span>
+                                                                <span class="text-primary">{{ translate('add_Fund') }}</span>
+                                                            </button>
+                                                        </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                                <img class="wallet-card-bg z-1" src="{{ theme_asset(path: 'public/assets/front-end/img/icons/wallet-card.png') }}" alt="">
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="col-md-5">
+                                            <div class="card btn--primary h-100 position-relative mx-h-200">
+                                                <div class="card-body d-flex align-items-center z-2">
+                                                    <div class="d-flex flex-wrap justify-content-between align-items-center w-100 py-3">
+                                                        <div class="text-white">
+                                                            <p class="mb-0">{{ translate('wallet') }}</p>
+                                                            <p class="mb-2">{{ translate('amount') }}</p>
+                                                        </div>
+                                                        @if ($addFundsToWallet)
+                                                        <div class="mx-3">
+                                                            <button class="btn btn-light align-items-center fs-14 font-semi-bold py-2 px-4" data-toggle="modal" data-target="#addFundToWallet">
+                                                                <span><i class="tio-add-circle text-accent"></i></span>
+                                                                <span class="text-primary">{{ translate('add_Fund') }}</span>
+                                                            </button>
+                                                        </div>
                                                         @endif
 
-                                                    </h2>
-                                                </div>
-                                            </div>
-                                            <img class="wallet-card-bg z-1" src="{{ theme_asset(path: 'public/assets/front-end/img/icons/wallet-card.png') }}" alt="">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-7">
-                                        @if($addFundsToWallet)
-                                        <div class="owl-carousel add-fund-carousel">
-                                            @foreach ($add_fund_bonus_list as $bonus)
-                                                    <div class="item">
+                                                        <h2 class="fs-36 text-white d-flex align-items-center m-0 w-100">
+                                                            {{ webCurrencyConverter(amount: $total_wallet_balance ?? 0) }}
 
-                                                <div class="add-fund-carousel-card z-1 w-100 border rounded-10 p-4 ml-1">
-                                                        <div>
-                                                            <h4 class="mb-2 text-accent">{{ $bonus->title }}</h4>
-                                                            <p class="mb-2 text-dark">{{ translate('valid_till') }} {{ date('d M, Y',strtotime($bonus->end_date_time)) }}</p>
-                                                        </div>
-                                                        <div>
-                                                            @if ($bonus->bonus_type == 'percentage')
-                                                            <p>{{ translate('add_fund_to_wallet') }} {{ webCurrencyConverter(amount: $bonus->min_add_money_amount) }} {{ translate('and_enjoy') }} {{ $bonus->bonus_amount }}% {{ translate('bonus') }}</p>
-                                                            @else
-                                                                <p>{{ translate('add_fund_to_wallet') }} {{ webCurrencyConverter(amount: $bonus->min_add_money_amount) }} {{ translate('and_enjoy') }} {{ webCurrencyConverter(amount: $bonus->bonus_amount) }} {{ translate('bonus') }}</p>
+                                                            @if ($addFundsToWallet)
+                                                            <span class="ml-2 fs-18">
+                                                                <i class="tio-info-outined" data-toggle="tooltip" data-placement="bottom" title="{{ translate('if_you_want_to_add_fund_to_your_wallet_then_click_add_fund_button') }}"></i>
+                                                            </span>
                                                             @endif
-                                                            <p class="fw-bold text-accent mb-0">{{ $bonus->description ? Str::limit($bonus->description, 40):'' }}</p>
-                                                        </div>
-                                                        <img class="slider-card-bg-img" width="50" src="{{ theme_asset(path: 'public/assets/front-end/img/icons/add_fund_vector.png') }}" alt="">
+
+                                                        </h2>
                                                     </div>
                                                 </div>
-                                            @endforeach
+                                                <img class="wallet-card-bg z-1" src="{{ theme_asset(path: 'public/assets/front-end/img/icons/wallet-card.png') }}" alt="">
+                                            </div>
                                         </div>
-                                        @endif
+                                        <div class="col-md-7">
+                                            @if($addFundsToWallet)
+                                            <div class="{{ count($add_fund_bonus_list) > 1 ? 'owl-carousel add-fund-carousel' : '' }}">
+                                                @foreach ($add_fund_bonus_list as $bonus)
+                                                        <div class="item">
 
-                                    </div>
+                                                    <div class="add-fund-carousel-card z-1 w-100 border rounded-10 p-4 ml-1">
+                                                            <div>
+                                                                <h4 class="mb-2 text-accent">{{ $bonus->title }}</h4>
+                                                                <p class="mb-2 text-dark">{{ translate('valid_till') }} {{ date('d M, Y',strtotime($bonus->end_date_time)) }}</p>
+                                                            </div>
+                                                            <div>
+                                                                @if ($bonus->bonus_type == 'percentage')
+                                                                <p>{{ translate('add_fund_to_wallet') }} {{ webCurrencyConverter(amount: $bonus->min_add_money_amount) }} {{ translate('and_enjoy') }} {{ $bonus->bonus_amount }}% {{ translate('bonus') }}</p>
+                                                                @else
+                                                                    <p>{{ translate('add_fund_to_wallet') }} {{ webCurrencyConverter(amount: $bonus->min_add_money_amount) }} {{ translate('and_enjoy') }} {{ webCurrencyConverter(amount: $bonus->bonus_amount) }} {{ translate('bonus') }}</p>
+                                                                @endif
+                                                                <p class="fw-bold text-accent mb-0">{{ $bonus->description ? Str::limit($bonus->description, 40):'' }}</p>
+                                                            </div>
+                                                            <img class="slider-card-bg-img add-fund-carousel-slider-card-bg" width="50" src="{{ theme_asset(path: 'public/assets/front-end/img/icons/add_fund_vector.png') }}" alt="">
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                            @endif
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
 
@@ -134,7 +163,7 @@
                                                                     @php( $payment_method_img = !empty($gateway->additional_data) ? json_decode($gateway->additional_data)->gateway_image : '' )
                                                                     <div class="form-check-label d-flex align-items-center">
                                                                         <img width="60" alt="{{ translate('payment') }}"
-                                                                             src="{{ getValidImage(path: 'storage/app/public/payment_modules/gateway_image/'.$payment_method_img, type: 'banner') }}">
+                                                                             src="{{ getValidImage(path: 'storage/app/public/payment_modules/gateway_image/'.$payment_method_img, type:'banner') }}">
                                                                         <span class="ml-3">{{ $payment_method_title }}</span>
                                                                     </div>
                                                                 </label>
@@ -166,32 +195,32 @@
                                             <div class="dropdown border pl-3">
                                                 <button class="btn btn-sm dropdown-toggle" type="button" id="dropdownMenuButton"
                                                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                    {{ request()->has('type') ? (request('type') == 'all'? translate('all_Transactions') : ucwords(translate(request('type')))):translate('all_Transactions')}}
+                                                    {{ request()->has('type') ? (request('type') == 'all'? translate('all_Transactions') : ucwords(translate(request('type')))):translate('all_Transactions') }}
                                                 </button>
 
                                                 <div class="dropdown-menu __dropdown-menu-3 __min-w-165px text-align-direction" aria-labelledby="dropdownMenuButton">
-                                                    <a class="dropdown-item" href="{{route('wallet')}}/?type=all">
-                                                        {{translate('all_Transaction')}}
+                                                    <a class="dropdown-item" href="{{route('wallet') }}/?type=all">
+                                                        {{ translate('all_Transaction') }}
                                                     </a>
                                                     <div class="dropdown-divider"></div>
-                                                    <a class="dropdown-item" href="{{route('wallet')}}/?type=order_transactions">
-                                                        {{translate('order_transactions')}}
+                                                    <a class="dropdown-item" href="{{route('wallet') }}/?type=order_transactions">
+                                                        {{ translate('order_transactions') }}
                                                     </a>
                                                     <div class="dropdown-divider"></div>
-                                                    <a class="dropdown-item" href="{{route('wallet')}}/?type=order_refund">
-                                                        {{translate('order_refund')}}
+                                                    <a class="dropdown-item" href="{{route('wallet') }}/?type=order_refund">
+                                                        {{ translate('order_refund') }}
                                                     </a>
                                                     <div class="dropdown-divider"></div>
-                                                    <a class="dropdown-item" href="{{route('wallet')}}/?type=converted_from_loyalty_point">
-                                                        {{translate('converted_from_loyalty_point')}}
+                                                    <a class="dropdown-item" href="{{route('wallet') }}/?type=converted_from_loyalty_point">
+                                                        {{ translate('converted_from_loyalty_point') }}
                                                     </a>
                                                     <div class="dropdown-divider"></div>
-                                                    <a class="dropdown-item" href="{{route('wallet')}}/?type=added_via_payment_method">
-                                                        {{translate('added_via_payment_method')}}
+                                                    <a class="dropdown-item" href="{{route('wallet') }}/?type=added_via_payment_method">
+                                                        {{ translate('added_via_payment_method') }}
                                                     </a>
                                                     <div class="dropdown-divider"></div>
-                                                    <a class="dropdown-item" href="{{route('wallet')}}/?type=add_fund_by_admin">
-                                                        {{translate('add_fund_by_admin')}}
+                                                    <a class="dropdown-item" href="{{route('wallet') }}/?type=add_fund_by_admin">
+                                                        {{ translate('add_fund_by_admin') }}
                                                     </a>
                                                 </div>
 
@@ -207,7 +236,7 @@
                                                         <div class="">
                                                             <h6 class="mb-2 d-flex align-items-center gap-8">
                                                                 <img src="{{ theme_asset(path: 'public/assets/front-end/img/icons/coin-success.png') }}" width="25" alt="">
-                                                                <span>+ {{ webCurrencyConverter(amount: $item['admin_bonus']) }}</span>
+                                                                <span class="absolute-ltr font-bold fs-18">+ {{ webCurrencyConverter(amount: $item['admin_bonus']) }}</span>
                                                             </h6>
                                                             <h6 class="text-muted mb-0 small text-capitalize fs-13 font-semibold">
                                                                 {{ucwords(str_replace('_', ' ', translate('admin_bonus')))}}
@@ -218,9 +247,9 @@
                                                                 {{date('d M, Y H:i A',strtotime($item['created_at']))}}
                                                             </div>
                                                             @if($item['debit'] != 0)
-                                                                <p class="text-danger fs-12">{{translate('debit')}}</p>
+                                                                <p class="text-danger fs-12">{{ translate('debit') }}</p>
                                                             @else
-                                                                <p class="text-info fs-12 m-0">{{translate('credit')}}</p>
+                                                                <p class="text-info fs-12 m-0">{{ translate('credit') }}</p>
                                                             @endif
                                                         </div>
                                                     </div>
@@ -234,18 +263,20 @@
                                                                 <img src="{{ theme_asset(path: 'public/assets/front-end/img/icons/coin-success.png') }}" width="25" alt="">
                                                             @endif
 
-                                                            {{ $item['debit'] != 0 ? ' - '.webCurrencyConverter(amount: $item['debit']) : ' + '.webCurrencyConverter(amount: $item['credit']) }}
+                                                            <span class="absolute-ltr font-bold fs-18">
+                                                                {{ $item['debit'] != 0 ? ' - '.webCurrencyConverter(amount: $item['debit']): ' + '.webCurrencyConverter(amount: $item['credit']) }}
+                                                            </span>
 
                                                         </h6>
                                                         <h6 class="text-muted mb-0 small text-capitalize fs-13 font-semibold">
                                                             @if ($item['transaction_type'] == 'add_fund_by_admin')
-                                                                {{translate('add_fund_by_admin')}} {{ $item['reference'] =='earned_by_referral' ? '('.translate($item['reference']).')' : '' }}
+                                                                {{ translate('add_fund_by_admin') }} {{ $item['reference'] =='earned_by_referral' ? '('.translate($item['reference']).')' : '' }}
                                                             @elseif($item['transaction_type'] == 'order_place')
-                                                                {{translate('order_place')}}
+                                                                {{ translate('order_place') }}
                                                             @elseif($item['transaction_type'] == 'loyalty_point')
-                                                                {{translate('converted_from_loyalty_point')}}
+                                                                {{ translate('converted_from_loyalty_point') }}
                                                             @elseif($item['transaction_type'] == 'add_fund')
-                                                                {{translate('added_via_payment_method')}}
+                                                                {{ translate('added_via_payment_method') }}
                                                             @else
                                                                 {{str_replace('_',' ',translate($item['transaction_type']))}}
                                                             @endif
@@ -254,9 +285,9 @@
                                                     <div class="text-end small">
                                                         <div class="text-muted mb-1 text-nowrap text-capitalize font-semibold">{{date('d M, Y H:i A',strtotime($item['created_at']))}}</div>
                                                             @if($item['debit'] != 0)
-                                                                <p class="text-danger fs-12 m-0">{{translate('debit')}}</p>
+                                                                <p class="text-danger fs-12 m-0">{{ translate('debit') }}</p>
                                                             @else
-                                                                <p class="text-info fs-12 m-0">{{translate('credit')}}</p>
+                                                                <p class="text-info fs-12 m-0">{{ translate('credit') }}</p>
                                                             @endif
                                                     </div>
                                                 </div>
@@ -265,8 +296,8 @@
                                     </div>
                                     @if($wallet_transactio_list->count()==0)
                                     <div class="d-flex flex-column gap-3 align-items-center text-center my-5">
-                                        <img width="72" src="{{ theme_asset(path: 'public/assets/front-end/img/icons/empty-transaction-history.png')}}" class="dark-support" alt="">
-                                        <h6 class="text-muted mt-3">{{translate('you_do_not_have_any')}}<br> {{ request('type') != 'all' ? ucwords(translate(request('type'))) : '' }} {{translate('transaction_yet')}}</h6>
+                                        <img width="72" src="{{ theme_asset(path: 'public/assets/front-end/img/icons/empty-transaction-history.png') }}" class="dark-support" alt="">
+                                        <h6 class="text-muted mt-3">{{ translate('you_do_not_have_any') }}<br> {{ request('type') != 'all' ? ucwords(translate(request('type'))) : '' }} {{ translate('transaction_yet') }}</h6>
                                     </div>
                                     @endif
 
@@ -303,7 +334,7 @@
         autoplay: false,
         nav: false,
         margin: 20,
-        '{{session('direction')}}': true,
+        '{{session('direction') }}': true,
         items: 1.3
     })
 </script>

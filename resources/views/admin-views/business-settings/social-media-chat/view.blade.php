@@ -45,7 +45,9 @@
                         </div>
                         <div class="d-flex justify-content-end flex-wrap gap-3">
                             <button type="reset" class="btn btn-secondary px-5">{{translate('reset')}}</button>
-                            <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}" class="btn btn--primary px-5">{{translate('save')}}</button>
+                            <button type="{{env('APP_MODE')!='demo'?'submit':'button'}}"
+                                    class="btn btn--primary px-5 {{env('APP_MODE')!= 'demo'? '' : 'call-demo'}}"
+                            >{{translate('save')}}</button>
                         </div>
                     @else
                         <div class="mt-3 d-flex flex-wrap justify-content-center gap-10">

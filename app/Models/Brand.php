@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Traits\CacheManagerTrait;
+use App\Traits\StorageTrait;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,16 +18,21 @@ use Illuminate\Support\Facades\App;
  */
 class Brand extends Model
 {
+    use StorageTrait, CacheManagerTrait;
 
     protected $fillable = [
         'name',
         'image',
+        'image_storage_type',
+        'image_alt_text',
         'status'
     ];
 
     protected $casts = [
         'name' => 'string',
         'image' => 'string',
+        'image_storage_type' => 'string',
+        'image_alt_text' => 'string',
         'status' => 'integer',
         'brand_products_count' => 'integer',
         'created_at' => 'datetime',
@@ -34,7 +41,7 @@ class Brand extends Model
 
     public function scopeActive(): mixed
     {
-        return $this->where('status',1);
+        return $this->where('status', 1);
     }
 
     public function brandProducts(): HasMany
@@ -58,7 +65,7 @@ class Brand extends Model
             return $name;
         }
 
-        return $this->translations[0]->value??$name;
+        return $this->translations[0]->value ?? $name;
     }
 
     public function getDefaultNameAttribute(): string|null
@@ -66,14 +73,36 @@ class Brand extends Model
         return $this->translations[0]->value ?? $this->name;
     }
 
+    public function storage(): MorphMany
+    {
+        return $this->morphMany(Storage::class, 'data');
+    }
+
+    public function getImageFullUrlAttribute(): array
+    {
+        $value = $this->image;
+        return $this->storageLink('brand', $value, $this->image_storage_type ?? 'public');
+    }
+
+    protected $appends = ['image_full_url'];
+
     protected static function boot(): void
     {
         parent::boot();
+
+        static::saved(function ($model) {
+            cacheRemoveByType(type: 'brands');
+        });
+
+        static::deleted(function ($model) {
+            cacheRemoveByType(type: 'brands');
+        });
+
         static::addGlobalScope('translate', function (Builder $builder) {
             $builder->with(['translations' => function ($query) {
-                if (strpos(url()->current(), '/api')){
+                if (strpos(url()->current(), '/api')) {
                     return $query->where('locale', App::getLocale());
-                }else{
+                } else {
                     return $query->where('locale', getDefaultLanguage());
                 }
             }]);

@@ -181,22 +181,11 @@
                             {{translate('download_PDF')}}
                         </a>
                     </div>
-                    <div>
-                        <button type="button" class="btn btn-outline--primary text-nowrap btn-block"
-                                data-toggle="dropdown">
-                            <i class="tio-download-to"></i>
-                            {{translate('export')}}
-                            <i class="tio-chevron-down"></i>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-right">
-                            <li>
-                                <a class="dropdown-item"
-                                   href="{{ route('vendor.transaction.order-transaction-export-excel', ['date_type'=>request('date_type'), 'customer_id'=>request('customer_id')??'all', 'search'=>request('search'), 'status'=>request('status'), 'from'=>request('from'), 'to'=>request('to')]) }}">
-                                    <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" alt="">
-                                    {{translate('excel')}}
-                                </a>
-                            </li>
-                        </ul>
+                    <div class="dropdown">
+                        <a type="button" class="btn btn-outline--primary text-nowrap" href="{{ route('vendor.transaction.order-transaction-export-excel', ['date_type'=>request('date_type'), 'customer_id'=>request('customer_id')??'all', 'search'=>request('search'), 'status'=>request('status'), 'from'=>request('from'), 'to'=>request('to')]) }}">
+                            <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
+                            <span class="ps-2">{{ translate('export') }}</span>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -277,8 +266,6 @@
                                         if($transaction->order->delivery_type == 'self_delivery' && $transaction->order->shipping_responsibility == 'sellerwise_shipping' && $transaction->order->seller_is == 'seller'){
                                             $seller_net_income -= $transaction->order->deliveryman_charge;
                                         }
-
-                                        // new
                                         if ($transaction['seller_is'] == 'seller') {
                                             if ($transaction->order->shipping_responsibility == 'inhouse_shipping') {
                                                 $seller_net_income += $transaction->order->coupon_discount_bearer == 'inhouse' ? $admin_coupon_discount : 0;

@@ -15,10 +15,10 @@
                 </ol>
                 <div class="card py-2 mt-4">
                     <form class="card-body needs-validation" novalidate method="POST"
-                          action="{{request('customer.auth.password-recovery')}}">
+                          action="{{ request('customer.auth.password-recovery') }}">
                         @csrf
                         <div class="form-group d-none">
-                            <input type="text" name="reset_token" value="{{$token}}" required>
+                            <input type="text" name="reset_token" value="{{ $token }}" required>
                         </div>
 
                         <div class="form-group">

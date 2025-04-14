@@ -6,7 +6,7 @@
 @endphp
 @extends('theme-views.layouts.app')
 
-@section('title', translate('Track_Order_Result ').' | '.$web_config['name']->value.' '.translate('ecommerce'))
+@section('title', translate('Track_Order_Result ').' | '.$web_config['company_name'].' '.translate('ecommerce'))
 
 @section('content')
     <main class="main-content d-flex flex-column gap-3 py-3 mb-4">
@@ -289,7 +289,7 @@
                                             <td>
                                                 <div class="media align-items-center gap-3">
                                                     <img class="rounded border" alt="{{ translate('product') }}"
-                                                         src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$productDetails->thumbnail, type: 'product') }}"
+                                                         src="{{ getStorageImages(path: $orderDetail?->productAllStatus?->thumbnail_full_url, type: 'product') }}"
                                                          width="100px">
                                                     <div class="get-view-by-onclick" data-link="{{route('product',$productDetails->slug)}}">
                                                         <a href="{{route('product',$productDetails->slug)}}">
@@ -298,7 +298,7 @@
                                                         <div class="d-flex flex-column">
                                                             <small>
                                                                 <strong>{{translate('unit_price')}} :</strong>
-                                                                {{Helpers::currency_converter($orderDetail['price'])}}
+                                                                {{webCurrencyConverter($orderDetail['price'])}}
                                                                 @if ($orderDetail->tax_model =='include')
                                                                     ({{translate('tax_incl.')}})
                                                                 @else
@@ -342,7 +342,7 @@
                                                 {{$orderDetail->qty}}
                                             </td>
                                             <td class="text-end">
-                                                {{Helpers::currency_converter($orderDetail['price']*$orderDetail['qty'])}}
+                                                {{webCurrencyConverter($orderDetail['price']*$orderDetail['qty'])}}
                                             </td>
                                         </tr>
                                         @php($sub_total+=$orderDetail['price']*$orderDetail['qty'])
@@ -387,31 +387,31 @@
                                     <tbody>
                                     <tr>
                                         <td class="text-dark">
-                                            {{Helpers::currency_converter($sub_total)}}
+                                            {{webCurrencyConverter($sub_total)}}
                                         </td>
                                         @if ($orderDetails['order_type'] == 'default_type')
                                             <td class="text-dark">
-                                                {{Helpers::currency_converter($orderDetails['is_shipping_free'] ? $total_shipping_cost-$orderDetails['extra_discount']:$total_shipping_cost)}}
+                                                {{webCurrencyConverter($orderDetails['is_shipping_free'] ? $total_shipping_cost-$orderDetails['extra_discount']:$total_shipping_cost)}}
                                             </td>
 
                                         @endif
 
                                         <td class="text-dark">
-                                            {{Helpers::currency_converter($total_tax)}}
+                                            {{webCurrencyConverter($total_tax)}}
                                         </td>
                                         <td class="text-dark">
-                                            -{{Helpers::currency_converter($total_discount_on_product)}}
+                                            -{{webCurrencyConverter($total_discount_on_product)}}
                                         </td>
                                         <td class="text-dark">
-                                            - {{Helpers::currency_converter($coupon_discount)}}
+                                            - {{webCurrencyConverter($coupon_discount)}}
                                         </td>
                                         @if ($orderDetails['order_type'] == 'POS')
                                             <td class="text-dark">
-                                                - {{Helpers::currency_converter($extra_discount)}}
+                                                - {{webCurrencyConverter($extra_discount)}}
                                             </td>
                                         @endif
                                         <td class="text-dark">
-                                            {{Helpers::currency_converter($sub_total+$total_tax+$total_shipping_cost-($orderDetails->discount)-$total_discount_on_product - $coupon_discount - $extra_discount)}}
+                                            {{webCurrencyConverter($sub_total+$total_tax+$total_shipping_cost-($orderDetails->discount)-$total_discount_on_product - $coupon_discount - $extra_discount)}}
                                         </td>
                                     </tr>
                                     </tbody>

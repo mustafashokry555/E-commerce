@@ -1,37 +1,37 @@
+@php($cart=\App\Utils\CartManager::getCartListQuery())
+@php($cartList=\App\Utils\CartManager::getCartListQuery(type: 'checked'))
+
 <div class="navbar-tool dropdown me-2 {{Session::get('direction') === "rtl" ? 'mr-md-3' : 'ml-md-3'}}">
     @if($web_config['guest_checkout_status'] || auth('customer')->check())
-        <a class="navbar-tool-icon-box bg-secondary dropdown-toggle" href="{{route('shop-cart')}}">
+        <a class="navbar-tool-icon-box bg-secondary dropdown-toggle" href="{{route('shop-cart') }}">
             <span class="navbar-tool-label">
-                @php($cart=\App\Utils\CartManager::get_cart())
-                {{$cart->count()}}
+                {{ $cart->count() }}
             </span>
             <i class="navbar-tool-icon czi-cart"></i>
         </a>
         <a class="navbar-tool-text ms-2"
-           href="{{route('shop-cart')}}"><small>{{translate('my_cart')}}</small>
+           href="{{route('shop-cart') }}"><small>{{ translate('my_cart') }}</small>
             <span class="cart-total-price font-bold fs-14">
-                {{ webCurrencyConverter(amount: \App\Utils\CartManager::cart_total_applied_discount(\App\Utils\CartManager::get_cart()))}}
+                {{ webCurrencyConverter(amount: \App\Utils\CartManager::getCartListTotalAppliedDiscount($cartList)) }}
             </span>
         </a>
     @else
         <a class="navbar-tool-icon-box bg-secondary dropdown-toggle" href="{{ route('customer.auth.login') }}">
             <span class="navbar-tool-label">
-                @php($cart=\App\Utils\CartManager::get_cart())
-                {{$cart->count()}}
+                {{ $cart->count() }}
             </span>
             <i class="navbar-tool-icon czi-cart"></i>
         </a>
         <a class="navbar-tool-text ms-2"
            href="{{ route('customer.auth.login') }}">
-            <small>{{translate('my_cart')}}</small>
+            <small>{{ translate('my_cart') }}</small>
             <span class="cart-total-price font-bold fs-14">
-                {{ webCurrencyConverter(amount: \App\Utils\CartManager::cart_total_applied_discount(\App\Utils\CartManager::get_cart()))}}
+                {{ webCurrencyConverter(amount: \App\Utils\CartManager::getCartListTotalAppliedDiscount($cartList)) }}
             </span>
         </a>
     @endif
 
-    <div
-        class="dropdown-menu dropdown-menu-{{Session::get('direction') === "rtl" ? 'left' : 'right'}} __w-20rem cart-dropdown py-0">
+    <div class="dropdown-menu dropdown-menu-{{ session('direction') === "rtl" ? 'left' : 'right' }} __w-20rem cart-dropdown py-0">
         <div class="widget widget-cart px-3 pt-2 pb-3">
             <div class="widget-cart-top rounded">
                 <h6 class="m-0">
@@ -44,14 +44,14 @@
                             fill="#1455AC"/>
                     </svg>
                     <span class="text-capitalize">
-                        {{translate('shopping_cart')}}
+                        {{ translate('shopping_cart') }}
                     </span>
                 </h6>
             </div>
             @if($cart->count() > 0)
 
                 <?php
-                    $getShippingCostSavedForFreeDelivery=\App\Utils\CartManager::get_shipping_cost_saved_for_free_delivery();
+                    $getShippingCostSavedForFreeDelivery=\App\Utils\CartManager::getShippingCostSavedForFreeDelivery();
                     $totalDiscountOnProduct = 0;
                     foreach ($cart as $cartItem) {
                         $totalDiscountOnProduct += $cartItem->discount * $cartItem->quantity;
@@ -67,15 +67,19 @@
                 ?>
 
                 <div class="dropdown-saved-amount text-center  align-items-center justify-content-center text-accent mb-3 {{$totalSavedAmount <= 0 ? 'd-none' : 'd-flex'}}">
-                    <img src="{{theme_asset(path: 'public/assets/front-end/img/party-popper.svg')}}" class="mr-2" alt="">
-                    <small>{{translate('you_have_saved')}} <span
-                            class="total_discount">{{ webCurrencyConverter(amount: $totalSavedAmount)}}</span>!</small>
+                    <img src="{{theme_asset(path: 'public/assets/front-end/img/party-popper.svg') }}" class="mr-2" alt="">
+                    <small>
+                        {{ translate('you_have_saved') }}
+                        <span class="total_discount">
+                            {{ webCurrencyConverter(amount: $totalSavedAmount)}}
+                        </span>!
+                    </small>
                 </div>
                 <div class="__h-20rem" data-simplebar data-simplebar-auto-hide="false">
                     @php($sub_total=0)
                     @php($total_tax=0)
                     @foreach($cart as  $cartItem)
-                        @php($product=\App\Models\Product::find($cartItem['product_id']))
+                        @php($product=\App\Models\Product::where(['id' => $cartItem['product_id']])->with(['clearanceSale' => function ($query) {return $query->active();}])->first())
 
                         <?php
                             $getProductCurrentStock = $product->current_stock;
@@ -93,7 +97,7 @@
                                 <a class="d-block me-2 position-relative overflow-hidden"
                                    href="{{route('product',$cartItem['slug'])}}">
                                     <img width="64" class="{{ $product ? ($product->status == 0?'blur-section':'') : 'blur-section' }}"
-                                         src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$cartItem['thumbnail'], type: 'backend-product') }}"
+                                         src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'backend-product') }}"
                                          alt="{{ translate('product') }}"/>
                                     @if (!$product || $product->status == 0)
                                         <span class="temporary-closed position-absolute text-center p-2">
@@ -111,17 +115,15 @@
                                         </h6>
                                         @if(!empty($cartItem['variant']))
                                             <div>
-                                                <span
-                                                    class="__text-12px">{{translate('variant')}} : {{$cartItem['variant']}}</span>
+                                                <span class="__text-12px">{{ translate('variant') }} : {{$cartItem['variant']}}</span>
                                             </div>
                                         @endif
                                         <div class="widget-product-meta">
                                             <span
                                                 class="text-muted me-2">x <span
                                                     class="cart_quantity_multiply{{$cartItem['id']}}">{{$cartItem['quantity']}}</span></span>
-                                            <span
-                                                class="text-accent me-2 discount_price_of_{{$cartItem['id']}}">
-                                                    {{ webCurrencyConverter(amount: ($cartItem['price']-$cartItem['discount'])*$cartItem['quantity'])}}
+                                            <span class="text-accent me-2 discount_price_of_{{$cartItem['id']}}">
+                                                {{ webCurrencyConverter(amount: ($cartItem['price']-$cartItem['discount'])*$cartItem['quantity'])}}
                                             </span>
                                         </div>
                                     </div>
@@ -180,10 +182,10 @@
                         @php($total_tax+=$cartItem['tax']*$cartItem['quantity'])
                     @endforeach
                 </div>
-                @php($free_delivery_status = \App\Utils\OrderManager::free_delivery_order_amount($cart[0]->cart_group_id))
+                @php($free_delivery_status = \App\Utils\OrderManager::getFreeDeliveryOrderAmountArray($cart[0]->cart_group_id))
                 @if ($free_delivery_status['status'] && (session()->missing('coupon_type') || session('coupon_type') !='free_delivery'))
                     <div class="py-3">
-                        <img src="{{theme_asset(path: 'public/assets/front-end/img/truck.svg')}}" alt="">
+                        <img src="{{theme_asset(path: 'public/assets/front-end/img/truck.svg') }}" alt="">
                         <span
                             class="amount_fullfill text-accent __text-12px {{$free_delivery_status['amount_need'] <= 0 ? '' :'d-none'}}">{{ translate('you_Get_Free_Delivery_Bonus') }}</span>
                         <small
@@ -199,7 +201,7 @@
                 <div class="d-flex flex-wrap justify-content-between align-items-center pb-2">
                     <div
                         class="font-size-sm {{Session::get('direction') === "rtl" ? 'ml-2 float-left' : 'mr-2 float-right'}} py-2 ">
-                        <span>{{translate('subtotal')}} :</span>
+                        <span>{{ translate('subtotal') }} :</span>
                         <span
                             class="text-accent font-size-base cart_total_amount {{Session::get('direction') === "rtl" ? 'mr-1' : 'ml-1'}}">
                                 {{ webCurrencyConverter(amount: $sub_total) }}
@@ -207,13 +209,13 @@
                     </div>
 
                     @if($web_config['guest_checkout_status'] || auth('customer')->check())
-                        <a class="btn btn-outline-secondary btn-sm" href="{{route('shop-cart')}}">
-                            {{translate('expand_cart')}}<i
+                        <a class="btn btn-outline-secondary btn-sm" href="{{route('shop-cart') }}">
+                            {{ translate('expand_cart') }}<i
                                 class="czi-arrow-{{Session::get('direction') === "rtl" ? 'left mr-1 ml-n1' : 'right ml-1 mr-n1'}}"></i>
                         </a>
                     @else
-                        <a class="btn btn-outline-secondary btn-sm" href="{{route('customer.auth.login')}}">
-                            {{translate('expand_cart')}}<i
+                        <a class="btn btn-outline-secondary btn-sm" href="{{route('customer.auth.login') }}">
+                            {{ translate('expand_cart') }}<i
                                 class="czi-arrow-{{Session::get('direction') === "rtl" ? 'left mr-1 ml-n1' : 'right ml-1 mr-n1'}}"></i>
                         </a>
                     @endif
@@ -221,21 +223,21 @@
 
                 @if($web_config['guest_checkout_status'] || auth('customer')->check())
                     <a class="btn btn--primary btn-sm btn-block font-bold rounded text-capitalize"
-                       href="{{route('checkout-details')}}">
-                        {{translate('proceed_to_checkout')}}
+                       href="{{route('checkout-details') }}">
+                        {{ translate('proceed_to_checkout') }}
                     </a>
                 @else
                     <a class="btn btn--primary btn-sm btn-block font-bold rounded text-capitalize"
-                       href="{{route('customer.auth.login')}}">
-                        {{translate('proceed_to_checkout')}}
+                       href="{{route('customer.auth.login') }}">
+                        {{ translate('proceed_to_checkout') }}
                     </a>
                 @endif
 
             @else
                 <div class="widget-cart-item">
                     <div class="text-center text-capitalize">
-                        <img class="mb-3 mw-100" src="{{theme_asset(path: 'public/assets/front-end/img/icons/empty-cart.svg')}}"
-                             alt="{{ translate('cart') }}">
+                        <img class="mb-3 mw-100" src="{{theme_asset(path: 'public/assets/front-end/img/icons/empty-cart.svg') }}"
+                             alt="{{ translate('cart') }}" loading="eager">
                         <p class="text-capitalize">{{ translate('Your_Cart_is_Empty') }}!</p>
                     </div>
                 </div>

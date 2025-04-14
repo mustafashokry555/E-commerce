@@ -60,6 +60,10 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
+                           href="{{ route('admin.vendors.view',['id'=>$seller['id'], 'tab'=>'clearance_sale']) }}">{{translate('clearance_sale_products')}}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link"
                            href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'setting']) }}">{{translate('setting')}}</a>
                     </li>
                     <li class="nav-item">
@@ -94,7 +98,8 @@
                                     <tr>
                                         <th>{{translate('SL')}}</th>
                                         <th>{{translate('product Name')}}</th>
-                                        <th>{{translate('selling_price')}}</th>
+                                        <th class="text-center">{{translate('product_Type')}}</th>
+                                        <th class="text-center">{{translate('selling_price')}}</th>
                                         <th class="text-center">{{translate('featured')}}</th>
                                         <th class="text-center">{{translate('active_status')}}</th>
                                         <th class="text-center">{{translate('action')}}</th>
@@ -106,12 +111,26 @@
                                         <tr>
                                             <td>{{$products->firstItem()+$k}}</td>
                                             <td>
-                                                <a href="{{route('admin.products.view',['addedBy'=>($product['added_by'] =='seller'?'vendor' : 'in-house'),'id'=>$product['id']])}}"
-                                                   class="title-color hover-c1">
-                                                    {{substr($product['name'],0,20)}}{{strlen($product['name'])>20?'...':''}}
+                                                <a href="{{ route('admin.products.view', ['addedBy' => ($product['added_by'] == 'seller' ? 'vendor' : 'in-house'), 'id' => $product['id']]) }}"
+                                                   class="title-color hover-c1 d-flex align-items-start">
+                                                    <img src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'backend-basic') }}"
+                                                         class="avatar border me-3 object-fit-cover" alt="">
+                                                    <div class="ml-2">
+                                                        <div class="fw-bold text-truncate">
+                                                            {{ substr($product['name'], 0, 20) }}{{ strlen($product['name']) > 20 ? '...' : '' }}
+                                                        </div>
+                                                        @if($product?->clearanceSale)
+                                                            <div class="badge badge-soft-warning user-select-none mt-1">
+                                                                {{ translate('Clearance_Sale') }}
+                                                            </div>
+                                                        @endif
+                                                    </div>
                                                 </a>
                                             </td>
-                                            <td>
+                                            <td class="text-center">
+                                                {{translate(str_replace('_',' ',$product['product_type']))}}
+                                            </td>
+                                            <td class="text-center">
                                                 {{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $product['unit_price']))}}
                                             </td>
                                             <td>
@@ -160,6 +179,15 @@
                                             </td>
                                             <td>
                                                 <div class="d-flex justify-content-center gap-10">
+                                                    <a class="btn btn-outline-info btn-sm square-btn"
+                                                       title="{{ translate('barcode') }}"
+                                                       href="{{ route('admin.products.barcode', [$product['id']]) }}">
+                                                        <i class="tio-barcode"></i>
+                                                    </a>
+                                                    <a class="btn btn-outline-info btn-sm square-btn" title="View"
+                                                       href="{{route('admin.products.view',['addedBy'=>($product['added_by']=='seller'?'vendor' : 'in-house'),'id'=>$product['id']])}}">
+                                                        <i class="tio-invisible"></i>
+                                                    </a>
                                                     <a class="btn btn-outline--primary btn-sm square-btn"
                                                        href="{{route('admin.products.update',[$product['id']])}}">
                                                         <i class="tio-edit"></i>

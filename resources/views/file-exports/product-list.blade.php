@@ -13,11 +13,11 @@
                         {{translate('store_Name')}} - {{$data['vendor']?->shop?->name}}
                         <br>
                     @endif
-                    {{translate('category').' - '. ($data['category'] != 'all' ? $data['category']['defaultName'] : $data['category'])  }}
+                    {{translate('category').' - '. ($data['category'] != 'all' ? $data['category']['name'] : $data['category'])  }}
                     <br>
-                    {{translate('sub_Category').' - '. ($data['sub_category'] != 'all' ? $data['sub_category']['defaultName'] : $data['sub_category'])  }}
+                    {{translate('sub_Category').' - '. ($data['sub_category'] != 'all' ? $data['sub_category']['name'] : $data['sub_category'])  }}
                     <br>
-                    {{translate('sub_Sub_Category').' - '. ($data['sub_sub_category'] != 'all' ? $data['sub_sub_category']['defaultName'] : $data['sub_sub_category'])  }}
+                    {{translate('sub_Sub_Category').' - '. ($data['sub_sub_category'] != 'all' ? $data['sub_sub_category']['name'] : $data['sub_sub_category'])  }}
                     <br>
                     {{translate('brand').' - '. ($data['brand'] != 'all' ? $data['brand']['defaultName'] : $data['brand'])  }}
 

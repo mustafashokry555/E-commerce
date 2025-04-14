@@ -12,8 +12,8 @@
 
                 <div class="col-md-12">
                     <div class="text-center">
-                        <input id="print_invoice" type="button" class="btn btn--primary non-printable action-print-invoice"
-                               data-value="printableArea"
+                        <input id="print_invoice" type="button" class="btn btn--primary non-printable action-print-pos-invoice"
+                               data-print="#printableArea"
                                value="{{ translate('proceed') }}, {{ translate('if_thermal_printer_is_ready') }}"/>
                         <a href="{{url()->previous()}}" class="btn btn-danger non-printable">
                             {{ translate('back') }}

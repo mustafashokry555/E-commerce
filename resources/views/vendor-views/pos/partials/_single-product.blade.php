@@ -1,6 +1,11 @@
 <div class="pos-product-item card action-select-product" data-id="{{ $product['id'] }}">
-    <div class="pos-product-item_thumb">
-        <img class="img-fit" src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$product['thumbnail'], type: 'backend-product') }}"
+    <div class="pos-product-item_thumb position-relative">
+        @if($product?->clearanceSale)
+            <div class="position-absolute badge badge-soft-warning user-select-none m-2">
+                {{ translate('Clearance_Sale') }}
+            </div>
+        @endif
+        <img class="img-fit" src="{{ getStorageImages(path:$product->thumbnail_full_url, type: 'backend-product') }}"
              alt="{{ $product['name'] }}">
     </div>
 
@@ -9,7 +14,7 @@
             {{ $product['name'] }}
         </div>
         <div class="pos-product-item_price">
-            {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $product['unit_price'] - getProductDiscount(product: $product, price: $product['unit_price'])), currencyCode: getCurrencyCode())  }}
+            {{ getProductPriceByType(product: $product, type: 'discounted_unit_price', result: 'string', price: $product['unit_price'], from: 'panel') }}
         </div>
         <div class="pos-product-item_hover-content">
             <div class="d-flex flex-wrap gap-2">

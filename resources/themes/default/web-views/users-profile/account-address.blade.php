@@ -3,7 +3,7 @@
 @section('title', translate('my_Address'))
 
 @push('css_or_js')
-    <link rel="stylesheet" href="{{theme_asset(path: 'public/assets/front-end/vendor/nouislider/distribute/nouislider.min.css')}}"/>
+    <link rel="stylesheet" href="{{ theme_asset(path: 'public/assets/front-end/vendor/nouislider/distribute/nouislider.min.css')}}"/>
     <link rel="stylesheet" href="{{ theme_asset(path: 'public/assets/front-end/css/bootstrap-select.min.css') }}">
     <link rel="stylesheet" href="{{ theme_asset(path: 'public/assets/front-end/css/address.css') }}">
     <link rel="stylesheet" href="{{ theme_asset(path: 'public/assets/front-end/plugin/intl-tel-input/css/intlTelInput.css') }}">
@@ -163,7 +163,7 @@
                                     <button type="button" class="btn btn-secondary"
                                             data-dismiss="modal">{{translate('close')}}</button>
                                     <button type="submit"
-                                            class="btn btn--primary">{{translate('add_informations')}}  </button>
+                                            class="btn btn--primary">{{translate('add_information')}}  </button>
                                 </div>
                             </div>
                         </form>

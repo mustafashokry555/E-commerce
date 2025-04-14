@@ -52,7 +52,7 @@ class LoginController extends Controller
         return view(Auth::VENDOR_LOGIN[VIEW], compact('recaptchaBuilder', 'recaptcha'));
     }
 
-    public function login(LoginRequest $request): JsonResponse
+    public function login(LoginRequest $request): RedirectResponse
     {
         $recaptcha = getWebConfig(name: 'recaptcha');
         if (isset($recaptcha) && $recaptcha['status'] == 1) {
@@ -72,36 +72,36 @@ class LoginController extends Controller
             ]);
         } else {
             if ($recaptcha['status'] != 1 && strtolower($request->vendorRecaptchaKey) != strtolower(Session(SessionKey::VENDOR_RECAPTCHA_KEY))) {
-                return response()->json(['error'=>translate('captcha_failed').'!']);
+                Toastr::error(translate('ReCAPTCHA_Failed'));
+                return back();
             }
         }
         $vendor = $this->vendorRepo->getFirstWhere(['identity' => $request['email']]);
-        if (!$vendor){
-            return response()->json(['error'=>translate('credentials_doesnt_match').'!']);
+        if (!$vendor) {
+            Toastr::error(translate('credentials_doesnt_match') . '!');
+            return back();
         }
-        $passwordCheck = Hash::check($request['password'],$vendor['password']);
+        $passwordCheck = Hash::check($request['password'], $vendor['password']);
         if ($passwordCheck && $vendor['status'] !== 'approved') {
-            return response()->json(['status' => $vendor['status']]);
+            Toastr::error(translate('Not_approve_yet') . '!');
+            return back();
         }
         if ($this->vendorService->isLoginSuccessful($request->email, $request->password, $request->remember)) {
-            if ($this->vendorWalletRepo->getFirstWhere(params:['id'=>auth('seller')->id()]) === false) {
-                $this->vendorWalletRepo->add($this->vendorService->getInitialWalletData(vendorId:auth('seller')->id()));
+            if ($this->vendorWalletRepo->getFirstWhere(params: ['id' => auth('seller')->id()]) === false) {
+                $this->vendorWalletRepo->add($this->vendorService->getInitialWalletData(vendorId: auth('seller')->id()));
             }
-            Toastr::info(translate('welcome_to_your_dashboard').'.');
-            return response()->json([
-                'success' =>translate('login_successful') . '!',
-                'redirectRoute'=>route('vendor.dashboard.index'),
-            ]);
-        }else{
-            return response()->json(['error'=>translate('credentials_doesnt_match').'!']);
-
+            Toastr::info(translate('welcome_to_your_dashboard') . '.');
+            return redirect()->route('vendor.dashboard.index');
+        } else {
+            Toastr::error(translate('credentials_doesnt_match') . '!');
+            return back();
         }
     }
 
     public function logout(): RedirectResponse
     {
         $this->vendorService->logout();
-        Toastr::success(translate('logged_out_successfully').'.');
+        Toastr::success(translate('logged_out_successfully') . '.');
         return redirect()->route('vendor.auth.login');
     }
 }

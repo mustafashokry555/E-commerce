@@ -33,7 +33,7 @@
                                      loading="lazy" alt="">
                                 <h4 class="lh-md">{{ translate('wallet_bonus_is_only_applicable_when_a_customer_wants_to_add_fund_to_wallet_via_outside_payment_gateway').'!' }}
                                 </h4>
-                                <p>{{ translate('the_bonus_amounts_are_added_to_the_customer’s_wallet_balance_with_the_amount_added_from_outside_payment_gateways,_when_admin_set_this_bonus_amount').'. '.translate('the_bonus_amount_will_be_deduct_from_admin_wallet_&_will_consider_as_admin_expense').'.' }}</p>
+                                <p>{{ translate('the_bonus_amounts_are_added_to_the_customers_wallet_balance_with_the_amount_added_from_outside_payment_gateways,_when_admin_set_this_bonus_amount').'. '.translate('the_bonus_amount_will_be_deduct_from_admin_wallet_&_will_consider_as_admin_expense').'.' }}</p>
                             </div>
                         </div>
                     </div>

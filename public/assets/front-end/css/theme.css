@@ -13469,10 +13469,8 @@ label:not(.form-check-label):not(.custom-control-label):not(
 .btn-scroll-top {
     display: block;
     position: fixed;
-    right: -4.125rem;
-    bottom: 1.25rem;
-    width: 2.75rem;
-    height: 2.75rem;
+    width: 32px;
+    height: 32px;
     transition: right 400ms cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.3s,
         background-color 0.25s ease-in-out;
     border-radius: 50%;
@@ -13481,12 +13479,13 @@ label:not(.form-check-label):not(.custom-control-label):not(
     text-align: center;
     opacity: 0;
     z-index: 1025;
+    display: none;
 }
 
 .btn-scroll-top > .btn-scroll-top-icon {
     font-size: 0.875rem;
     font-weight: bold;
-    line-height: 2.625rem;
+    line-height: 32px;
 }
 
 .btn-scroll-top .btn-scroll-top-tooltip {
@@ -13511,23 +13510,19 @@ label:not(.form-check-label):not(.custom-control-label):not(
 }
 
 .btn-scroll-top.show {
-    right: 1.25rem;
+    /* right: 1.25rem; */
     opacity: 1;
+    display: block;
+    animation: fadeInUp 0.3s;
+    -webkit-animation: fadeInUp 0.3s;
+    -moz-animation: fadeInUp 0.3s;
+
 }
 
 @media (max-width: 767.98px) {
     .btn-scroll-top {
-        width: 2.2916666667rem;
-        height: 2.2916666667rem;
-        bottom: 1rem;
-    }
-
-    .btn-scroll-top > .btn-scroll-top-icon {
-        line-height: 2.1666666667rem;
-    }
-
-    .btn-scroll-top.show {
-        right: 1rem;
+        width: 32px;
+        height: 32px;
     }
 }
 
@@ -18862,7 +18857,7 @@ body {
 }
 
 .nav-item .dropdown-toggle::after {
-    margin-left: 20px !important;
+    margin-left: 10px !important;
 }
 
 .navbar-tool-text {
@@ -18879,11 +18874,11 @@ body {
     /*border: 1px solid #E2F0FF;*/
 }
 
-.checkbox-alphanumeric::after,
-.checkbox-alphanumeric::before {
-    content: "";
-    display: table;
-}
+/*.checkbox-alphanumeric::after,*/
+/*.checkbox-alphanumeric::before {*/
+/*    content: "";*/
+/*    display: table;*/
+/*}*/
 
 .checkbox-alphanumeric::after {
     clear: both;
@@ -18950,11 +18945,11 @@ body {
 }
 
 /* CUSTOM COLOR INPUT */
-.checkbox-color::after,
-.checkbox-color::before {
-    content: "";
-    display: table;
-}
+/*.checkbox-color::after,*/
+/*.checkbox-color::before {*/
+/*    content: "";*/
+/*    display: table;*/
+/*}*/
 
 .checkbox-color::after {
     clear: both;
@@ -19311,8 +19306,99 @@ html[dir="ltr"] .badge-style {
 html[dir="rtl"] .badge-style {
     left: 0 !important;
 }
+
+.for-brand-hover:hover {
+    color: var(--web-primary);
+}
+
+.page-item.active .page-link {
+    background-color: var(--web-primary) !important;
+}
+
 .dropdown-menu {
     min-width: 304px !important;
     border-top-left-radius: 0px;
     border-top-right-radius: 0px;
+}
+
+.height-300px {
+    height: 300px;
+}
+
+.object-fit-contain {
+    object-fit: contain;
+}
+
+@media (max-width: 576px) {
+    .maintenance-mode-container h2.title {
+        font-size: 1.5rem;
+        line-height: 2rem;
+    }
+
+    .maintenance-mode-container p.info {
+        font-size: .85rem;
+    }
+}
+
+.btn-clearance {
+    position: relative;
+    padding-right: 34px;
+    z-index: 1;
+}
+
+.btn-clearance:hover {
+    filter: none !important;
+}
+
+.btn-clearance::after {
+    position: absolute;
+    content: "";
+    right: -1px;
+    top: 0;
+    width: 0;
+    height: 0;
+    border-top: 17px solid transparent;
+    border-right: 17px solid var(--web-primary);
+    border-bottom: 17px solid transparent;
+}
+
+@media (max-width: 767.98px) {
+    .btn-clearance::after {
+        display: none;
+    }
+}
+
+.top-n6 {
+    top: -6px;
+}
+
+.product-details-sticky {
+    position: fixed;
+    bottom: 0;
+    z-index: 9999;
+    width: 100%;
+    background: #fff;
+    box-shadow: 0 -10px 20px 0 rgba(0, 0, 0, 0.08);
+    border-radius: 20px 20px 0 0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(100%);
+    transition: all 0.3s;
+}
+
+.product-details-sticky.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.product-details-sticky-top {
+    display: none;
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.overflow-y-hidden {
+    overflow-y: hidden !important;
 }

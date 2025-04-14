@@ -247,12 +247,11 @@ class OrderController extends BaseController
         $params = ['id' => $id, 'seller_id' => $vendorId, 'seller_is' => 'seller'];
         $relations = ['details', 'customer', 'shipping', 'seller'];
         $order = $this->orderRepo->getFirstWhere(params: $params, relations: $relations);
-        $invoiceSettings = json_decode(json: $this->businessSettingRepo->getFirstWhere(params: ['type'=>'invoice_settings'])?->value);
+        $invoiceSettings = json_decode(json: $this->businessSettingRepo->getFirstWhere(params: ['type' => 'invoice_settings'])?->value);
         $mpdf_view = PdfView::make(Order::GENERATE_INVOICE[VIEW],
-            compact('order', 'vendor', 'companyPhone', 'companyEmail', 'companyName', 'companyWebLogo','invoiceSettings')
+            compact('order', 'vendor', 'companyPhone', 'companyEmail', 'companyName', 'companyWebLogo', 'invoiceSettings')
         );
-        $this->generatePdf(view: $mpdf_view, filePrefix: 'order_invoice_',filePostfix: $order['id'],pdfType: 'invoice');
-
+        $this->generatePdf(view: $mpdf_view, filePrefix: 'order_invoice_', filePostfix: $order['id'], pdfType: 'invoice');
     }
 
     public function getView(string|int $id, DeliveryCountryCodeService $service, OrderService $orderService): View
@@ -269,8 +268,9 @@ class OrderController extends BaseController
 
         $physicalProduct = false;
         if (isset($order->details)) {
-            foreach ($order->details as $product) {
-                if (isset($product->product) && $product->product->product_type == 'physical') {
+            foreach ($order->details as $orderDetail) {
+                $orderDetailProduct = json_decode($orderDetail?->product_details, true);
+                if ($orderDetailProduct && $orderDetailProduct['product_type'] == 'physical') {
                     $physicalProduct = true;
                 }
             }
@@ -312,24 +312,28 @@ class OrderController extends BaseController
         OrderStatusHistoryService     $orderStatusHistoryService,
     ): JsonResponse
     {
-        $order = $this->orderRepo->getFirstWhere(params: ['id' => $request['id']], relations: ['customer','seller.shop', 'deliveryMan']);
+        $order = $this->orderRepo->getFirstWhere(params: ['id' => $request['id']], relations: ['customer', 'seller.shop', 'deliveryMan']);
 
         if (!$order['is_guest'] && !isset($order['customer'])) {
             return response()->json(['customer_status' => 0], 200);
         }
 
-        if ($order['payment_method'] !='cash_on_delivery' && $request['order_status'] == 'delivered' && $order['payment_status'] != 'paid') {
+        if ($order['payment_method'] != 'cash_on_delivery' && $request['order_status'] == 'delivered' && $order['payment_status'] != 'paid') {
             return response()->json(['payment_status' => 0], 200);
+        }
+
+        if ($order['order_status'] == 'delivered') {
+            return response()->json(['success' => 0, 'message' => translate('order_is_already_delivered.')], 200);
         }
 
         $this->orderRepo->updateStockOnOrderStatusChange($request['id'], $request['order_status']);
         $this->orderRepo->update(id: $request['id'], data: ['order_status' => $request['order_status']]);
-        if ($request['order_status'] == 'delivered'){
-            $this->orderRepo->update(id: $request['id'], data: ['payment_status'=>'paid']);
-            $this->orderDetailRepo->updateWhere(params: ['order_id' => $order['id']], data: ['delivery_status' => $request['order_status'],'payment_status'=>'paid']);
+        if ($request['order_status'] == 'delivered') {
+            $this->orderRepo->update(id: $request['id'], data: ['payment_status' => 'paid', 'is_pause' => 0]);
+            $this->orderDetailRepo->updateWhere(params: ['order_id' => $order['id']], data: ['delivery_status' => $request['order_status'], 'payment_status' => 'paid']);
         }
         event(new OrderStatusEvent(key: $request['order_status'], type: 'customer', order: $order));
-        if ($request->order_status == 'canceled') {
+        if ($request['order_status'] == 'canceled') {
             event(new OrderStatusEvent(key: 'canceled', type: 'delivery_man', order: $order));
         }
 
@@ -358,7 +362,7 @@ class OrderController extends BaseController
             }
         }
 
-        if ($order['delivery_man_id'] && $request->order_status == 'delivered') {
+        if ($order['delivery_man_id'] && $request['order_status'] == 'delivered') {
             $deliverymanWallet = $this->deliveryManWalletRepo->getFirstWhere(params: ['delivery_man_id' => $order['delivery_man_id']]);
             $cashInHand = $order['payment_method'] == 'cash_on_delivery' ? $order['order_amount'] : 0;
 
@@ -367,8 +371,8 @@ class OrderController extends BaseController
                 $this->deliveryManWalletRepo->add(data: $deliverymanWalletData);
             } else {
                 $deliverymanWalletData = [
-                    'current_balance' => $deliverymanWallet['current_balance'] + currencyConverter($order['deliveryman_charge']) ?? 0,
-                    'cash_in_hand' => $deliverymanWallet['cash_in_hand'] + currencyConverter($cashInHand) ?? 0,
+                    'current_balance' => $deliverymanWallet['current_balance'] + $order['deliveryman_charge'] ?? 0,
+                    'cash_in_hand' => $deliverymanWallet['cash_in_hand'] + $cashInHand ?? 0,
                 ];
 
                 $this->deliveryManWalletRepo->updateWhere(params: ['delivery_man_id' => $order['delivery_man_id']], data: $deliverymanWalletData);
@@ -508,7 +512,7 @@ class OrderController extends BaseController
             $message = translate("deliveryman_charge_added_successfully");
         }
 
-        return response()->json(['status' => $status, 'message'=>$message], $status ? 200 : 403);
+        return response()->json(['status' => $status, 'message' => $message], $status ? 200 : 403);
     }
 
     public function uploadDigitalFileAfterSell(UploadDigitalFileAfterSellRequest $request): RedirectResponse

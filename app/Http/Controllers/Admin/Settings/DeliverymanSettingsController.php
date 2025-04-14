@@ -39,6 +39,8 @@ class DeliverymanSettingsController extends BaseController
     public function update(Request $request): RedirectResponse
     {
         $this->businessSettingRepo->updateOrInsert(type: 'upload_picture_on_delivery', value: $request->get('upload_picture_on_delivery', 0));
+        $this->businessSettingRepo->updateOrInsert(type: 'deliveryman_forgot_password_method', value: $request->get('deliveryman_forgot_password_method', 'phone'));
+        clearWebConfigCacheKeys();
         Toastr::success(translate('Updated_successfully'));
         return redirect()->back();
     }

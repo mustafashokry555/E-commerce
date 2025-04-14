@@ -38,7 +38,7 @@ use App\Utils\Helpers;
 Route::get('aws-data', function () {
     return "bdsb";
     return view('installation.step5');
-    $mail_config = Helpers::get_business_settings('mail_config');
+    $mail_config = getWebConfig(name: 'mail_config');
      return $mail_config['status']??0;
     return view('welcome');
 });
@@ -57,7 +57,6 @@ Route::post('aws-upload', function (Request $request) {
     $path = Storage::disk('s3')->put('images', $request->image);
     $path = Storage::disk('s3')->url($path);
 
-    dd($path);
     /* Store $imageName name in DATABASE from HERE */
     return back()
         ->with('success', 'You have successfully upload image.')

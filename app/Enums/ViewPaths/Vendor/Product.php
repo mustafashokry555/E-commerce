@@ -30,6 +30,16 @@ enum Product
         VIEW => ''
     ];
 
+    const DIGITAL_VARIATION_COMBINATION = [
+        URI => 'digital-variation-combination',
+        VIEW => 'vendor-views.product.partials._digital-variation-combination'
+    ];
+
+    const DIGITAL_VARIATION_FILE_DELETE = [
+        URI => 'digital-variation-file-delete',
+        VIEW => ''
+    ];
+
     const UPDATE_STATUS = [
         URI => 'status-update',
         VIEW => ''
@@ -72,7 +82,7 @@ enum Product
 
     const GET_VARIATIONS = [
         URI => 'get-variations',
-        VIEW => 'vendor-views.product.partials._update_stock'
+        VIEW => 'vendor-views.product.partials._update-stock'
     ];
 
     const UPDATE_QUANTITY = [
@@ -97,5 +107,25 @@ enum Product
     const STOCK_LIMIT_STATUS = [
         URI => 'stock-limit-status',
         VIEW => ''
+    ];
+
+    const DELETE_PREVIEW_FILE = [
+        URI => 'delete-preview-file',
+        VIEW => '',
+    ];
+
+    const REQUEST_RESTOCK_LIST = [
+        URI => 'request-restock-list',
+        VIEW => 'vendor-views.product.request-restock-list'
+    ];
+
+    const EXPORT_RESTOCK = [
+        URI => 'export-restock',
+        VIEW => ''
+    ];
+
+    const RESTOCK_DELETE = [
+        URI => 'delete-restock',
+        VIEW => '',
     ];
 }

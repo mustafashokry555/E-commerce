@@ -230,7 +230,7 @@
                             class="tio-clear"></i></button>
                 </div>
                 <div class="modal-body px-4 px-sm-5 pt-0">
-                    <div class="swiper mySwiper pb-3">
+                    <div class="swiper instruction-carousel pb-3">
                         <div class="swiper-wrapper">
                             <div class="swiper-slide">
                                 <div class="d-flex flex-column align-items-center gap-2">
@@ -254,7 +254,7 @@
                                         </li>
                                         <li>{{translate('step').' '.'2'.' :'.translate('choose_Country').'(s)'}}</li>
                                         <li>{{translate('step').' '.'3'.' :'.translate('enable').' ‘'.translate('Delivery_Available_Zip_Code_Area').'’ '}}</li>
-                                        <li>{{translate('step').' '.'4'.' :'.translate('Enter_Zip_Code').'(s)'.translate('of_the_country_you’ve_selected')}}</li>
+                                        <li>{{translate('step').' '.'4'.' :'.translate('Enter_Zip_Code').'(s)'.translate('of_the_country_you_have_selected')}}</li>
                                     </ul>
                                 </div>
                             </div>
@@ -264,9 +264,9 @@
                                     <ul class="d-flex flex-column px-4 gap-2 mb-4">
                                         <li>{{translate('if_both_features_are_disabled,_then_all_places_will_be_available_as_delivery_area')}}
                                         </li>
-                                        <li>{{translate('If_only_the'.' ‘Delivery_Available_Country’ '.'feature_is_enabled,_and_you_add_your_preferred_country,_then_you’ll_be_able_to_deliver_all_over_the_country').'.'}} </li>
-                                        <li>{{translate('If_only_the'.' ‘Delivery_Available_Zip_Code_Area’ '.'feature_is_enabled,_then_you’ll_be_able_to_deliver_on_all_the_zip_code_areas').'.'}}
-                                        <li>{{translate('you_cannot_deliver_to_any_specific_country_or_zip_code_areas_if_it’s_not_added_and_saved').'.'}}
+                                        <li>{{translate('If_only_the'.' Delivery_Available_Country '.'feature_is_enabled,_and_you_add_your_preferred_country,_then_you’ll_be_able_to_deliver_all_over_the_country').'.'}} </li>
+                                        <li>{{translate('If_only_the'.' Delivery_Available_Zip_Code_Area '.'feature_is_enabled,_then_you_will_be_able_to_deliver_on_all_the_zip_code_areas').'.'}}
+                                        <li>{{translate('you_cannot_deliver_to_any_specific_country_or_zip_code_areas_if_its_not_added_and_saved').'.'}}
                                         </li>
                                     </ul>
                                 </div>
@@ -283,7 +283,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="swiper-pagination mb-2"></div>
+                    <div class="instruction-pagination-custom my-2"></div>
                 </div>
             </div>
         </div>

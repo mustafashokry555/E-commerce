@@ -39,23 +39,11 @@
                     </div>
                     <div class="col-12 mt-3 col-md-8">
                         <div class="d-flex gap-3 justify-content-md-end">
-                            <div class="dropdown text-nowrap">
-                                <button type="button" class="btn btn-outline--primary" data-toggle="dropdown">
-                                    <i class="tio-download-to"></i>
-                                    {{translate('export')}}
-                                    <i class="tio-chevron-down"></i>
-                                </button>
-
-                                <ul class="dropdown-menu dropdown-menu-right">
-                                    <li>
-                                        <a type="submit" class="dropdown-item d-flex align-items-center gap-2 "
-                                           href="{{route('vendor.refund.export',['status'=>request('status'),'search'=>request('search')])}}">
-                                            <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}"
-                                                 alt="">
-                                            {{translate('excel')}}
-                                        </a>
-                                    </li>
-                                </ul>
+                            <div class="dropdown">
+                                <a type="button" class="btn btn-outline--primary text-nowrap" href="{{route('vendor.refund.export',['status'=>request('status'),'search'=>request('search')])}}">
+                                    <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
+                                    <span class="ps-2">{{ translate('export') }}</span>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -96,7 +84,7 @@
                                 @if ($refund->product!=null)
                                     <div class="d-flex flex-wrap gap-2">
                                         <a href="{{route('vendor.products.view',[$refund->product->id])}}">
-                                            <img src="{{getValidImage(path:'storage/app/public/product/thumbnail/'.$refund->product->thumbnail ,type:'backend-product')}}"
+                                            <img src="{{getStorageImages(path: $refund?->product?->thumbnail_full_url ,type:'backend-product')}}"
                                                  class="avatar border" alt="">
                                         </a>
                                         <div class="d-flex flex-column gap-1">

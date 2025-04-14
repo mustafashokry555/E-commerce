@@ -21,15 +21,11 @@ $companyLogo = getWebConfig(name: 'company_web_logo');
     <div class="card">
         <div class="m-auto bg-white pt-40px pb-40px text-center">
             <div class="d-block">
-                @if(is_file('storage/app/public/company/'.$companyLogo))
-                    <div class="d-flex justify-content-center align-items-center gap-1">
-                        <img src="{{ dynamicStorage(path: 'storage/app/public/company/'.$companyLogo) }}" alt="{{ $companyName }}"
-                             class="width-auto h-50px">
-                        {{ $companyName }}
-                    </div>
-                @else
+                <div class="d-flex justify-content-center align-items-center gap-1">
+                    <img src="{{ getStorageImages(path: $companyLogo, type: 'backend-logo') }}" alt="{{ $companyName }}"
+                         class="width-auto h-50px">
                     {{ $companyName }}
-                @endif
+                </div>
             </div>
         </div>
 

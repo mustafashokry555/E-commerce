@@ -1,20 +1,18 @@
 <?php
 
 namespace App\Models;
-
+use App\Traits\CacheManagerTrait;
+use App\Traits\StorageTrait;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\Casts\Attribute as AttributeCast;
-
-//use Rennokki\QueryCache\Traits\QueryCacheable;
-
 
 /**
  * @property int $user_id
@@ -52,6 +50,9 @@ use Illuminate\Database\Eloquent\Casts\Attribute as AttributeCast;
  * @property int $multiply_qty
  * @property float $temp_shipping_cost
  * @property string $thumbnail
+ * @property string $thumbnail_storage_type
+ * @property string $preview_file
+ * @property string $preview_file_storage_type
  * @property string $digital_file_ready
  * @property string $meta_title
  * @property string $meta_description
@@ -60,6 +61,7 @@ use Illuminate\Database\Eloquent\Casts\Attribute as AttributeCast;
  */
 class Product extends Model
 {
+    use StorageTrait, CacheManagerTrait;
 
     protected $fillable = [
         'user_id',
@@ -79,6 +81,8 @@ class Product extends Model
         'colors',
         'choice_options',
         'variation',
+        'digital_product_file_types',
+        'digital_product_extensions',
         'unit_price',
         'purchase_price',
         'tax',
@@ -93,16 +97,24 @@ class Product extends Model
         'video_url',
         'status',
         'featured_status',
+        'featured',
         'request_status',
         'shipping_cost',
         'multiply_qty',
         'color_image',
         'images',
         'thumbnail',
+        'thumbnail_storage_type',
+        'preview_file',
+        'preview_file_storage_type',
         'digital_file_ready',
         'meta_title',
         'meta_description',
-        'meta_image'
+        'meta_image',
+        'thumbnail_storage_type',
+        'digital_file_ready_storage_type',
+        'is_shipping_cost_updated',
+        'temp_shipping_cost',
     ];
 
     /**
@@ -146,14 +158,19 @@ class Product extends Model
         'multiply_qty' => 'integer',
         'temp_shipping_cost' => 'float',
         'thumbnail' => 'string',
+        'preview_file' => 'string',
         'digital_file_ready' => 'string',
         'meta_title' => 'string',
         'meta_description' => 'string',
         'meta_image' => 'string',
-        'is_shipping_cost_updated' => 'integer'
+        'is_shipping_cost_updated' => 'integer',
+        'digital_product_file_types' => 'array',
+        'digital_product_extensions' => 'array',
+        'thumbnail_storage_type' => 'string',
+        'digital_file_ready_storage_type' => 'string',
     ];
 
-    protected $appends = ['is_shop_temporary_close'];
+    protected $appends = ['is_shop_temporary_close', 'thumbnail_full_url', 'preview_file_full_url', 'color_images_full_url', 'meta_image_full_url', 'images_full_url', 'digital_file_ready_full_url'];
 
     public function translations(): MorphMany
     {
@@ -165,26 +182,25 @@ class Product extends Model
         $brandSetting = getWebConfig(name: 'product_brand');
         $digitalProductSetting = getWebConfig(name: 'digital_product');
         $businessMode = getWebConfig(name: 'business_mode');
+        $productType = $digitalProductSetting ? ['digital', 'physical'] : ['physical'];
 
-        if (!$digitalProductSetting) {
-            $productType = ['physical'];
-        } else {
-            $productType = ['digital', 'physical'];
-        }
-
-        return $query->when($businessMode=='single', function ($query) {
-            $query->where(['added_by'=>'admin']);
-        })->when($brandSetting, function ($query) {
-            $query->whereHas('brand', function ($query) {
-                $query->where(['status' => 1]);
-            });
-        })->when(!$brandSetting, function ($query) {
-            $query->whereNull('brand_id')->where('status', 1);
-        })
-        ->where(['status' => 1])
-        ->where(['request_status' => 1])
-        ->SellerApproved()
-        ->whereIn('product_type', $productType);
+        return $query->when($businessMode == 'single', function ($query) {
+                $query->where(['added_by' => 'admin']);
+            })
+            ->when($brandSetting, function ($query) use ($brandSetting, $productType) {
+                if (!in_array('digital', $productType)) {
+                    $query->whereHas('brand', function ($query) {
+                        $query->where('status', 1);
+                    });
+                }
+            })
+            ->when(!$brandSetting, function ($query) {
+                $query->whereNull('brand_id')->where('status', 1);
+            })
+            ->where(['status' => 1])
+            ->where(['request_status' => 1])
+            ->SellerApproved()
+            ->whereIn('product_type', $productType);
     }
 
     public function scopeSellerApproved($query): void
@@ -194,12 +210,16 @@ class Product extends Model
         })->orWhere(function ($query) {
             $query->where(['added_by' => 'admin', 'status' => 1]);
         });
-
     }
 
     public function stocks(): HasMany
     {
         return $this->hasMany(ProductStock::class);
+    }
+
+    public function clearanceSale(): HasOne
+    {
+        return $this->hasOne(StockClearanceProduct::class, 'product_id');
     }
 
     public function reviews(): HasMany
@@ -211,6 +231,16 @@ class Product extends Model
     public function reviewsByCustomer(): HasMany
     {
         return $this->hasMany(Review::class, 'product_id')->where('customer_id', auth('customer')->id())->whereNotNull('product_id')->whereNull('delivery_man_id');
+    }
+
+    public function digitalProductAuthors(): HasMany
+    {
+        return $this->hasMany(DigitalProductAuthor::class, 'product_id');
+    }
+
+    public function digitalProductPublishingHouse(): HasMany
+    {
+        return $this->hasMany(DigitalProductPublishingHouse::class, 'product_id');
     }
 
     public function brand(): BelongsTo
@@ -235,11 +265,11 @@ class Product extends Model
 
     public function getIsShopTemporaryCloseAttribute($value): int
     {
-        $inhouseTemporaryClose = Cache::get('inhouseShopInTemporaryClose') ?? 0;
+        $inHouseTemporaryClose = Cache::get(IN_HOUSE_SHOP_TEMPORARY_CLOSE_STATUS) ?? 0;
         if ($this->added_by == 'admin') {
-            return $inhouseTemporaryClose ?? 0;
+            return $inHouseTemporaryClose ?? 0;
         } elseif ($this->added_by == 'seller') {
-            return Cache::remember('product-shop-close-'.$this->id, 3600, function () {
+            return Cache::remember('product-shop-close-' . $this->id, 3600, function () {
                 return $this?->seller?->shop?->temporary_close ?? 0;
             });
         }
@@ -277,6 +307,11 @@ class Product extends Model
         return $this->hasMany(OrderDetail::class, 'product_id');
     }
 
+    public function seoInfo(): BelongsTo
+    {
+        return $this->belongsTo(ProductSeo::class, 'id', 'product_id');
+    }
+
     //old relation: order_delivered
     public function orderDelivered(): HasMany
     {
@@ -291,8 +326,16 @@ class Product extends Model
         return $this->hasMany(Wishlist::class, 'product_id');
     }
 
+    public function digitalVariation(): HasMany
+    {
+        return $this->hasMany(DigitalProductVariation::class, 'product_id');
+    }
+
     public function tags(): BelongsToMany
     {
+        if (strpos(url()->current(), '/api')) {
+            return $this->belongsToMany(Tag::class)->limit(5);
+        }
         return $this->belongsToMany(Tag::class);
     }
 
@@ -330,10 +373,71 @@ class Product extends Model
         }
         return $this->translations[1]->value ?? $detail;
     }
+    public function getThumbnailFullUrlAttribute(): string|null|array
+    {
+        $value = $this->thumbnail;
+        return $this->storageLink('product/thumbnail', $value, $this->thumbnail_storage_type ?? 'public');
+    }
+
+    public function getPreviewFileFullUrlAttribute(): string|null|array
+    {
+        $value = $this->preview_file;
+        return $this->storageLink('product/preview', $value, $this->preview_file_storage_type ?? 'public');
+    }
+
+    public function getMetaImageFullUrlAttribute(): array
+    {
+        $value = $this->meta_image;
+        return $this->storageLink('product/meta', $value, 'public');
+    }
+
+    public function getDigitalFileReadyFullUrlAttribute(): array
+    {
+        $value = $this->digital_file_ready;
+        return $this->storageLink('product/digital-product',$value,$this->digital_file_ready_storage_type ?? 'public');
+    }
+
+    public function getColorImagesFullUrlAttribute(): array
+    {
+        $images = [];
+        $value = json_decode($this->color_image);
+        if ($value) {
+            foreach ($value as $item) {
+                $item = (array)$item;
+                $images[] = [
+                    'color' => $item['color'],
+                    'image_name' => $this->storageLink('product', $item['image_name'], $item['storage'] ?? 'public')
+                ];
+            }
+        }
+        return $images;
+    }
+
+    public function getImagesFullUrlAttribute(): array
+    {
+        $images = [];
+        $value = json_decode($this->images);
+         if ($value){
+             foreach ($value as $item){
+                 $item = isset($item->image_name) ? (array)$item : ['image_name' => $item, 'storage' => 'public'];
+                 $images[] =  $this->storageLink('product',$item['image_name'],$item['storage'] ?? 'public');
+             }
+         }
+        return $images;
+    }
 
     protected static function boot(): void
     {
         parent::boot();
+
+        static::saved(function ($model) {
+            cacheRemoveByType(type: 'products');
+        });
+
+        static::deleted(function ($model) {
+            cacheRemoveByType(type: 'products');
+        });
+
         static::addGlobalScope('translate', function (Builder $builder) {
             $builder->with(['translations' => function ($query) {
                 if (strpos(url()->current(), '/api')) {

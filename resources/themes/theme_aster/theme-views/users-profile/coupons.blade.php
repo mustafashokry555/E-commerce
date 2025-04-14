@@ -1,6 +1,6 @@
 @php use App\Utils\Helpers; @endphp
 @extends('theme-views.layouts.app')
-@section('title', translate('coupons').' | '.$web_config['name']->value.' '.translate('ecommerce'))
+@section('title', translate('coupons').' | '.$web_config['company_name'].' '.translate('ecommerce'))
 @section('content')
     <main class="main-content d-flex flex-column gap-3 py-3 mb-5">
         <div class="container">
@@ -39,7 +39,7 @@
                                                         @if ($item->coupon_type == "free_delivery")
                                                             {{ translate('free_Delivery') }}
                                                         @else
-                                                            {{ ($item->discount_type == 'percentage')? $item->discount.'%'.translate('off') : Helpers::currency_converter($item->discount)}}
+                                                            {{ ($item->discount_type == 'percentage')? $item->discount.'%'.translate('off') : webCurrencyConverter($item->discount)}}
                                                         @endif
                                                     </h2>
                                                     <p class="text-capitalize">
@@ -48,7 +48,7 @@
                                                             {{ translate('all_shops') }}
                                                         @elseif($item->seller_id == NULL)
                                                             <a class="shop-name" href="{{route('shopView',['id'=>0])}}">
-                                                                {{ $web_config['name']->value }}
+                                                                {{ $web_config['company_name'] }}
                                                             </a>
                                                         @else
                                                             <a class="shop-name"
@@ -61,13 +61,11 @@
                                                 <div class="ticket-border"></div>
                                                 <div class="ticket-end click-to-copy-code-div">
                                                     <button
-                                                        class="ticket-welcome-btn click-to-copy-code coupon-id coupon-id-{{ $item->code }}"
+                                                        class="ticket-welcome-btn click-to-copy-code"
                                                         data-copy-code="{{ $item->code }}">{{ $item->code }}
                                                     </button>
-                                                    <button
-                                                        class="ticket-welcome-btn coupon-id-hide coupon-hide-id-{{ $item->code }} d-none">{{ translate('copied') }}</button>
                                                     <h6>{{ translate('valid_till') }} {{ $item->expire_date->format('d M, Y') }}</h6>
-                                                    <p class="m-0">{{ translate('available_from_minimum_purchase') }} {{Helpers::currency_converter($item->min_purchase)}}</p>
+                                                    <p class="m-0">{{ translate('available_from_minimum_purchase') }} {{webCurrencyConverter($item->min_purchase)}}</p>
                                                 </div>
                                             </div>
                                         </div>

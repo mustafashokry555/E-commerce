@@ -2,21 +2,17 @@
 <div class="product-single-hover shadow-none rtl">
     <div class="overflow-hidden position-relative">
         <div class="inline_product clickable">
-            @if($product->discount > 0)
+            @if(getProductPriceByType(product: $product, type: 'discount', result: 'value') > 0)
                 <span class="for-discount-value p-1 pl-2 pr-2 font-bold fs-13">
                     <span class="direction-ltr d-block">
-                        @if ($product->discount_type == 'percent')
-                            -{{round($product->discount,(!empty($decimal_point_settings) ? $decimal_point_settings: 0))}}%
-                        @elseif($product->discount_type =='flat')
-                            -{{ webCurrencyConverter(amount: $product->discount) }}
-                        @endif
+                       -{{ getProductPriceByType(product: $product, type: 'discount', result: 'string') }}
                     </span>
                 </span>
             @else
                 <span class="for-discount-value-null"></span>
             @endif
             <a href="{{route('product',$product->slug)}}">
-                <img src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$product['thumbnail'], type: 'product') }}" alt="">
+                <img src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'product') }}" alt="">
             </a>
 
             <div class="quick-view">
@@ -47,20 +43,18 @@
             @endif
             <div>
                 <a href="{{route('product',$product->slug)}}" class="text-capitalize fw-semibold">
-                    {{ Str::limit($product['name'], 23) }}
+                    {{ $product['name'] }}
                 </a>
             </div>
             <div class="justify-content-between">
                 <div class="product-price">
-                    @if($product->discount > 0)
+                    @if(getProductPriceByType(product: $product, type: 'discount', result: 'value') > 0)
                         <del class="category-single-product-price">
                             {{ webCurrencyConverter(amount: $product->unit_price) }}
                         </del>
                     @endif
                     <span class="text-accent text-dark">
-                        {{ webCurrencyConverter(amount:
-                            $product->unit_price-(getProductDiscount(product: $product, price: $product->unit_price))
-                        ) }}
+                       {{ getProductPriceByType(product: $product, type: 'discounted_unit_price', result: 'string') }}
                     </span>
                 </div>
             </div>

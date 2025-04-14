@@ -16,7 +16,6 @@ class CategoryController extends Controller
     {
         $categoriesID = [];
         if ($request->has('seller_id') && $request['seller_id'] != null) {
-            // Finding category ids
             $categoriesID = Product::active()
                 ->when($request->has('seller_id') && $request['seller_id'] != null && $request['seller_id'] != 0, function ($query) use ($request) {
                     return $query->where(['added_by' => 'seller'])
@@ -51,7 +50,8 @@ class CategoryController extends Controller
 
     public function get_products(Request $request, $id): JsonResponse
     {
-        return response()->json(Helpers::product_data_formatting(CategoryManager::products($id, $request), true), 200);
+        $dataLimit = $request['limit'] ?? 'all';
+        return response()->json(Helpers::product_data_formatting(CategoryManager::products($id, $request, $dataLimit), true), 200);
     }
 
     public function find_what_you_need()

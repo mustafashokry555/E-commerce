@@ -248,6 +248,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
 
+<?php
+    $companyLogo = getWebConfig(name: 'company_web_logo');
+?>
+
 <body>
 
 <div class="max-w-595px" style="min-height: 100vh; display:flex;flex-direction: column;">
@@ -260,7 +264,7 @@
                                 style="font-weight: normal">{{ date('d/m/Y') }}</span></p>
                 </th>
                 <th class="content-position-y text-right">
-                    <img height="50" src="{{dynamicStorage(path: "storage/app/public/company/$company_web_logo")}}" alt="">
+                    <img height="50" src="{{ getStorageImages(path: $companyLogo, type: 'backend-logo') }}" alt="">
                 </th>
             </tr>
         </table>

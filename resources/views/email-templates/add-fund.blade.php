@@ -49,15 +49,11 @@
 <div style="height: 100px;background-color: #ececec; width:100%"></div>
 <div class="m-auto bg-white pt-40px pb-40px text-center" style="width:595px;border-radius: 3px;">
     <div class="d-block">
-        @if(is_file('storage/app/public/company/'.$companyLogo))
-            <div class="d-flex justify-content-center align-items-center gap-1">
-                <img src="{{ dynamicStorage(path: 'storage/app/public/company/'.$companyLogo) }}" alt="{{ $companyName }}"
-                     style="height: 50px;" class="width-auto">
-                {{ $companyName }}
-            </div>
-        @else
+        <div class="d-flex justify-content-center align-items-center gap-1">
+            <img src="{{ getStorageImages(path: $companyLogo, type: 'backend-logo') }}" alt="{{ $companyName }}"
+                 style="height: 50px;" class="width-auto">
             {{ $companyName }}
-        @endif
+        </div>
     </div>
 
     <img src="{{ dynamicAsset(path: 'public/assets/front-end/img/icons/add_fund_vector.png') }}" alt="" style="height: 50px; width:50px; margin-top:40px;">
@@ -102,9 +98,9 @@
                 <td class="col">1</td>
                 <td class="col">{{$data->transaction_id}}</td>
                 <td class="col">{{$data->created_at}}</td>
-                <td class="col">{{\App\Utils\Helpers::currency_converter($data->credit) }}</td>
-                <td class="col">{{\App\Utils\Helpers::currency_converter($data->debit) }}</td>
-                <td class="col">{{\App\Utils\Helpers::currency_converter($data->balance) }}</td>
+                <td class="col">{{webCurrencyConverter($data->credit) }}</td>
+                <td class="col">{{webCurrencyConverter($data->debit) }}</td>
+                <td class="col">{{webCurrencyConverter($data->balance) }}</td>
             </tr>
             </tbody>
         </table>

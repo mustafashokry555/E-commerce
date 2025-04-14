@@ -57,15 +57,15 @@ class DeliveryManRepository implements DeliveryManRepositoryInterface
 
     }
 
-    public function getTopRatedList(array $orderBy = [],array $filters = [], array $whereHasFilters = [], array $relations = [], int|string $dataLimit = DEFAULT_DATA_LIMIT, int $offset = null): Collection|LengthAwarePaginator
+    public function getTopRatedList(array $orderBy = [], array $filters = [], array $whereHasFilters = [], array $relations = [], int|string $dataLimit = DEFAULT_DATA_LIMIT, int $offset = null): Collection|LengthAwarePaginator
     {
         return $this->deliveryMan->with($relations)
             ->when(isset($filters['seller_id']), function ($query) use ($filters) {
                 $query->where('seller_id', $filters['seller_id']);
             })
-            ->when(current($relations)=='deliveredOrders', function ($query) use ($whereHasFilters) {
+            ->when(current($relations) == 'deliveredOrders', function ($query) use ($whereHasFilters) {
                 $query->whereHas('deliveredOrders', function ($query) use ($whereHasFilters) {
-                    $query->when($whereHasFilters,function ($query)use($whereHasFilters){
+                    $query->when($whereHasFilters, function ($query) use ($whereHasFilters) {
                         return $query->where($whereHasFilters)->whereNotNull('delivery_man_id');
                     });
                 });
@@ -79,7 +79,7 @@ class DeliveryManRepository implements DeliveryManRepositoryInterface
 
     public function update(string $id, array $data): bool
     {
-        return $this->deliveryMan->where('id', $id)->update($data);
+        return $this->deliveryMan->find($id)->update($data);
     }
 
     public function delete(array $params): bool

@@ -5,6 +5,7 @@ namespace App\Utils;
 use App\Utils\Helpers;
 use App\Models\Brand;
 use App\Models\Product;
+use Illuminate\Support\Facades\Cache;
 
 class BrandManager
 {
@@ -15,9 +16,12 @@ class BrandManager
 
     public static function get_products($brand_id, $request = null)
     {
-        $user = Helpers::get_customer($request);
+        $user = Helpers::getCustomerInformation($request);
 
         $products = Product::active()
+            ->with(['clearanceSale' => function ($query) {
+                return $query->active();
+            }])
             ->withCount(['reviews', 'wishList' => function ($query) use ($user) {
                 $query->where('customer_id', $user != 'offline' ? $user->id : '0');
             }])
@@ -29,8 +33,28 @@ class BrandManager
 
     public static function getActiveBrandWithCountingAndPriorityWiseSorting()
     {
-        $brandList = Brand::active()->withCount('brandProducts');
-        return self::getPriorityWiseBrandProductsQuery(query: $brandList);
+        if (request('offer_type') == 'clearance_sale') {
+            $cacheKey = 'cache_priority_wise_brands_list_clearance_sale_' . (getDefaultLanguage() ?? 'en');
+        } else {
+            $cacheKey = 'cache_priority_wise_brands_list_' . (getDefaultLanguage() ?? 'en');
+        }
+        $cacheKeys = Cache::get(CACHE_CONTAINER_FOR_LANGUAGE_WISE_CACHE_KEYS, []);
+
+        if (!in_array($cacheKey, $cacheKeys)) {
+            $cacheKeys[] = $cacheKey;
+            Cache::put(CACHE_CONTAINER_FOR_LANGUAGE_WISE_CACHE_KEYS, $cacheKeys, CACHE_FOR_3_HOURS);
+        }
+
+        return Cache::remember($cacheKey, CACHE_FOR_3_HOURS, function () {
+            $brandList = Brand::active()->withCount(['brandProducts' => function ($query) {
+                $query->active()->when(request('offer_type') == 'clearance_sale', function ($query) {
+                    return $query->whereHas('clearanceSale', function ($query) {
+                        return $query->active();
+                    });
+                });
+            }]);
+            return self::getPriorityWiseBrandProductsQuery(query: $brandList);
+        });
     }
 
     public static function getPriorityWiseBrandProductsQuery($query)
@@ -39,7 +63,7 @@ class BrandManager
         if ($brandProductSortBy && ($brandProductSortBy['custom_sorting_status'] == 1)) {
             if ($brandProductSortBy['sort_by'] == 'most_order') {
                 return $query->with(['brandProducts' => function ($query) {
-                    return $query->withCount('orderDetails');
+                    return $query->active()->withCount('orderDetails');
                 }])->get()->map(function ($brand) {
                     $brand['order_count'] = $brand?->brandProducts?->sum('order_details_count') ?? 0;
                     return $brand;

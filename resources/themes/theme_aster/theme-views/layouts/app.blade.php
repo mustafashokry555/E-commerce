@@ -1,16 +1,22 @@
-@php
-    use function App\Utils\hex_to_rgb;
-@endphp
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ session()->get('direction') }}">
 <head>
-    <title>@yield('title')</title>
+
     <meta name="base-url" content="{{ url('/') }}">
+    <meta property="og:site_name" content="{{ $web_config['company_name'] }}" />
+
+    <meta name="google-site-verification" content="{{getWebConfig('google_search_console_code')}}">
+    <meta name="msvalidate.01" content="{{getWebConfig('bing_webmaster_code')}}">
+    <meta name="baidu-site-verification" content="{{getWebConfig('baidu_webmaster_code')}}">
+    <meta name="yandex-verification" content="{{getWebConfig('yandex_webmaster_code')}}">
+
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
     <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="robots" content="index, follow">
     <meta name="_token" content="{{csrf_token()}}">
-    <link rel="shortcut icon" href="{{dynamicStorage(path: 'storage/app/public/company')}}/{{$web_config['fav_icon']->value}}"/>
+    <link rel="shortcut icon" href="{{$web_config['fav_icon']['path']}}"/>
+
     <link rel="stylesheet" href="{{ theme_asset('assets/css/fonts-init.css') }}"/>
     <link rel="stylesheet" href="{{ theme_asset('assets/css/bootstrap.min.css') }}"/>
     <link rel="stylesheet" href="{{ theme_asset('assets/css/bootstrap-icons.min.css') }}"/>
@@ -22,16 +28,20 @@
     <link rel="stylesheet" href="{{ theme_asset('assets/plugins/select2/css/select2.min.css') }}">
     <link rel="stylesheet" href="{{ theme_asset('assets/plugins/intl-tel-input/css/intlTelInput.css') }}">
     <link rel="stylesheet" href="{{ theme_asset('assets/css/style.css') }}"/>
+
     @stack('css_or_js')
+    @include(VIEW_FILE_NAMES['robots_meta_content_partials'])
+    <title>@yield('title')</title>
+
     <link rel="stylesheet" href="{{ theme_asset('assets/css/custom.css') }}"/>
     <style>
         :root {
             --bs-primary: {{ $web_config['primary_color'] }};
-            --bs-primary-rgb: {{ hex_to_rgb($web_config['primary_color']) }};
+            --bs-primary-rgb: {{ getHexToRGBColorCode($web_config['primary_color']) }};
             --primary-dark: {{ $web_config['primary_color'] }};
             --primary-light: {{ $web_config['primary_color_light'] }};
             --bs-secondary: {{ $web_config['secondary_color'] }};
-            --bs-secondary-rgb: {{ hex_to_rgb($web_config['secondary_color']) }};
+            --bs-secondary-rgb: {{ getHexToRGBColorCode($web_config['secondary_color']) }};
         }
 
         .announcement-color {
@@ -49,52 +59,8 @@
             --bs-btn-border-color: {{ $web_config['primary_color'] }} !important;
         }
     </style>
-    @php($google_tag_manager_id = getWebConfig(name: 'google_tag_manager_id'))
-    @if($google_tag_manager_id )
-        <script>(function (w, d, s, l, i) {
-                w[l] = w[l] || [];
-                w[l].push({
-                    'gtm.start':
-                        new Date().getTime(), event: 'gtm.js'
-                });
-                let f = d.getElementsByTagName(s)[0],
-                    j = d.createElement(s), dl = l !== 'dataLayer' ? '&l=' + l : '';
-                j.async = true;
-                j.src =
-                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
-                f.parentNode.insertBefore(j, f);
-            })(window, document, 'script', 'dataLayer', '{{$google_tag_manager_id}}');
-        </script>
-    @endif
-    @php($pixel_analytices_user_code =getWebConfig(name: 'pixel_analytics'))
-    @if($pixel_analytices_user_code)
-        <script>
-            !function (f, b, e, v, n, t, s) {
-                if (f.fbq) return;
-                n = f.fbq = function () {
-                    n.callMethod ?
-                        n.callMethod.apply(n, arguments) : n.queue.push(arguments)
-                };
-                if (!f._fbq) f._fbq = n;
-                n.push = n;
-                n.loaded = !0;
-                n.version = '2.0';
-                n.queue = [];
-                t = b.createElement(e);
-                t.async = !0;
-                t.src = v;
-                s = b.getElementsByTagName(e)[0];
-                s.parentNode.insertBefore(t, s)
-            }(window, document, 'script',
-                'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '{{ $pixel_analytices_user_code }}');
-            fbq('track', 'PageView');
-        </script>
-        <noscript>
-            <img class="d-none" height="1" width="1"
-                 src="https://www.facebook.com/tr?id={{ $pixel_analytices_user_code }}&ev=PageView&noscript=1" alt=""/>
-        </noscript>
-    @endif
+
+    {!! getSystemDynamicPartials(type: 'analytics_script') !!}
 </head>
 <body class="toolbar-enabled">
 <script>
@@ -108,14 +74,9 @@
     }
     setThemeMode();
 </script>
-@if($google_tag_manager_id)
-    <noscript>
-        <iframe class="d-none visibility-hidden" src="https://www.googletagmanager.com/ns.html?id={{$google_tag_manager_id}}"
-                height="0" width="0"></iframe>
-    </noscript>
-@endif
+
 <div class="preloader d--none" id="loading">
-    <img width="200" alt="" src="{{ getValidImage(path: 'storage/app/public/company/'.getWebConfig(name: 'loader_gif'), type: 'source', source: theme_asset('assets/img/loader.gif')) }}">
+    <img width="200" alt="" src="{{ getStorageImages(path: getWebConfig(name: 'loader_gif'), type: 'source', source: theme_asset('assets/img/loader.gif')) }}">
 </div>
 @include('theme-views.layouts.partials._alert-message')
 @include('theme-views.layouts.partials._header')
@@ -123,12 +84,15 @@
 @yield('content')
 @include('theme-views.layouts.partials._feature')
 @include('theme-views.layouts.partials._footer')
+
 <a href="#" class="back-to-top">
     <i class="bi bi-arrow-up"></i>
 </a>
+
 <div class="app-bar px-sm-2 d-xl-none" id="mobile_app_bar">
     @include('theme-views.layouts.partials._app-bar')
 </div>
+
 <span class="customize-text"
       data-textno="{{ translate('no') }}"
       data-textyes="{{ translate('yes') }}"
@@ -174,8 +138,28 @@
 @include('theme-views.layouts.partials._translate-text-for-js')
 @include('theme-views.layouts.partials._route-for-js')
 @include('theme-views.layouts.main-script')
+@include('theme-views.layouts._firebase-script')
 
 {!! Toastr::message() !!}
+<script>
+    function route_alert(route, message) {
+        Swal.fire({
+            title: "{{translate('are_you_sure')}}?",
+            text: message,
+            type: 'warning',
+            showCancelButton: true,
+            cancelButtonColor: 'default',
+            confirmButtonColor: '{{$web_config['primary_color']}}',
+            cancelButtonText: '{{translate('no')}}',
+            confirmButtonText: '{{translate('yes')}}',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.value) {
+                location.href = route;
+            }
+        })
+    }
+</script>
 @stack('script')
 
 </body>

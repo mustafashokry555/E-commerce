@@ -21,7 +21,7 @@ class FlashDealController extends Controller
 
     public function getFlashDealProducts(Request $request, $deal_id): JsonResponse
     {
-        $user = Helpers::get_customer($request);
+        $user = Helpers::getCustomerInformation($request);
         $userId = $user != 'offline' ? $user->id : '0';
         $products = ProductManager::getPriorityWiseFlashDealsProductsQuery(id: $deal_id, userId: $userId)['flashDealProducts'];
         return response()->json(Helpers::product_data_formatting($products, true), 200);

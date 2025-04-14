@@ -49,13 +49,16 @@
                             </div>
                         </div>
                         <div class="col-sm-6 col-lg-3 d-flex align-items-center">
-                            <form action="{{url()->full()}}">
+                            <form action="{{ route('admin.products.product-gallery') }}">
                                 <div class="input-group input-group-merge input-group-custom">
                                     <div class="input-group-prepend">
                                         <div class="input-group-text">
                                             <i class="tio-search"></i>
                                         </div>
                                     </div>
+                                    <input type="hidden" name="brand_id" value="{{ request('brand_id') }}">
+                                    <input type="hidden" name="category_id" value="{{ request('category_id') }}">
+                                    <input type="hidden" name="vendor_id" value="{{ request('vendor_id') }}">
                                     <input type="search" name="searchValue" class="form-control"
                                            placeholder="{{translate('search_by_product_name')}}"
                                            aria-label="Search orders" value="{{ request('searchValue') }}">
@@ -72,10 +75,10 @@
                                 <div class="media flex-nowrap flex-column flex-sm-row gap-3">
                                     <div class="d-flex flex-column align-items-center __min-w-165px">
                                         <a class="aspect-1 float-left overflow-hidden"
-                                           href="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'. $product['thumbnail'],type: 'backend-product') }}"
+                                           href="{{ getStorageImages(path: $product->thumbnail_full_url,type: 'backend-product') }}"
                                            data-lightbox="product-gallery-{{ $product['id'] }}">
-                                            <img class="avatar avatar-170 rounded-0"
-                                                 src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'. $product['thumbnail'],type: 'backend-product') }}"
+                                            <img class="avatar avatar-170 rounded object-fit-cover"
+                                                 src="{{ getStorageImages(path: $product->thumbnail_full_url,type: 'backend-product') }}"
                                                  alt="">
                                         </a>
                                     </div>

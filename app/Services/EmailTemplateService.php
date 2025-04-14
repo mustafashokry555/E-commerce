@@ -59,7 +59,7 @@ class EmailTemplateService
             'body' => $body,
             'hide_field' => $hideField ,
             'copyright_text' => translate('copyright_').date('Y').' '.getWebConfig('company_name').'. '.translate('all_right_reserved').'.',
-            'footer_text' => translate('please_contact_us_for_any_queries').','.translate('_we’re_always_happy_to_help').'.',
+            'footer_text' => translate('please_contact_us_for_any_queries').','.translate('_we_are_always_happy_to_help').'.',
         ];
     }
     public function getUpdateData(object $request,$template):array

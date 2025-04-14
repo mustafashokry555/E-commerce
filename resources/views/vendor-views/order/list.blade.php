@@ -9,7 +9,7 @@
     <div class="content container-fluid">
         <div class="d-flex flex-wrap gap-2 align-items-center mb-3">
             <h2 class="h1 mb-0">
-                <img src="{{dynamicAsset(path: 'assets/back-end/img/all-orders.png')}}" class="mb-1 mr-1" alt="">
+                <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/all-orders.png') }}" class="mb-1 mr-1" alt="">
                 <span class="page-header-title">
                     @if($status =='processing')
                         {{translate('packaging')}}
@@ -143,23 +143,11 @@
                                     <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
                                 </div>
                             </form>
-
                             <div class="dropdown">
-                                <button type="button" class="btn btn-outline--primary" data-toggle="dropdown">
-                                    <i class="tio-download-to"></i>
-                                    {{translate('export')}}
-                                    <i class="tio-chevron-down"></i>
-                                </button>
-
-                                <ul class="dropdown-menu dropdown-menu-right">
-                                    <li>
-                                        <a class="dropdown-item"
-                                           href="{{ route('vendor.orders.export-excel', ['delivery_man_id' => request('delivery_man_id'), 'status' => $status, 'from' => $from, 'to' => $to, 'filter' => $filter, 'searchValue' => $searchValue,'seller_id'=>$vendorId,'customer_id'=>$customerId, 'date_type'=>$dateType]) }}">
-                                            <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" alt="">
-                                            {{translate('excel')}}
-                                        </a>
-                                    </li>
-                                </ul>
+                                <a type="button" class="btn btn-outline--primary text-nowrap" href="{{ route('vendor.orders.export-excel', ['delivery_man_id' => request('delivery_man_id'), 'status' => $status, 'from' => $from, 'to' => $to, 'filter' => $filter, 'searchValue' => $searchValue,'seller_id'=>$vendorId,'customer_id'=>$customerId, 'date_type'=>$dateType]) }}">
+                                    <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
+                                    <span class="ps-2">{{ translate('export') }}</span>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -218,17 +206,8 @@
                                 </td>
                                 <td>
                                     <div>
-                                        @php($discount = 0)
-                                        @if($order->coupon_discount_bearer == 'inhouse' && !in_array($order['coupon_code'], [0, NULL]))
-                                            @php($discount = $order->discount_amount)
-                                        @endif
-
-                                        @php($free_shipping = 0)
-                                        @if($order->is_shipping_free)
-                                            @php($free_shipping = $order->shipping_cost)
-                                        @endif
-
-                                        {{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $order->order_amount+$discount+$free_shipping), currencyCode: getCurrencyCode())}}
+                                        @php($orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(order: $order))
+                                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount:  $orderTotalPriceSummary['totalAmount']), currencyCode: getCurrencyCode()) }}
                                     </div>
 
                                     @if($order->payment_status=='paid')

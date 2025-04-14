@@ -130,7 +130,7 @@
                             <td>{{$transactions->firstItem()+$key}}</td>
                             <td>
                                 @if($transaction['seller_is'] == 'admin')
-                                    {{ Helpers::get_business_settings('company_name') }}
+                                    {{ getWebConfig(name: 'company_name') }}
                                 @else
                                     @if (isset($transaction->seller))
                                         {{ $transaction->seller->f_name }} {{ $transaction->seller->l_name }}

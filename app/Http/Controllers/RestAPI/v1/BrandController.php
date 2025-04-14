@@ -8,13 +8,14 @@ use App\Models\Product;
 use App\Utils\BrandManager;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 
 class BrandController extends Controller
 {
-    public function get_brands(Request $request): JsonResponse
+    public function get_brands(Request $request)
     {
         if ($request->has('seller_id') && $request['seller_id'] != null) {
-            //finding brand ids
             $brand_ids = Product::active()
                 ->when($request->has('seller_id') && $request['seller_id'] != null && $request['seller_id'] != 0, function ($query) use ($request) {
                     return $query->where(['added_by' => 'seller'])
@@ -29,8 +30,20 @@ class BrandController extends Controller
         }
 
         $brands = self::getPriorityWiseBrandProductsQuery(query: $brands);
+        $currentPage = $request['offset'] ?? Paginator::resolveCurrentPage('page');
+        $totalSize = $brands->count();
+        $brands = $brands->forPage($currentPage, $request->get('limit', DEFAULT_DATA_LIMIT));
 
-        return response()->json($brands->values(),200);
+        $brands = new LengthAwarePaginator($brands, $totalSize, $request->get('limit', DEFAULT_DATA_LIMIT), $currentPage, [
+            'path' => Paginator::resolveCurrentPath(),
+            'appends' => $request->all(),
+        ]);
+        return [
+            'total_size' => $brands->total(),
+            'limit' => (int)$request['limit'],
+            'offset' => (int)$request['offset'],
+            'brands' => $brands->values()
+        ];
     }
 
     function getPriorityWiseBrandProductsQuery($query)
@@ -68,6 +81,6 @@ class BrandController extends Controller
             return response()->json(['errors' => $e], 403);
         }
 
-        return response()->json($products,200);
+        return response()->json($products, 200);
     }
 }

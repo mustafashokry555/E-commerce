@@ -33,8 +33,8 @@ class GoogleMapAPIController extends BaseController
 
     public function getView(): View
     {
-       $mapAPIKey=Helpers::get_business_settings('map_api_key');
-       $mapAPIKeyServer=Helpers::get_business_settings('map_api_key_server');
+       $mapAPIKey=getWebConfig(name: 'map_api_key');
+       $mapAPIKeyServer=getWebConfig(name: 'map_api_key_server');
        $mapAPIStatus = $this->businessSettingRepo->getFirstWhere(['type'=>'map_api_status']);
        return view(GoogleMapAPI::VIEW[VIEW],compact('mapAPIKey','mapAPIKeyServer','mapAPIStatus'));
     }

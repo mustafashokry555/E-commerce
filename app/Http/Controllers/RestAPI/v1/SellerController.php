@@ -16,6 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Arr;
 
 class SellerController extends Controller
 {
@@ -29,23 +30,24 @@ class SellerController extends Controller
 
     public function get_seller_info(Request $request)
     {
-        $data=[];
+        $data = [];
         $sellerId = $request['seller_id'];
-        $seller = $sellerId!= 0 ? Seller::with(['shop'])->where(['id' => $request['seller_id']])->first(['id', 'f_name', 'l_name', 'phone', 'image', 'minimum_order_amount']) : null;
+        $seller = $sellerId != 0 ? Seller::with(['shop'])->where(['id' => $request['seller_id']])->first(['id', 'f_name', 'l_name', 'phone', 'image', 'minimum_order_amount']) : null;
 
-        $productIds = Product::when($sellerId == 0, function ($query) {
-            return $query->where(['added_by' => 'admin']);
-        })
-            ->withCount('reviews')
+        $productIds = Product::active()
+            ->when($sellerId == 0, function ($query) {
+                return $query->where(['added_by' => 'admin']);
+            })
             ->when($sellerId != 0, function ($query) use ($sellerId) {
                 return $query->where(['added_by' => 'seller'])
                     ->where('user_id', $sellerId);
             })
-            ->active()->pluck('id')->toArray();
+            ->withCount('reviews')
+            ->pluck('id')->toArray();
 
-        $avgRating = Review::whereIn('product_id', $productIds)->avg('rating');
-        $totalReview = Review::whereIn('product_id', $productIds)->count();
-        $totalOrder = Review::whereIn('product_id', $productIds)->groupBy('order_id')->count();
+        $avgRating = Review::active()->whereIn('product_id', $productIds)->avg('rating');
+        $totalReview = Review::active()->whereIn('product_id', $productIds)->count();
+        $totalOrder = Review::active()->whereIn('product_id', $productIds)->groupBy('order_id')->count();
         $totalProduct = Product::active()
             ->when($sellerId == 0, function ($query) {
                 return $query->where(['added_by' => 'admin']);
@@ -55,13 +57,12 @@ class SellerController extends Controller
                     ->where('user_id', $sellerId);
             })->count();
 
-        $minimum_order_amount = 0;
-        $minimum_order_amount_status = Helpers::get_business_settings('minimum_order_amount_status');
-        $minimum_order_amount_by_seller = Helpers::get_business_settings('minimum_order_amount_by_seller');
-        $rating_percentage = round(($avgRating * 100) / 5);
-        if($sellerId !=0 && $minimum_order_amount_status && $minimum_order_amount_by_seller)
-        {
-            $minimum_order_amount = $seller['minimum_order_amount'];
+        $minimumOrderAmount = 0;
+        $minimumOrderAmountStatus = getWebConfig(name: 'minimum_order_amount_status');
+        $minimumOrderAmountBySeller = getWebConfig(name: 'minimum_order_amount_by_seller');
+        $ratingPercentage = round(($avgRating * 100) / 5);
+        if ($sellerId != 0 && $minimumOrderAmountStatus && $minimumOrderAmountBySeller) {
+            $minimumOrderAmount = $seller['minimum_order_amount'];
             unset($seller['minimum_order_amount']);
         }
 
@@ -71,13 +72,13 @@ class SellerController extends Controller
         $data['total_review'] = $totalReview;
         $data['total_order'] = $totalOrder;
         $data['total_product'] = $totalProduct;
-        $data['minimum_order_amount']= $minimum_order_amount;
-        $data['rating_percentage']= $rating_percentage;
+        $data['minimum_order_amount'] = $minimumOrderAmount;
+        $data['rating_percentage'] = $ratingPercentage;
 
         return response()->json($data, 200);
     }
 
-    public function get_seller_products($seller_id, Request $request)
+    public function getVendorProducts($seller_id, Request $request): JsonResponse
     {
         $products = ProductManager::get_seller_products($seller_id, $request);
         $productsList = $products->total() > 0 ? Helpers::product_data_formatting($products->items(), true) : [];
@@ -91,7 +92,10 @@ class SellerController extends Controller
 
     public function getSellerList(Request $request, $type)
     {
-        $sellers = $this->seller->approved()->with(['shop', 'orders', 'product.reviews' => function ($query) {
+        $sellers = $this->seller->when($type == 'top', function($query){
+                return $query->whereHas('orders');
+            })
+            ->approved()->with(['shop', 'orders', 'product.reviews' => function ($query) {
                 $query->active();
             }])
             ->withCount(['orders', 'product' => function ($query) {
@@ -101,8 +105,9 @@ class SellerController extends Controller
             ->each(function ($seller) {
                 $seller['temporary_close'] = (int)$seller?->shop?->temporary_close ?? 0;
                 $seller->product?->map(function ($product) {
-                    $product['rating'] = $product?->reviews->pluck('rating')->sum();
-                    $product['rating_count'] = $product->reviews->count();
+                    $product['rating'] = $product?->reviews?->where('status', 1)->pluck('rating')->sum();
+                    $product['rating_count'] = $product->reviews?->where('status', 1)->count();
+                    $product['rating_count'] = $product->reviews?->where('status', 1)->count();
                 });
                 $seller['total_rating'] = $seller?->product->pluck('rating')->sum();
                 $seller['rating_count'] = $seller->product->pluck('rating_count')->sum();
@@ -119,7 +124,11 @@ class SellerController extends Controller
                 unset($seller['orders']);
         });
 
-        $inhouseProducts = Product::active()->with(['reviews', 'rating'])->withCount('reviews')->where(['added_by' => 'admin'])->get();
+        $inhouseProducts = Product::active()->with(['reviews', 'rating'])
+        ->withCount(['reviews' => function ($query) {
+            $query->active();
+        }])
+        ->where(['added_by' => 'admin'])->get();
         $inhouseProductCount = $inhouseProducts->count();
 
         $inhouseReviewData = Review::active()->whereIn('product_id', $inhouseProducts->pluck('id'));
@@ -155,9 +164,9 @@ class SellerController extends Controller
 
         $currentPage = $request['offset'] ?? Paginator::resolveCurrentPage('page');
         $totalSize = $sellers->count();
-        $sellers = $sellers->forPage($currentPage, $request['limit']);
+        $sellers = $sellers->forPage($currentPage, $request->get('limit', DEFAULT_DATA_LIMIT));
 
-        $sellers = new LengthAwarePaginator($sellers, $totalSize, $request['limit'], $currentPage, [
+        $sellers = new LengthAwarePaginator($sellers, $totalSize, $request->get('limit', DEFAULT_DATA_LIMIT), $currentPage, [
             'path' => Paginator::resolveCurrentPath(),
             'appends' => $request->all(),
         ]);
@@ -173,10 +182,19 @@ class SellerController extends Controller
 
     public function more_sellers()
     {
-        $more_seller = $this->seller->approved()->with(['shop'])
-            ->inRandomOrder()
-            ->take(10)->get();
-        return response()->json($more_seller, 200);
+        $topVendorsList = Shop::active()
+            ->whereHas('seller', function($query){
+                return $query->whereHas('orders');
+            })
+            ->with(['seller' => function ($query) {
+                $query->withCount(['orders']);
+            }])
+            ->get()
+            ->sortByDesc(function ($shop) {
+                return $shop->seller->orders_count;
+            });
+
+        return array_values($topVendorsList->toArray());
     }
 
     public function get_seller_best_selling_products($seller_id, Request $request)
@@ -189,17 +207,19 @@ class SellerController extends Controller
 
     public function get_sellers_featured_product($seller_id, Request $request)
     {
-        $user = Helpers::get_customer($request);
-        $featuredProducts = Product::with('reviews', 'rating')
+        $user = Helpers::getCustomerInformation($request);
+        $featuredProducts = Product::active()->with(['reviews', 'rating', 'clearanceSale' => function ($query) {
+                return $query->active();
+            }])
             ->withCount(['wishList' => function ($query) use ($user) {
                 $query->where('customer_id', $user != 'offline' ? $user->id : '0');
             }])
             ->where(['featured' => '1'])
             ->when($seller_id == '0', function ($query) {
-                return $query->where(['added_by' => 'admin'])->active();
+                return $query->where(['added_by' => 'admin']);
             })
             ->when($seller_id != '0', function ($query) use ($seller_id) {
-                return $query->where(['added_by' => 'seller', 'user_id' => $seller_id])->active();
+                return $query->where(['added_by' => 'seller', 'user_id' => $seller_id]);
             });
 
         $featuredProductsList = ProductManager::getPriorityWiseFeaturedProductsQuery(query: $featuredProducts, dataLimit: $request['limit'], offset: $request['offset']);

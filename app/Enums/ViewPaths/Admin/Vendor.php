@@ -104,6 +104,11 @@ enum Vendor
         URI => 'withdraw-status',
         VIEW => ''
     ];
+    const VIEW_CLEARANCE_SALE = [
+        URI => '',
+        VIEW => 'admin-views.vendor.view.clearance_sale',
+    ];
+
 
 
 }

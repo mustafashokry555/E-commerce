@@ -28,6 +28,7 @@
                                 <i class="tio-shopping-cart-outlined"></i> {{translate('you_have_new order').','.translate('check_Please')}}.
                             </h2>
                             <hr>
+                            <button class="btn btn-warning ignore-check-order">{{ translate('Ignore_this_now') }}</button>
                             <button class="btn btn--primary check-order">{{translate('ok').','.translate('let_me_check')}}</button>
                         </div>
                     </div>

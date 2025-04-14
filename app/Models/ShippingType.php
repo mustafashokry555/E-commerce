@@ -40,4 +40,18 @@ class ShippingType extends Model
         'seller_id' => 'integer',
         'shipping_type' => 'string',
     ];
+
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::saved(function ($model) {
+            cacheRemoveByType(type: 'shipping_types');
+        });
+
+        static::deleted(function ($model) {
+            cacheRemoveByType(type: 'shipping_types');
+        });
+    }
 }

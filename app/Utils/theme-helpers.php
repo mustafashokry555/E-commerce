@@ -23,4 +23,20 @@ if (!function_exists('theme_root_path')) {
     }
 }
 
+if (!function_exists('getHexToRGBColorCode')) {
+    function getHexToRGBColorCode($hex): ?string
+    {
+        $result = preg_match('/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i', $hex, $matches);
+        return $result ? hexdec($matches[1]) . ', ' . hexdec($matches[2]) . ', ' . hexdec($matches[3]) : null;
+    }
+}
 
+if (!function_exists('getSystemDynamicPartials')) {
+    function getSystemDynamicPartials($type = null): mixed
+    {
+        if ($type == 'analytics_script') {
+            return view("system-partials._analytics_script");
+        }
+        return null;
+    }
+}

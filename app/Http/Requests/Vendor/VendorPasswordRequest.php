@@ -40,8 +40,4 @@ class VendorPasswordRequest extends FormRequest
             'password.regex' => translate('The_password_must_be_at_least_8_characters_long_and_contain_at_least_one_uppercase_letter').','.translate('_one_lowercase_letter').','.translate('_one_digit_').','.translate('_one_special_character').','.translate('_and_no_spaces').'.',
         ];
     }
-    protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
-    {
-        throw new HttpResponseException(response()->json(['errors' => $this->errorProcessor($validator)]));
-    }
 }

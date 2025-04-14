@@ -41,19 +41,12 @@
                                         </div>
                                     </form>
                                 </div>
-                                <button type="button" class="btn btn-outline--primary text-nowrap" data-toggle="dropdown">
-                                        <i class="tio-download-to"></i>
-                                        {{ translate('export') }}
-                                        <i class="tio-chevron-down"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-right">
-                                    <li>
-                                        <a class="dropdown-item withdraw-request-file-export" href="javascript:" data-action="{{route('vendor.delivery-man.withdraw.export',['searchValue'=> request('searchValue')??''])}}">
-                                            <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" alt="">
-                                            {{translate('Excel')}}
-                                        </a>
-                                    </li>
-                                </ul>
+                                <div class="dropdown">
+                                    <a type="button" class="btn btn-outline--primary text-nowrap" href="{{route('vendor.delivery-man.withdraw.export',['searchValue'=> request('searchValue')??''])}}">
+                                        <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
+                                        <span class="ps-2">{{ translate('export') }}</span>
+                                    </a>
+                                </div>
                                 <select name="delivery_withdraw_status_filter" class="custom-select min-w-120 max-w-200 status-filter">
                                     <option value="all" >{{translate('all')}}</option>
                                     <option value="approved" >{{translate('approved')}}</option>

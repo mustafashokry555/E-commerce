@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Customer;
 
-use App\User;
+use App\Models\User;
 use App\Utils\Helpers;
 use App\Http\Controllers\Controller;
 use App\Models\ShippingAddress;
@@ -58,8 +58,8 @@ class SystemController extends Controller
      */
     public function getChooseShippingAddress(Request $request): JsonResponse
     {
-        $zip_restrict_status = Helpers::get_business_settings('delivery_zip_code_area_restriction');
-        $country_restrict_status = Helpers::get_business_settings('delivery_country_restriction');
+        $zip_restrict_status = getWebConfig(name: 'delivery_zip_code_area_restriction');
+        $country_restrict_status = getWebConfig(name: 'delivery_country_restriction');
 
         $physical_product = $request['physical_product'];
         $shipping = [];

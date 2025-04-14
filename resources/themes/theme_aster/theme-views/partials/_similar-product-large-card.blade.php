@@ -8,7 +8,7 @@
                 -@if ($product->discount_type == 'percent')
                     {{round($product->discount, $web_config['decimal_point_settings'])}}%
                 @elseif($product->discount_type =='flat')
-                    {{Helpers::currency_converter($product->discount)}}
+                    {{webCurrencyConverter($product->discount)}}
                 @endif
             </span>
         @endif
@@ -18,21 +18,20 @@
                      class="svg text-white">
             </div>
         @endif
-        @php($wishList = count($product->wishList)>0 ? 1 : 0)
-        @php($compareList = count($product->compareList)>0 ? 1 : 0)
+
         <div class="product__actions d-flex flex-column gap-2">
             <a href="javascript:"
                data-action="{{route('store-wishlist')}}"
                data-product-id="{{$product['id']}}"
                id="wishlist-{{$product['id']}}"
-               class="btn-wishlist stopPropagation add-to-wishlist wishlist-{{$product['id']}} {{($wishList == 1?'wishlist_icon_active':'')}}"
+               class="btn-wishlist stopPropagation add-to-wishlist wishlist-{{$product['id']}} {{ isProductInWishList($product->id) ?'wishlist_icon_active':'' }}"
                title="Add to wishlist">
                 <i class="bi bi-heart"></i>
             </a>
             <a href="javascript:"
                data-action="{{route('product-compare.index')}}"
                data-product-id="{{$product['id']}}"
-               class="btn-compare stopPropagation add-to-compare compare_list-{{$product['id']}} {{($compareList == 1?'compare_list_icon_active':'')}}"
+               class="btn-compare stopPropagation add-to-compare compare_list-{{$product['id']}} {{ isProductInCompareList($product->id) ?'compare_list_icon_active':'' }}"
                title="{{ translate('add_to_compare') }}"
                id="compare_list-{{$product['id']}}">
                 <i class="bi bi-repeat"></i>
@@ -40,7 +39,7 @@
         </div>
 
         <div class="product__thumbnail align-items-center d-flex h-100 justify-content-center">
-            <img src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$product['thumbnail'], type: 'product') }}"
+            <img src="{{ getStorageImages(path:$product->thumbnail_full_url, type: 'product') }}"
                  loading="lazy" class="dark-support rounded" alt="">
         </div>
         @if(($product['product_type'] == 'physical') && ($product['current_stock'] < 1))
@@ -79,7 +78,7 @@
             @if($product->added_by=='seller')
                 {{ isset($product->seller->shop->name) ? Str::limit($product->seller->shop->name, 20) : '' }}
             @elseif($product->added_by=='admin')
-                {{$web_config['name']->value}}
+                {{$web_config['company_name']}}
             @endif
         </div>
 
@@ -89,10 +88,10 @@
 
         <div class="product__price d-flex flex-wrap column-gap-2">
             @if($product->discount > 0)
-                <del class="product__old-price">{{Helpers::currency_converter($product->unit_price)}}</del>
+                <del class="product__old-price">{{webCurrencyConverter($product->unit_price)}}</del>
             @endif
             <ins class="product__new-price">
-                {{Helpers::currency_converter($product->unit_price-Helpers::get_product_discount($product,$product->unit_price))}}
+                {{webCurrencyConverter($product->unit_price-Helpers::getProductDiscount($product,$product->unit_price))}}
             </ins>
         </div>
     </div>

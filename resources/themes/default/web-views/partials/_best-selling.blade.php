@@ -15,19 +15,15 @@
                 </div>
             </div>
             <div class="row g-3">
-                @foreach($bestSellProduct as $key=>$bestSell)
-                    @if($bestSell->product && $key<6)
+                @foreach($bestSellProduct as $key=> $bestSellItem)
+                    @if($bestSellItem && $key<6)
                         <div class="col-sm-6">
-                            <a class="__best-selling" href="{{route('product',$bestSell->product->slug)}}">
-                                @if($bestSell->product->discount > 0)
+                            <a class="__best-selling" href="{{route('product',$bestSellItem->slug)}}">
+                                @if(getProductPriceByType(product: $bestSellItem, type: 'discount', result: 'value') > 0)
                                     <div class="d-flex">
                                         <span class="for-discount-value p-1 pl-2 pr-2 font-bold fs-13">
                                             <span class="direction-ltr d-block">
-                                                @if ($bestSell->product->discount_type == 'percent')
-                                                    -{{round($bestSell->product->discount)}}%
-                                                @elseif($bestSell->product->discount_type =='flat')
-                                                    -{{ webCurrencyConverter(amount: $bestSell->product->discount) }}
-                                                @endif
+                                                -{{ getProductPriceByType(product: $bestSellItem, type: 'discount', result: 'string') }}
                                             </span>
                                         </span>
                                     </div>
@@ -35,16 +31,16 @@
                                 <div class="d-flex flex-wrap">
                                     <div class="best-selleing-image">
                                         <img class="rounded"
-                                             src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$bestSell->product['thumbnail'], type: 'product') }}"
+                                             src="{{ getStorageImages(path: $bestSellItem?->thumbnail_full_url, type: 'product') }}"
                                              alt="{{ translate('product') }}"/>
                                     </div>
                                     <div class="best-selling-details">
                                         <h6 class="widget-product-title">
                                         <span class="ptr fw-semibold">
-                                            {{ Str::limit($bestSell->product['name'],100) }}
+                                            {{ Str::limit($bestSellItem['name'],100) }}
                                         </span>
                                         </h6>
-                                        @php($overallRating = getOverallRating($bestSell->product['reviews']))
+                                        @php($overallRating = getOverallRating($bestSellItem['reviews']))
                                         @if($overallRating[0] != 0 )
                                             <div class="rating-show">
                                             <span class="d-inline-block font-size-sm text-body">
@@ -57,22 +53,20 @@
                                                         <i class="tio-star-outlined text-warning"></i>
                                                     @endif
                                                 @endfor
-                                                <label class="badge-style">( {{ count($bestSell->product['reviews']) }} )</label>
+                                                <label class="badge-style">( {{ count($bestSellItem['reviews']) }} )</label>
                                             </span>
                                             </div>
                                         @endif
                                         <div class="widget-product-meta d-flex flex-wrap gap-8 align-items-center row-gap-0">
                                             <span>
-                                                @if($bestSell->product->discount > 0)
+                                                @if(getProductPriceByType(product: $bestSellItem, type: 'discount', result: 'value') > 0)
                                                     <del class="__color-9B9B9B __text-12px">
-                                                        {{ webCurrencyConverter(amount: $bestSell->product->unit_price) }}
+                                                        {{ webCurrencyConverter(amount: $bestSellItem->unit_price) }}
                                                     </del>
                                                 @endif
                                             </span>
                                             <span class="text-accent text-dark">
-                                                {{ webCurrencyConverter(amount:
-                                                $bestSell->product->unit_price-(getProductDiscount(product: $bestSell->product, price: $bestSell->product->unit_price))
-                                                ) }}
+                                                {{ getProductPriceByType(product: $bestSellItem, type: 'discounted_unit_price', result: 'string') }}
                                             </span>
                                         </div>
                                     </div>

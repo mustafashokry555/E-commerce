@@ -134,23 +134,11 @@
                                 </form>
                             </div>
                             <div class="col-lg-8 mt-3 mt-lg-0 d-flex flex-wrap gap-3 justify-content-lg-end">
-
-                                <div>
-                                    <button type="button" class="btn btn-outline--primary" data-toggle="dropdown">
-                                        <i class="tio-download-to"></i>
-                                        {{ translate('export') }}
-                                        <i class="tio-chevron-down"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-right">
-                                        <li>
-                                            <a class="dropdown-item"
-                                               href="{{ route('admin.products.export-excel',['type'=>request('type')]) }}?brand_id={{request('brand_id') }}&searchValue={{ request('searchValue') }}&category_id={{request('category_id') }}&sub_category_id={{request('sub_category_id') }}&sub_sub_category_id={{request('sub_sub_category_id') }}&seller_id={{request('seller_id') }}&status={{request('status') }}">
-                                                <img width="14" src="{{ dynamicAsset(path: 'public/assets/back-end/img/excel.png') }}"
-                                                     alt="">
-                                                {{ translate('excel') }}
-                                            </a>
-                                        </li>
-                                    </ul>
+                                <div class="dropdown">
+                                    <a type="button" class="btn btn-outline--primary text-nowrap" href="{{ route('admin.products.export-excel',['type'=>request('type')]) }}?brand_id={{request('brand_id') }}&searchValue={{ request('searchValue') }}&category_id={{request('category_id') }}&sub_category_id={{request('sub_category_id') }}&sub_sub_category_id={{request('sub_sub_category_id') }}&seller_id={{request('seller_id') }}&status={{request('status') }}">
+                                        <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
+                                        <span class="ps-2">{{ translate('export') }}</span>
+                                    </a>
                                 </div>
                                 @if($type == 'in_house')
                                     <a href="{{ route('admin.products.stock-limit-list',['in_house']) }}"
@@ -181,17 +169,24 @@
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach($products as $key=>$product)
+                            @foreach($products as $key => $product)
                                 <tr>
                                     <th scope="row">{{ $products->firstItem()+$key}}</th>
                                     <td>
                                         <a href="{{ route('admin.products.view',['addedBy'=>($product['added_by']=='seller'?'vendor' : 'in-house'),'id'=>$product['id']]) }}"
                                            class="media align-items-center gap-2">
-                                            <img src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$product['thumbnail'], type: 'backend-product') }}"
-                                                 class="avatar border" alt="">
-                                            <span class="media-body title-color hover-c1">
-                                            {{ Str::limit($product['name'], 20) }}
-                                        </span>
+                                            <img src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'backend-product') }}"
+                                                 class="avatar border object-fit-cover" alt="">
+                                            <div>
+                                                <div class="media-body title-color hover-c1">
+                                                    {{ Str::limit($product['name'], 20) }}
+                                                </div>
+                                                @if($product?->clearanceSale)
+                                                    <div class="badge badge-soft-warning user-select-none">
+                                                        {{ translate('Clearance_Sale') }}
+                                                    </div>
+                                                @endif
+                                            </div>
                                         </a>
                                     </td>
                                     <td class="text-center">

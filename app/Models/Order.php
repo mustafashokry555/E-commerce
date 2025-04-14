@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Models;
-use App\User;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -19,6 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
  * @property string $payment_by
  * @property string $payment_note
  * @property float $order_amount
+ * @property float $paid_amount
  * @property float $admin_commission
  * @property bool $is_pause
  * @property string $cause
@@ -71,6 +72,7 @@ class Order extends Model
         'payment_by',
         'payment_note',
         'order_amount',
+        'paid_amount',
         'admin_commission',
         'is_pause',
         'cause',
@@ -116,6 +118,7 @@ class Order extends Model
         'payment_by' => 'string',
         'payment_note' => 'string',
         'order_amount' => 'double',
+        'paid_amount' => 'double',
         'admin_commission' => 'decimal:2',
         'is_pause' => 'boolean',
         'cause' => 'string',

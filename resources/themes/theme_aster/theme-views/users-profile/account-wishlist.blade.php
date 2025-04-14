@@ -1,5 +1,5 @@
 @extends('theme-views.layouts.app')
-@section('title', translate('my_Wishlists').' | '.$web_config['name']->value.' '.translate('ecommerce'))
+@section('title', translate('my_Wishlists').' | '.$web_config['company_name'].' '.translate('ecommerce'))
 @section('content')
     <main class="main-content d-flex flex-column gap-3 py-3 mb-4">
         <div class="container">

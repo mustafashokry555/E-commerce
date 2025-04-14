@@ -199,7 +199,6 @@
                                     <div class="is_check_create_account_password_group d--none">
                                         <div class="d-flex gap-3 flex-wrap flex-sm-nowrap">
                                             <div class="w-100">
-                                                {{-- <label class="form-label font-semibold">{{ translate('password') }}</label> --}}
                                                 <div class="password-toggle rtl">
                                                     <input class="form-control text-align-direction" name="customer_password" type="password" id="customer_password" placeholder="{{ translate('new_Password') }}" required>
                                                     <label class="password-toggle-btn">
@@ -210,7 +209,6 @@
                                                 </div>
                                             </div>
                                             <div class="w-100">
-                                                {{-- <label class="form-label font-semibold">{{ translate('confirm_Password') }}</label> --}}
                                                 <div class="password-toggle rtl">
                                                     <input class="form-control text-align-direction w-100" name="customer_confirm_password" type="password" id="customer_confirm_password" placeholder="{{ translate('confirm_Password') }}" required>
                                                     <label class="password-toggle-btn">

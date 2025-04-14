@@ -31,14 +31,14 @@
                                         @foreach($order['details']->take(3) as $key=>$detail)
                                             <div>
                                                 <img width="42" loading="lazy" alt="" class="dark-support rounded"
-                                                     src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.($detail['product']['thumbnail'] ?? ''), type: 'product') }}">
+                                                     src="{{ getStorageImages(path: $detail?->productAllStatus?->thumbnail_full_url, type: 'product') }}">
                                             </div>
                                         @endforeach
 
                                         @if(count($order['details']) > 3)
                                             <h6 class="fw-medium fs-12 text-center">+{{ count($order['details'])-3 }}
                                                 <br>
-                                                <a href="{{ route('account-order-details', ['order_id'=>$order['id']]) }}">{{ translate('more') }}</a>
+                                                <a href="{{ route('account-order-details', ['id'=>$order['id']]) }}">{{ translate('more') }}</a>
                                             </h6>
                                         @endif
                                     </div>
@@ -46,7 +46,7 @@
                                 <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
                                     <div class="">
                                         <h6 class="fs-10 mb-2">{{ translate('Order_ID').':'. '#' }}{{ $order['id'] }}</h6>
-                                        <h6>{{ translate('final_total').':' }}{{ Helpers::currency_converter($order['order_amount']) }}</h6>
+                                        <h6>{{ translate('final_total').':' }}{{ webCurrencyConverter($order['order_amount']) }}</h6>
                                     </div>
                                     <a href="javascript:" data-order-id="{{ $order['id'] }}"
                                        class="btn btn-primary order-again">{{ translate('order_again') }}</a>
@@ -58,9 +58,9 @@
             </div>
         @else
             <div class="d-sm-none mb-4">
-                @if($sidebar_banner)
-                    <a href="{{ $sidebar_banner['url'] }}">
-                        <img src="{{ getValidImage(path: 'storage/app/public/banner/'.($sidebar_banner ? $sidebar_banner['photo'] : ''), type:'banner') }}"
+                @if($bannerTypeSidebarBanner)
+                    <a href="{{ $bannerTypeSidebarBanner['url'] }}">
+                        <img src="{{ getStorageImages(path: $bannerTypeSidebarBanner['photo_full_url'], type:'banner') }}"
                             alt="" class="dark-support rounded w-100">
                     </a>
                 @else
@@ -77,9 +77,9 @@
                         <i class="bi bi-chevron-right text-primary"></i></a>
                 </div>
                 <div class="table-responsive hide-scrollbar">
-                    <div class="d-flex gap-3 {{count($more_seller) > 2 ? 'justify-content-between' : ''}} store-list">
+                    <div class="d-flex gap-3 {{count($moreVendors) > 2 ? 'justify-content-between' : ''}} store-list">
                         @php($current_date = date('Y-m-d'))
-                        @foreach($more_seller as $seller)
+                        @foreach($moreVendors as $seller)
                             @php($start_date = date('Y-m-d', strtotime($seller->shop['vacation_start_date'])))
                             @php($end_date = date('Y-m-d', strtotime($seller->shop['vacation_end_date'])))
                             <a href="{{route('shopView',['id'=>$seller['id']])}}"
@@ -87,15 +87,15 @@
                                 <div class="position-relative">
                                     <div class="avatar rounded-circle">
                                         <img class="dark-support img-fit rounded-circle img-w-h-100"
-                                             src="{{ getValidImage(path: 'storage/app/public/shop/'.$seller->shop->image, type:'shop') }}" alt=""
+                                             src="{{ getStorageImages(path: $seller?->shop->image_full_url, type:'shop') }}" alt=""
                                              loading="lazy">
                                     </div>
                                     @if($seller->shop->temporary_close)
-                                        <span class="temporary-closed position-absolute rounded-circle">
+                                        <span class="temporary-closed position-absolute rounded-circle text-center">
                                             <span>{{translate('Temporary_OFF')}}</span>
                                         </span>
                                     @elseif($seller->shop->vacation_status && ($current_date >= $start_date) && ($current_date <= $end_date))
-                                        <span class="temporary-closed position-absolute rounded-circle">
+                                        <span class="temporary-closed position-absolute rounded-circle text-center">
                                             <span>{{translate('closed_now')}}</span>
                                         </span>
                                     @endif

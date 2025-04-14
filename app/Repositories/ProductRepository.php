@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Tag;
 use App\Models\Translation;
 use App\Models\Wishlist;
+use App\Traits\CacheManagerTrait;
 use App\Traits\ProductTrait;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +20,7 @@ use Illuminate\Support\Facades\DB;
 
 class ProductRepository implements ProductRepositoryInterface
 {
-    use ProductTrait;
+    use ProductTrait, CacheManagerTrait;
 
     public function __construct(
         private readonly Product          $product,
@@ -53,6 +54,7 @@ class ProductRepository implements ProductRepositoryInterface
 
     public function add(array $data): string|object
     {
+        cacheRemoveByType(type: 'products');
         return $this->product->create($data);
     }
 
@@ -99,6 +101,24 @@ class ProductRepository implements ProductRepositoryInterface
                     });
                 }]);
             })
+            ->when(isset($relations['digitalProductAuthors']), function ($query) use ($relations) {
+                return $query->with($relations['digitalProductAuthors'], function ($query) {
+                    return $query->with('author');
+                });
+            })
+            ->when(isset($relations['digitalProductPublishingHouse']), function ($query) use ($relations) {
+                return $query->with($relations['digitalProductPublishingHouse'], function ($query) {
+                    return $query->with('publishingHouse');
+                });
+            })
+            ->when(isset($relations['clearanceSale']), function ($query) use ($relations) {
+                return $query->with(['clearanceSale' => function($query) {
+                    return $query->active();
+                }]);
+            })
+            ->when(isset($params['id']), function ($query) use ($params) {
+                return $query->where('id', $params['id']);
+            })
             ->when(isset($params['slug']), function ($query) use ($params) {
                 return $query->where('slug', $params['slug']);
             })
@@ -141,7 +161,7 @@ class ProductRepository implements ProductRepositoryInterface
                     }
                 })
                 ->when(isset($filters['added_by']) && !$this->isAddedByInHouse($filters['added_by']), function($query) use($filters, $product_ids) {
-                    $query->orWhereIn('id', $product_ids)
+                    $query->whereIn('id', $product_ids)
                         ->where(['added_by' => 'seller'])
                         ->when(isset($filters['seller_id']), function ($query) use ($filters) {
                             return $query->where(['user_id' => $filters['seller_id']]);
@@ -156,11 +176,11 @@ class ProductRepository implements ProductRepositoryInterface
                 });
         })->when(isset($filters['brand_id']) && $filters['brand_id'] != 'all', function ($query) use ($filters) {
             return $query->where(['brand_id' => $filters['brand_id']]);
-        })->when(isset($filters['category_id']) && $filters['category_id'] != 'all', function ($query) use ($filters) {
+        })->when(isset($filters['category_id']) && !empty($filters['category_id']) && $filters['category_id'] != 'all', function ($query) use ($filters) {
             return $query->where(['category_id' => $filters['category_id']]);
-        })->when(isset($filters['sub_category_id']) && $filters['sub_category_id'] != 'all', function ($query) use ($filters) {
+        })->when(isset($filters['sub_category_id']) && !empty($filters['sub_category_id']) && $filters['sub_category_id'] != 'all', function ($query) use ($filters) {
             return $query->where(['sub_category_id' => $filters['sub_category_id']]);
-        })->when(isset($filters['sub_sub_category_id']) && $filters['sub_sub_category_id'] != 'all', function ($query) use ($filters) {
+        })->when(isset($filters['sub_sub_category_id']) && !empty($filters['sub_sub_category_id']) && $filters['sub_sub_category_id'] != 'all', function ($query) use ($filters) {
             return $query->where(['sub_sub_category_id' => $filters['sub_sub_category_id']]);
         })->when(isset($filters['is_shipping_cost_updated']), function ($query) use ($filters) {
             return $query->where(['is_shipping_cost_updated' => $filters['is_shipping_cost_updated']]);
@@ -168,6 +188,8 @@ class ProductRepository implements ProductRepositoryInterface
             return $query->where(['status' => $filters['status']]);
         })->when(isset($filters['code']), function ($query) use ($filters) {
             return $query->where(['code' => $filters['code']]);
+        })->when(isset($filters['productIds']), function ($query) use ($filters) {
+            return $query->whereIn('id' , $filters['productIds']);
         })->when(!empty($orderBy), function ($query) use ($orderBy) {
             $query->orderBy(array_key_first($orderBy), array_values($orderBy)[0]);
         });
@@ -190,8 +212,11 @@ class ProductRepository implements ProductRepositoryInterface
                     ->where('key', 'name')
                     ->where('value', 'like', "%{$searchValue}%")
                     ->pluck('translationable_id');
-                return $query->where('name', 'like', "%{$searchValue}%")
-                    ->orWhereIn('id', $product_ids);
+
+                return $query->where(function ($query) use ($searchValue, $product_ids) {
+                    return $query->where('name', 'like', "%{$searchValue}%")
+                        ->orWhereIn('id', $product_ids);
+                });
             })
             ->when(isset($filters['search_from']) && $filters['search_from'] == 'pos', function ($query) use ($filters) {
                 $searchKeyword = str_ireplace(['\'', '"', ',', ';', '<', '>', '?'], ' ', preg_replace('/\s\s+/', ' ', $filters['keywords']));
@@ -203,7 +228,8 @@ class ProductRepository implements ProductRepositoryInterface
             })
             ->when(isset($filters['added_by']) && $this->isAddedByInHouse(addedBy: $filters['added_by']), function ($query) {
                 return $query->where(['added_by' => 'admin']);
-            })->when(isset($filters['added_by']) && !$this->isAddedByInHouse($filters['added_by']), function ($query) use ($filters) {
+            })
+            ->when(isset($filters['added_by']) && !$this->isAddedByInHouse($filters['added_by']), function ($query) use ($filters) {
                 return $query->where(['added_by' => 'seller'])
                     ->when(isset($filters['request_status']), function ($query) use ($filters) {
                         $query->where(['request_status' => $filters['request_status']]);
@@ -325,15 +351,18 @@ class ProductRepository implements ProductRepositoryInterface
         $filters += ['searchValue' => $searchValue];
         return $dataLimit == 'all' ? $query->get() : $query->paginate($dataLimit)->appends($filters);
     }
+
     public function update(string $id, array $data): bool
     {
-        return $this->product->where('id', $id)->update($data);
-    }
-    public function updateByParams(array $params, array $data): bool
-    {
-        return $this->product->where($params)->update($data);
+        cacheRemoveByType(type: 'products');
+        return $this->product->find($id)->update($data);
     }
 
+    public function updateByParams(array $params, array $data): bool
+    {
+        cacheRemoveByType(type: 'products');
+        return $this->product->where($params)->update($data);
+    }
 
     public function getListWhereNotIn(array $filters = [], array $whereNotIn = [], array $relations = [], int|string $dataLimit = DEFAULT_DATA_LIMIT, int $offset = null): Collection|LengthAwarePaginator
     {
@@ -386,6 +415,7 @@ class ProductRepository implements ProductRepositoryInterface
 
     public function delete(array $params): bool
     {
+        cacheRemoveByType(type: 'products');
         return $this->product->where($params)->delete();
     }
 
@@ -438,6 +468,7 @@ class ProductRepository implements ProductRepositoryInterface
 
     public function addArray(array $data): bool
     {
+        cacheRemoveByType(type: 'products');
         return DB::table('products')->insert($data);
     }
 }

@@ -92,7 +92,7 @@ class ContactController extends BaseController
 
     public function sendMail(Request $request, $id, ContactService $contactService): RedirectResponse
     {
-        $contact = $this->contactRepo->getFirstWhere(params: ['id'=>$id]);
+        $contact = $this->contactRepo->getFirstWhere(params: ['id' => $id]);
         $data = array('body' => $request['mail_body']);
 
         $emailServices_smtp = getWebConfig(name: 'mail_config');
@@ -103,11 +103,11 @@ class ContactController extends BaseController
         if ($emailServices_smtp['status'] == 1) {
             try {
                 $dataArray = $contactService->getMailData(request: $request, data: $data, contact: $contact, companyName: getWebConfig(name: 'company_name'));
-                $this->contactRepo->update(id:$id, data: $dataArray);
+                $this->contactRepo->update(id: $id, data: $dataArray);
                 Toastr::success(translate('mail_sent_successfully'));
             } catch (Throwable $th) {
-                Toastr::error(translate('This_Mail_Could_Not_be_Sent').'.');
-                Toastr::info(translate('please_go_to_3rd_Party').' > '.translate('Mail_Config').','.translate('and_check_if_you’ve_enabled_and_saved_your_settings_properly'));
+                Toastr::error(translate('This_Mail_Could_Not_be_Sent') . '.');
+                Toastr::info(translate('please_go_to_3rd_Party') . ' > ' . translate('Mail_Config') . ',' . translate('and_check_if_you_have_enabled_and_saved_your_settings_properly'));
             }
         } else {
             Toastr::error(translate('Configure_your_mail_setup_first'));

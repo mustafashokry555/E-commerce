@@ -113,20 +113,11 @@
                     <span class="badge badge-soft-dark radius-50 fz-12 ml-1">{{$transactions->total()}}</span>
                 </h4>
                 <div class="d-flex justify-content-end">
-                    <div class="dropdown text-nowrap">
-                        <button type="button" class="btn btn-outline--primary" data-toggle="dropdown">
-                            <i class="tio-download-to"></i>
-                            {{translate('export')}}
-                            <i class="tio-chevron-down"></i>
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-right">
-                            <li>
-                                <a type="submit" class="dropdown-item d-flex align-items-center gap-2 " href="{{route('admin.customer.loyalty.export',['transaction_type'=>$transaction_status,'customer_id'=>request('customer_id'),'to'=>request('to'),'from'=>request('from')])}}">
-                                    <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" alt="">
-                                    {{translate('excel')}}
-                                </a>
-                            </li>
-                        </ul>
+                    <div class="dropdown">
+                        <a type="button" class="btn btn-outline--primary text-nowrap btn-block" href="{{route('admin.customer.loyalty.export',['transaction_type'=>$transaction_status,'customer_id'=>request('customer_id'),'to'=>request('to'),'from'=>request('from')])}}">
+                            <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
+                            <span class="ps-2">{{ translate('export') }}</span>
+                        </a>
                     </div>
                 </div>
             </div>

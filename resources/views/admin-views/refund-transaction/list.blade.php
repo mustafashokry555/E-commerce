@@ -50,23 +50,11 @@
                                     data-action="{{ url()->current() }}">
                                 {{translate('filter')}}
                             </button>
-                            <div>
-                                <button type="button" class="btn btn-outline--primary text-nowrap btn-block"
-                                        data-toggle="dropdown">
-                                    <i class="tio-download-to"></i>
-                                    {{translate('export')}}
-                                    <i class="tio-chevron-down"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-right">
-                                    <li>
-                                        <a class="dropdown-item"
-                                           href="{{ route('admin.report.transaction.refund-transaction-export', ['payment_method'=>$paymentMethod, 'searchValue'=>$searchValue]) }}">
-                                            <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}"
-                                                 alt="">
-                                            {{translate('excel')}}
-                                        </a>
-                                    </li>
-                                </ul>
+                            <div class="dropdown">
+                                <a type="button" class="btn btn-outline--primary text-nowrap" href="{{ route('admin.report.transaction.refund-transaction-export', ['payment_method'=>$paymentMethod, 'searchValue'=>$searchValue]) }}">
+                                    <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
+                                    <span class="ps-2">{{ translate('export') }}</span>
+                                </a>
                             </div>
                         </div>
                     </form>
@@ -101,7 +89,7 @@
                                     <a href="{{route('admin.products.view',['addedBy'=>($refund_transaction->orderDetails->product->added_by =='seller'?'vendor' : 'in-house'),'id'=>$refund_transaction->orderDetails->product->id])}}"
                                        class="media align-items-center gap-2">
                                         <img
-                                            src="{{ getValidImage(path:'storage/app/public/product/thumbnail/'.$refund_transaction->orderDetails->product->thumbnail,type: 'backend-product')}}"
+                                            src="{{ getStorageImages(path: $refund_transaction->orderDetails->product->thumbnail_full_url,type: 'backend-product')}}"
                                             class="avatar border" alt="">
                                         <span class="media-body title-color hover-c1">
                                             {{ isset($refund_transaction->orderDetails->product->name) ? Str::limit($refund_transaction->orderDetails->product->name, 20) : '' }}

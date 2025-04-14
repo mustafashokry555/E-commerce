@@ -32,11 +32,11 @@ class ChattingController extends BaseController
      * @param CustomerRepositoryInterface $customerRepo
      */
     public function __construct(
-        private readonly ChattingRepositoryInterface $chattingRepo,
-        private readonly ShopRepositoryInterface $shopRepo,
-        private readonly ChattingService $chattingService,
+        private readonly ChattingRepositoryInterface    $chattingRepo,
+        private readonly ShopRepositoryInterface        $shopRepo,
+        private readonly ChattingService                $chattingService,
         private readonly DeliveryManRepositoryInterface $deliveryManRepo,
-        private readonly CustomerRepositoryInterface $customerRepo,
+        private readonly CustomerRepositoryInterface    $customerRepo,
     )
     {
     }
@@ -50,22 +50,22 @@ class ChattingController extends BaseController
     public function index(?Request $request, string|array $type = null): View|Collection|LengthAwarePaginator|null|callable|RedirectResponse
     {
 
-        return $this->getListView(type:$type);
+        return $this->getListView(type: $type);
     }
 
     /**
      * @param string|array $type
      * @return View
      */
-    public function getListView(string|array $type):View
+    public function getListView(string|array $type): View
     {
         $shop = $this->shopRepo->getFirstWhere(params: ['seller_id' => auth('seller')->id()]);
         $adminId = 0;
         if ($type == 'delivery-man') {
             $allChattingUsers = $this->chattingRepo->getListWhereNotNull(
                 orderBy: ['created_at' => 'DESC'],
-                filters: ['admin_id' =>$adminId],
-                whereNotNull: ['delivery_man_id','admin_id'],
+                filters: ['admin_id' => $adminId],
+                whereNotNull: ['delivery_man_id', 'admin_id'],
                 relations: ['deliveryMan'],
                 dataLimit: 'all'
             )->unique('delivery_man_id');
@@ -79,8 +79,8 @@ class ChattingController extends BaseController
 
                 $chattingMessages = $this->chattingRepo->getListWhereNotNull(
                     orderBy: ['created_at' => 'DESC'],
-                    filters: ['admin_id' =>$adminId, 'delivery_man_id'=>$lastChatUser->id],
-                    whereNotNull: ['delivery_man_id','admin_id'],
+                    filters: ['admin_id' => $adminId, 'delivery_man_id' => $lastChatUser->id],
+                    whereNotNull: ['delivery_man_id', 'admin_id'],
                     relations: ['deliveryMan'],
                     dataLimit: 'all'
                 );
@@ -95,23 +95,25 @@ class ChattingController extends BaseController
         } elseif ($type == 'customer') {
             $allChattingUsers = $this->chattingRepo->getListWhereNotNull(
                 orderBy: ['created_at' => 'DESC'],
-                filters: ['admin_id' =>$adminId],
-                whereNotNull: ['user_id','admin_id'],
+                filters: ['admin_id' => $adminId],
+                whereNotNull: ['user_id', 'admin_id'],
                 relations: ['customer'],
                 dataLimit: 'all'
             )->unique('user_id');
 
             if (count($allChattingUsers) > 0) {
                 $lastChatUser = $allChattingUsers[0]->customer;
-                $this->chattingRepo->updateAllWhere(
-                    params: ['admin_id' => $adminId, 'user_id' => $lastChatUser['id']],
-                    data: ['seen_by_admin' => 1]
-                );
+                if ($lastChatUser) {
+                    $this->chattingRepo->updateAllWhere(
+                        params: ['admin_id' => $adminId, 'user_id' => $lastChatUser['id']],
+                        data: ['seen_by_admin' => 1]
+                    );
+                }
 
                 $chattingMessages = $this->chattingRepo->getListWhereNotNull(
                     orderBy: ['created_at' => 'DESC'],
-                    filters: ['admin_id' =>$adminId, 'user_id'=>$lastChatUser->id],
-                    whereNotNull: ['user_id','admin_id'],
+                    filters: ['admin_id' => $adminId, 'user_id' => $lastChatUser?->id],
+                    whereNotNull: ['user_id', 'admin_id'],
                     relations: ['customer'],
                     dataLimit: 'all'
                 );
@@ -170,24 +172,25 @@ class ChattingController extends BaseController
      * @param ChattingRequest $request
      * @return JsonResponse
      */
-    public function addAdminMessage(ChattingRequest $request):JsonResponse
+    public function addAdminMessage(ChattingRequest $request): JsonResponse
     {
         $data = [];
+        $shop = [
+            'name' => getWebConfig(name: 'company_name')
+        ];
         $messageForm = (object)[
-            'f_name'=>'admin',
-            'shop'=> [
-                'name'=> getWebConfig(name: 'company_name')
-            ]
+            'f_name' => 'admin',
+            'shop' => (object)$shop,
         ];
         if ($request->has(key: 'delivery_man_id')) {
             $this->chattingRepo->add(
                 data: $this->chattingService->addChattingData(
                     request: $request,
-                    type:'delivery-man',
+                    type: 'delivery-man',
                 )
             );
             $deliveryMan = $this->deliveryManRepo->getFirstWhere(params: ['id' => $request['delivery_man_id']]);
-            ChattingEvent::dispatch('message_from_admin', 'delivery_man', $deliveryMan, $messageForm);
+            event(new ChattingEvent(key: 'message_from_admin', type: 'delivery_man', userData: $deliveryMan, messageForm: $messageForm));
 
             $chattingMessages = $this->chattingRepo->getListWhereNotNull(
                 orderBy: ['created_at' => 'DESC'],
@@ -200,11 +203,11 @@ class ChattingController extends BaseController
             $this->chattingRepo->add(
                 data: $this->chattingService->addChattingData(
                     request: $request,
-                    type:'customer',
+                    type: 'customer',
                 )
             );
             $customer = $this->customerRepo->getFirstWhere(params: ['id' => $request['user_id']]);
-            ChattingEvent::dispatch('message_from_admin', 'customer', $customer, $messageForm);
+            event(new ChattingEvent(key: 'message_from_admin', type: 'customer', userData: $customer, messageForm: $messageForm));
 
             $chattingMessages = $this->chattingRepo->getListWhereNotNull(
                 orderBy: ['created_at' => 'DESC'],
@@ -223,7 +226,7 @@ class ChattingController extends BaseController
      * @param string|int|null $id
      * @return Collection
      */
-    protected function getChatList(string $tableName, string $orderBy, string|int $id = null) :Collection
+    protected function getChatList(string $tableName, string $orderBy, string|int $id = null): Collection
     {
         $adminId = 0;
         $columnName = $tableName == 'users' ? 'user_id' : 'delivery_man_id';
@@ -244,14 +247,8 @@ class ChattingController extends BaseController
      */
     protected function getRenderMessagesView(object $user, object $message, string $type): array
     {
-        $userData = ['name' => $user['f_name'].' '.$user['l_name'],'phone' => $user['country_code'].$user['phone']];
-
-        if ($type == 'customer') {
-            $userData['image'] = getValidImage(path: 'storage/app/public/profile/' . ($user['image']), type: 'backend-profile');
-        }else {
-            $userData['image'] = getValidImage(path: 'storage/app/public/delivery-man/' . ($user['image']), type: 'backend-profile');
-        }
-
+        $userData = ['name' => $user['f_name'] . ' ' . $user['l_name'], 'phone' => $user['country_code'] . $user['phone']];
+        $userData['image'] = getStorageImages(path: $user->image_full_url, type: 'backend-profile');
         return [
             'userData' => $userData,
             'chattingMessages' => view('admin-views.chatting.messages', [
@@ -277,7 +274,7 @@ class ChattingController extends BaseController
 
         return response()->json([
             'newMessagesExist' => $chatting,
-            'message' => $chatting > 1 ? $chatting .' '.translate('New_Message') : translate('New_Message'),
+            'message' => $chatting > 1 ? $chatting . ' ' . translate('New_Message') : translate('New_Message'),
         ]);
     }
 

@@ -9,6 +9,7 @@ use App\Contracts\Repositories\ProductRepositoryInterface;
 use App\Contracts\Repositories\VendorWalletRepositoryInterface;
 use App\Contracts\Repositories\WithdrawalMethodRepositoryInterface;
 use App\Contracts\Repositories\WithdrawRequestRepositoryInterface;
+use App\Contracts\Repositories\RestockProductRepositoryInterface;
 use App\Enums\OrderStatus;
 use App\Enums\ViewPaths\Vendor\Dashboard;
 use App\Http\Controllers\BaseController;
@@ -42,6 +43,7 @@ class DashboardController extends BaseController
         private readonly WithdrawRequestRepositoryInterface $withdrawRequestRepo,
         private readonly WithdrawRequestService $withdrawRequestService,
         private readonly DashboardService $dashboardService,
+        private readonly RestockProductRepositoryInterface $restockProductRepo,
     )
     {
     }
@@ -71,21 +73,21 @@ class DashboardController extends BaseController
             relations: ['orderDetails']
         )->take(DASHBOARD_TOP_SELL_DATA_LIMIT);
         $topRatedProducts = $this->productRepo->getTopRatedList(
-            filters:[
-                'user_id'=>$vendorId,
-                'added_by'=>'seller',
-                'request_status' =>1
+            filters: [
+                'user_id' => $vendorId,
+                'added_by' => 'seller',
+                'request_status' => 1
             ],
             relations: ['reviews'],
         )->take(DASHBOARD_DATA_LIMIT);
         $topRatedDeliveryMan = $this->deliveryManRepo->getTopRatedList(
-            orderBy: ['delivered_orders_count'=>'desc'],
+            orderBy: ['delivered_orders_count' => 'desc'],
             filters: [
-                'seller_id'=>$vendorId
+                'seller_id' => $vendorId
             ],
-            whereHasFilters:[
-                'seller_is'=>'seller',
-                'seller_id'=>$vendorId
+            whereHasFilters: [
+                'seller_is' => 'seller',
+                'seller_id' => $vendorId
             ],
             relations: ['deliveredOrders'],
         )->take(DASHBOARD_DATA_LIMIT);
@@ -93,14 +95,14 @@ class DashboardController extends BaseController
         $from = now()->startOfYear()->format('Y-m-d');
         $to = now()->endOfYear()->format('Y-m-d');
         $range = range(1,12);
-        $vendorEarning = $this->getVendorEarning(from:$from ,to: $to,range: $range,type:'month');
+        $vendorEarning = $this->getVendorEarning(from: $from, to: $to, range: $range, type: 'month');
         $commissionEarn = $this->getAdminCommission(from: $from ,to: $to,range: $range,type:'month');
-        $vendorWallet = $this->vendorWalletRepo->getFirstWhere(params: ['seller_id'=>$vendorId]);
+        $vendorWallet = $this->vendorWalletRepo->getFirstWhere(params: ['seller_id' => $vendorId]);
         $label = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
         $dateType = 'yearEarn';
         $dashboardData = [
             'orderStatus' => $this->getOrderStatusArray(type: 'overall'),
-            'customers'=> $this->customerRepo->getList()->count(),
+                'customers'=> $this->customerRepo->getList(dataLimit: 'all')->count(),
             'products'=> $this->productRepo->getListWhere(filters: ['seller_id'=>$vendorId,'added_by'=>'seller'])->count(),
             'orders'=> $this->orderRepo->getListWhere(filters: ['seller_id'=>$vendorId,'seller_is'=>'seller'])->count(),
             'brands'=> $this->brandRepo->getListWhere(dataLimit: 'all')->count(),
@@ -138,8 +140,11 @@ class DashboardController extends BaseController
     public function getEarningStatistics(Request $request):JsonResponse
     {
         $dateType = $request['type'];
-        $dateTypeArray = $this->dashboardService->getDateTypeData(dateType:$dateType);
-        $from = $dateTypeArray['from']; $to = $dateTypeArray['to']; $type = $dateTypeArray['type']; $range = $dateTypeArray['range'];
+        $dateTypeArray = $this->dashboardService->getDateTypeData(dateType: $dateType);
+        $from = $dateTypeArray['from'];
+        $to = $dateTypeArray['to'];
+        $type = $dateTypeArray['type'];
+        $range = $dateTypeArray['range'];
         $vendorEarning = $this->getVendorEarning(from: $from, to: $to, range: $range, type: $type);
         $commissionEarn = $this->getAdminCommission(from: $from, to: $to, range: $range, type: $type);
         $vendorEarning = array_values($vendorEarning);
@@ -209,21 +214,21 @@ class DashboardController extends BaseController
      * @param string $type
      * @return array
      */
-    protected function getVendorEarning(string|Carbon $from, string|Carbon $to, array $range, string $type):array
+    protected function getVendorEarning(string|Carbon $from, string|Carbon $to, array $range, string $type): array
     {
         $vendorId = auth('seller')->id();
         $vendorEarnings = $this->orderTransactionRepo->getListWhereBetween(
-            filters:  [
-                'seller_is'=>'seller',
-                'seller_id'=>$vendorId,
-                'status'=>'disburse'
+            filters: [
+                'seller_is' => 'seller',
+                'seller_id' => $vendorId,
+                'status' => 'disburse',
             ],
-            selectColumn:  'seller_amount',
+            selectColumn: 'seller_amount',
             whereBetween: 'created_at',
             whereBetweenFilters: [$from, $to],
+            groupBy:  $type,
         );
-        return $this->dashboardService->getDateWiseAmount(range: $range,type: $type,amountArray: $vendorEarnings);;
-
+        return $this->dashboardService->getDateWiseAmount(range: $range, type: $type, amountArray: $vendorEarnings);
     }
 
     /**
@@ -240,11 +245,12 @@ class DashboardController extends BaseController
             filters:  [
                 'seller_is'=>'seller',
                 'seller_id'=>$vendorId,
-                'status'=>'disburse'
+                'status'=>'disburse',
             ],
             selectColumn:  'admin_commission',
             whereBetween: 'created_at',
             whereBetweenFilters: [$from, $to],
+            groupBy:  $type,
         );
         return $this->dashboardService->getDateWiseAmount(range: $range,type: $type,amountArray: $commissionGiven);;
     }
@@ -257,5 +263,45 @@ class DashboardController extends BaseController
     {
         $method = $this->withdrawalMethodRepo->getFirstWhere(params:['id'=> $request['method_id'],'is_active'=>1]);
         return response()->json(['content'=>$method], 200);
+    }
+
+    public function getRealTimeActivities(): JsonResponse
+    {
+        $newOrder = $this->orderRepo->getListWhere(
+            filters: ['seller_is' => 'seller', 'seller_id' => auth('seller')->id(), 'checked' => 0],
+            dataLimit: 'all'
+        )->count();
+        $restockProductList = $this->restockProductRepo->getListWhere(filters: ['added_by' => 'seller', 'seller_id' => auth('seller')->id()], dataLimit: 'all')->groupBy('product_id');
+        $restockProduct = [];
+        if (count($restockProductList) == 1) {
+            $products = $this->restockProductRepo->getListWhere(
+                orderBy: ['updated_at' => 'desc'],
+                filters: ['added_by' => 'seller', 'seller_id' => auth('seller')->id()],
+                relations: ['product'],
+                dataLimit: 'all');
+            $firstProduct = $products->first();
+
+            $count = $products?->sum('restock_product_customers_count') ?? 0;
+            $restockProduct = [
+                'title' => $firstProduct?->product?->name ?? '',
+                'body' => $count < 100 ? translate('This_product_has').' '. $count .' '.translate('restock_request') : translate('This_product_has').' 99+ '.translate('restock_request'),
+                'image' => getStorageImages(path: $firstProduct?->product?->thumbnail_full_url ?? '', type: 'product'),
+                'route' => route('vendor.products.request-restock-list')
+            ];
+        } elseif (count($restockProductList) > 1) {
+            $restockProduct = [
+                'title' => translate('Restock_Request'),
+                'body' => (count($restockProductList) < 100 ? count($restockProductList) : '99 +') .' '.translate('more_products_have_restock_request'),
+                'image' => dynamicAsset(path: 'public/assets/back-end/img/icons/restock-request-icon.svg'),
+                'route' => route('vendor.products.request-restock-list')
+            ];
+        }
+
+        return response()->json([
+            'success' => 1,
+            'new_order_count' => $newOrder,
+            'restockProductCount' => $restockProductList->count(),
+            'restockProduct' => $restockProduct
+        ]);
     }
 }

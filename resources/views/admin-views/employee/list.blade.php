@@ -57,20 +57,11 @@
                                     </div>
                                 </form>
                             </div>
-                            <div class="">
-                                <button type="button" class="btn btn-outline--primary text-nowrap" data-toggle="dropdown">
-                                    <i class="tio-download-to"></i>
-                                    {{translate('export')}}
-                                    <i class="tio-chevron-down"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-right">
-                                    <li>
-                                        <a class="dropdown-item" href="{{route('admin.employee.export',['role'=>request('admin_role_id'),'searchValue'=>request('searchValue')])}}">
-                                            <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" alt="">
-                                            {{translate('excel')}}
-                                        </a>
-                                    </li>
-                                </ul>
+                            <div class="dropdown">
+                                <a type="button" class="btn btn-outline--primary text-nowrap btn-block" href="{{route('admin.employee.export',['role'=>request('admin_role_id'),'searchValue'=>request('searchValue')])}}">
+                                    <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
+                                    <span class="ps-2">{{ translate('export') }}</span>
+                                </a>
                             </div>
                             <div class="">
                                 <a href="{{route('admin.employee.add-new')}}" class="btn btn--primary text-nowrap">
@@ -103,7 +94,7 @@
                                 <td class="text-capitalize">
                                     <div class="media align-items-center gap-10">
                                         <img class="rounded-circle avatar avatar-lg" alt=""
-                                             src="{{getValidImage(path: 'storage/app/public/admin/'.$employee['image'],type:'backend-profile')}}">
+                                             src="{{getStorageImages(path: $employee->image_full_url,type:'backend-profile')}}">
                                         <div class="media-body">
                                             {{$employee['name']}}
                                         </div>

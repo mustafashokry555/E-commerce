@@ -2,12 +2,15 @@
 
 namespace App\Models;
 
+use App\Traits\CacheManagerTrait;
+use App\Traits\StorageTrait;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * @property int $id
@@ -21,10 +24,13 @@ use Illuminate\Support\Facades\App;
  */
 class Category extends Model
 {
+    use StorageTrait, CacheManagerTrait;
+
     protected $fillable = [
         'name',
         'slug',
         'icon',
+        'icon_storage_type',
         'parent_id',
         'position',
         'home_status',
@@ -35,6 +41,7 @@ class Category extends Model
         'name' => 'string',
         'slug' => 'string',
         'icon' => 'string',
+        'icon_storage_type' => 'string',
         'parent_id' => 'integer',
         'position' => 'integer',
         'home_status' => 'integer',
@@ -95,10 +102,25 @@ class Category extends Model
         return $query->orderBy('priority', 'asc');
     }
 
+    public function getIconFullUrlAttribute():array
+    {
+        $value = $this->icon;
+        return $this->storageLink('category',$value,$this->icon_storage_type ?? 'public');
+    }
+    protected $appends = ['icon_full_url'];
 
     protected static function boot(): void
     {
         parent::boot();
+
+        static::saved(function ($model) {
+            cacheRemoveByType(type: 'categories');
+        });
+
+        static::deleted(function ($model) {
+            cacheRemoveByType(type: 'categories');
+        });
+
         static::addGlobalScope('translate', function (Builder $builder) {
             $builder->with(['translations' => function ($query) {
                 if (strpos(url()->current(), '/api')) {

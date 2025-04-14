@@ -34,7 +34,14 @@ class ShopRepository implements ShopRepositoryInterface
 
     public function getListWhere(array $orderBy = [], string $searchValue = null, array $filters = [], array $relations = [], int|string $dataLimit = DEFAULT_DATA_LIMIT, int $offset = null): Collection|LengthAwarePaginator
     {
-        // TODO: Implement getListWhere() method.
+        $query = $this->shop->with($relations)->when(isset($filters['productIds']), function ($query) use ($filters) {
+            return $query->whereIn('id' , $filters['vendorIds']);
+        })->when(!empty($orderBy), function ($query) use ($orderBy) {
+            $query->orderBy(array_key_first($orderBy), array_values($orderBy)[0]);
+        });
+
+        $filters += ['searchValue' => $searchValue];
+        return $dataLimit == 'all' ? $query->get() : $query->paginate($dataLimit)->appends($filters);
     }
 
     public function update(string $id, array $data): bool

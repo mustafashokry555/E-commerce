@@ -47,21 +47,20 @@
                                     <h4 class="share-icons-heading">{{ translate('oR_SHARE') }}</h4>
                                     <div class="d-flex justify-content-center align-items-center share-on-social">
                                         @php
-                                            $text = "Greetings,".getWebConfig('company_name').' '."is the best e-commerce platform in the country.If you are new to this website dont forget to use " . $customer_detail->referral_code . " " ."as the referral code while sign up into ".' '.getWebConfig('company_name').'.';
+                                            $text = translate("Greetings").', '.$web_config['company_name'].' '.translate('is_the_best_ecommerce_platform_in_the_country.if_you_are_new_to_this_website_dont_forget_to_use').' '. $customer_detail->referral_code . ' ' .translate('as_the_referral_code_while_sign_up_into.').' '.$web_config['company_name'];
                                             $link = url('/');
                                         @endphp
                                         <a href="https://api.whatsapp.com/send?text={{$text}}.{{$link}}" target="_blank">
-                                            <img alt=""
-                                                 src="{{ getValidImage(path: 'public/assets/front-end/img/icons/whatsapp.png', type: 'product') }}">
+                                            <img alt="" src="{{ theme_asset('public/assets/front-end/img/icons/whatsapp.png')}}">
                                         </a>
                                         <a href="mailto:recipient@example.com?subject=Referral%20Code%20Text&body={{$text}}%20Link:%20{{$link}}" target="_blank">
                                             <img alt=""
-                                                 src="{{ getValidImage(path: 'public/assets/front-end/img/icons/gmail.png', type: 'product') }}">
+                                                 src="{{ theme_asset('public/assets/front-end/img/icons/gmail.png') }}">
                                         </a>
 
                                         <span data-target="#social-share-modal" data-toggle="modal">
                                             <img alt=""
-                                                 src="{{ getValidImage(path: 'public/assets/front-end/img/icons/share.png', type: 'product') }}">
+                                                 src="{{ theme_asset(path: 'public/assets/front-end/img/icons/share.png') }}">
                                         </span>
                                     </div>
                                 </div>
@@ -83,7 +82,7 @@
                                                 {{ translate('2') }}
                                             </span>
                                             <span class="item-custom-text">
-                                                {{ translate('they_register') }} {{ $web_config['name']->value }} {{ translate('with_special_offer') }}
+                                                {{ translate('they_register') }} {{ $web_config['company_name'] }} {{ translate('with_special_offer') }}
                                             </span>
                                         </li>
                                         <li>

@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use App\Models\Product;
+use App\Traits\CacheManagerTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Class Tag
@@ -20,7 +23,7 @@ use Illuminate\Support\Carbon;
  */
 class Tag extends Model
 {
-    use HasFactory;
+    use HasFactory, CacheManagerTrait;
 
     /**
      * The attributes that are mass assignable.
@@ -41,8 +44,20 @@ class Tag extends Model
         'visit_count' => 'integer',
     ];
 
-    public function items()
+    public function items(): BelongsToMany
     {
         return $this->belongsToMany(Product::class)->using(ProductTag::class);
+    }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+        static::saved(function ($model) {
+            cacheRemoveByType(type: 'tags');
+        });
+
+        static::deleted(function ($model) {
+            cacheRemoveByType(type: 'tags');
+        });
     }
 }

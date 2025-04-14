@@ -1,6 +1,6 @@
 @php use function App\Utils\customer_info; @endphp
 @extends('theme-views.layouts.app')
-@section('title', translate('My_Support_Tickets').' | '.$web_config['name']->value.' '.translate('ecommerce'))
+@section('title', translate('My_Support_Tickets').' | '.$web_config['company_name'].' '.translate('ecommerce'))
 @section('content')
     <main class="main-content d-flex flex-column gap-3 py-3 mb-4">
         <div class="container">
@@ -21,7 +21,7 @@
                                         <div class="media gap-2 gap-sm-3">
                                             <div class="avatar">
                                                 <img loading="lazy" class="img-fit dark-support" alt=""
-                                                    src="{{ getValidImage(path: 'storage/app/public/profile/'.(customer_info()->image), type:'avatar' ) }}">
+                                                    src="{{ getStorageImages(path: customer_info()->image_full_url, type:'avatar' ) }}">
                                             </div>
                                             <div class="media-body">
                                                 <div class="d-flex flex-column gap-1">

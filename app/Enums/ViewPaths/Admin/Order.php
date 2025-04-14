@@ -73,8 +73,5 @@ enum Order
         URI => 'status',
         VIEW => ''
     ];
-    const GET_DATA = [
-        URI => 'get-order-data',
-        VIEW => ''
-    ];
+
 }

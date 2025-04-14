@@ -17,7 +17,7 @@
                         {{translate('order_Report_Statement')}}
                     </th>
                     <th class="p-0 text-right">
-                        <img class="logo" src="{{getValidImage(path:'storage/app/public/company/'.($data['company_web_logo']),type:'backend-logo')}}"  alt="">
+                        <img class="logo" src="{{getStorageImages(path:$data['company_web_logo'],type:'backend-logo')}}"  alt="">
                     </th>
                 </tr>
             </table>
@@ -149,55 +149,6 @@
         </td>
     </tr>
 </table>
-
-{{--<table class="content-position">--}}
-{{--    <tr>--}}
-{{--        <th class="text-left black bold"><b>{{translate('additional_information')}}</b></th>--}}
-{{--        <th class="text-right black bold"><b>{{translate('totals')}}</b></th>--}}
-{{--    </tr>--}}
-{{--    <tbody class="bs-0 __product-table inter add-info-border-top-bottom">--}}
-{{--    <tr>--}}
-{{--        <td>--}}
-{{--            {{translate('admin_Discount')}}--}}
-{{--        </td>--}}
-{{--        <td class="text-right">--}}
-{{--            {{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['total_admin_discount']), currencyCode: getCurrencyCode()) }}--}}
-{{--        </td>--}}
-{{--    </tr>--}}
-{{--    <tr>--}}
-{{--        <td>--}}
-{{--            {{ translate('vendor_Discount') }}--}}
-{{--        </td>--}}
-{{--        <td class="text-right">--}}
-{{--            {{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['total_seller_discount']), currencyCode: getCurrencyCode()) }}--}}
-{{--        </td>--}}
-{{--    </tr>--}}
-{{--    <tr>--}}
-{{--        <td>--}}
-{{--            {{ translate('admin_Commission') }}--}}
-{{--        </td>--}}
-{{--        <td class="text-right">--}}
-{{--            {{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['total_admin_commission']), currencyCode: getCurrencyCode()) }}--}}
-{{--        </td>--}}
-{{--    </tr>--}}
-{{--    <tr>--}}
-{{--        <td>--}}
-{{--            {{translate('admin_Net_Income')}}--}}
-{{--        </td>--}}
-{{--        <td class="text-right">--}}
-{{--            {{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['total_admin_net_income']), currencyCode: getCurrencyCode()) }}--}}
-{{--        </td>--}}
-{{--    </tr>--}}
-{{--    <tr>--}}
-{{--        <td>--}}
-{{--            {{translate('vendor_Net_Income')}}--}}
-{{--        </td>--}}
-{{--        <td class="text-right">--}}
-{{--            {{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $data['total_seller_net_income']), currencyCode: getCurrencyCode()) }}--}}
-{{--        </td>--}}
-{{--    </tr>--}}
-{{--    </tbody>--}}
-{{--</table>--}}
 <br>
 <table class="">
     <tr>

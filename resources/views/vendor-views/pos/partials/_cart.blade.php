@@ -17,7 +17,7 @@
                         <tr>
                             <td>
                                 <div class="media align-items-center gap-10">
-                                    <img class="avatar avatar-sm" src="{{getValidImage(path:'storage/app/public/product/thumbnail/'.$item['image'],type: 'backend-product')}}"
+                                    <img class="avatar avatar-sm" src="{{ getStorageImages(path:$item['image'],type: 'backend-product')}}"
                                          alt="{{$item['name'].translate('image')}}">
                                     <div class="media-body">
                                         <h5 class="text-hover-primary mb-0">
@@ -66,7 +66,7 @@
 
                 <div class="d-flex gap-2 justify-content-between">
                     <dt class="title-color text-capitalize font-weight-normal">{{ translate('product_Discount') }} :</dt>
-                    <dd>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:round($cartItems['discountOnProduct'],2)), currencyCode: getCurrencyCode()) }}</dd>
+                    <dd>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $cartItems['discountOnProduct']), currencyCode: getCurrencyCode()) }}</dd>
                 </div>
 
                 <div class="d-flex gap-2 justify-content-between">
@@ -91,17 +91,19 @@
 
                 <div class="d-flex gap-2 justify-content-between">
                     <dt class="title-color text-capitalize font-weight-normal">{{ translate('tax') }} : </dt>
-                    <dd>{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:round($cartItems['totalTax'],2)), currencyCode: getCurrencyCode())}}</dd>
+                    <dd>{{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $cartItems['totalTax']), currencyCode: getCurrencyCode()) }}</dd>
                 </div>
 
                 <div class="d-flex gap-2 border-top justify-content-between pt-2">
                     <dt class="title-color text-capitalize font-weight-bold title-color">{{ translate('total') }} : </dt>
-                    <dd class="font-weight-bold title-color">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:round($cartItems['total']+$cartItems['totalTax']-$cartItems['couponDiscount'], 2)), currencyCode: getCurrencyCode())}}</dd>
+                    <dd class="font-weight-bold title-color">
+                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: ($cartItems['total']+$cartItems['totalTax']-$cartItems['couponDiscount'])), currencyCode: getCurrencyCode()) }}
+                    </dd>
                 </div>
             </dl>
 
             <div class="form-group col-12">
-                <input type="hidden" class="form-control" name="amount" min="0" step="0.01"
+                <input type="hidden" class="form-control total-amount" name="amount" min="0" step="0.01"
                        value="{{usdToDefaultCurrency(amount: $cartItems['total']+$cartItems['totalTax']-$cartItems['couponDiscount'])}}"
                        readonly>
             </div>
@@ -109,7 +111,7 @@
                 <div class="title-color d-flex mb-2">{{ translate('paid_By') }}:</div>
                 <ul class="list-unstyled option-buttons">
                     <li>
-                        <input type="radio" id="cash" value="cash" name="type" hidden checked>
+                        <input type="radio" id="cash" class="paid-by-cash" value="cash" name="type" hidden checked>
                         <label for="cash" class="btn btn--bordered btn--bordered-black px-4 mb-0">{{ translate('cash') }}</label>
                     </li>
                     <li>
@@ -124,6 +126,49 @@
                         </li>
                     @endif
                 </ul>
+            </div>
+            <div class="cash-change-amount cash-change-section">
+                <div class="d-flex gap-2 justify-content-between align-items-center pt-4">
+                    <dt class="text-capitalize font-weight-normal">{{ translate('Paid_Amount') }} : </dt>
+                    <dd>
+                        <input type="number" class="form-control text-end pos-paid-amount-element" placeholder="{{ translate('ex') }}: 1000"
+                               value="{{usdToDefaultCurrency(amount: $cartItems['total']+$cartItems['totalTax']-$cartItems['couponDiscount'])}}"
+                               name="paid_amount"
+                               min="{{ usdToDefaultCurrency(amount: ($cartItems['total'] + $cartItems['totalTax'] - $cartItems['couponDiscount'])) }}"
+                               data-currency-position="{{ getWebConfig('currency_symbol_position') }}"
+                               data-currency-symbol="{{ getCurrencySymbol() }}">
+                    </dd>
+                </div>
+                <div class="d-flex gap-2 justify-content-between align-items-center">
+                    <dt class="text-capitalize font-weight-normal">{{ translate('Change_Amount') }} : </dt>
+                    <dd class="font-weight-bold title-color pos-change-amount-element">{{ setCurrencySymbol(amount: 0) }}</dd>
+                </div>
+            </div>
+            <div class="cash-change-card cash-change-section d-none">
+                <div class="d-flex gap-2 justify-content-between align-items-center pt-4">
+                    <dt class="text-capitalize font-weight-normal">{{ translate('Paid_Amount') }} : </dt>
+                    <dd>
+                        <input type="number" class="form-control text-end" placeholder="{{ translate('ex') }}: 1000"
+                               value="{{usdToDefaultCurrency(amount: $cartItems['total']+$cartItems['totalTax']-$cartItems['couponDiscount'])}}" disabled>
+                    </dd>
+                </div>
+                <div class="d-flex gap-2 justify-content-between align-items-center">
+                    <dt class="text-capitalize font-weight-normal">{{ translate('Change_Amount') }} : </dt>
+                    <dd class="font-weight-bold title-color">{{ setCurrencySymbol(amount: 0) }}</dd>
+                </div>
+            </div>
+            <div class="cash-change-wallet cash-change-section d-none">
+                <div class="d-flex gap-2 justify-content-between align-items-center pt-4">
+                    <dt class="text-capitalize font-weight-normal">{{ translate('Paid_Amount') }} : <span class="badge badge-soft-danger" id="message-insufficient-balance" data-text="{{ translate('insufficient_balance') }}"></span></dt>
+                    <dd>
+                        <input type="number" class="form-control text-end wallet-balance-input" placeholder="{{ translate('ex') }}: 1000"
+                               value="{{usdToDefaultCurrency(amount: $cartItems['total']+$cartItems['totalTax']-$cartItems['couponDiscount'])}}" disabled>
+                    </dd>
+                </div>
+                <div class="d-flex gap-2 justify-content-between align-items-center">
+                    <dt class="text-capitalize font-weight-normal">{{ translate('Change_Amount') }} : </dt>
+                    <dd class="font-weight-bold title-color">{{ setCurrencySymbol(amount: 0) }}</dd>
+                </div>
             </div>
         </div>
 

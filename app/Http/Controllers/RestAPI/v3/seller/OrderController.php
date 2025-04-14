@@ -11,13 +11,14 @@ use App\Models\DeliveryZipCode;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Traits\CommonTrait;
-use App\User;
+use App\Models\User;
 use App\Utils\BackEndHelper;
 use App\Utils\Convert;
 use App\Utils\CustomerManager;
 use App\Utils\Helpers;
 use App\Utils\ImageManager;
 use App\Utils\OrderManager;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -75,16 +76,21 @@ class OrderController extends Controller
         ], 200);
     }
 
-    public function details(Request $request, $id)
+    public function details(Request $request, $id): JsonResponse
     {
         $seller = $request->seller;
-
-        $details = OrderDetail::with('order.customer','order.deliveryMan','verificationImages')->where(['seller_id' => $seller['id'], 'order_id' => $id])->get();
-        foreach ($details as $det) {
-            $det['product_details'] = Helpers::product_data_formatting(json_decode($det['product_details'], true));
+        $detailsList = OrderDetail::with('order.customer', 'order.deliveryMan', 'verificationImages')->where(['seller_id' => $seller['id'], 'order_id' => $id])->get();
+        foreach ($detailsList as $detail) {
+            $product = json_decode($detail['product_details'], true);
+            $product['thumbnail_full_url'] = $detail?->productAllStatus?->thumbnail_full_url;
+            if (isset($product['product_type']) && $product['product_type'] == 'digital' && $product['digital_product_type'] == 'ready_product' && $product['digital_file_ready']) {
+                $checkFilePath = storageLink('product/digital-product', $product['digital_file_ready'], ($product['storage_path'] ?? 'public'));
+                $product['digital_file_ready_full_url'] = $checkFilePath;
+            }
+            $detail['product_details'] = Helpers::product_data_formatting_for_json_data($product);
         }
 
-        return response()->json($details, 200);
+        return response()->json($detailsList, 200);
     }
 
     public function assign_delivery_man(Request $request)
@@ -96,7 +102,7 @@ class OrderController extends Controller
         ]);
 
         if ($validator->errors()->count() > 0) {
-            return response()->json(['errors' => Helpers::error_processor($validator)]);
+            return response()->json(['errors' => Helpers::validationErrorProcessor($validator)]);
         }
 
         $seller = $request->seller;
@@ -156,7 +162,7 @@ class OrderController extends Controller
         ]);
 
         if ($validator->errors()->count() > 0) {
-            return response()->json(['errors' => Helpers::error_processor($validator)]);
+            return response()->json(['errors' => Helpers::validationErrorProcessor($validator)]);
         }
 
         $order_details = OrderDetail::find($request->order_id);
@@ -178,8 +184,8 @@ class OrderController extends Controller
             return response()->json(['success' => 0, 'message' => translate("Customer_account_has_been_deleted").' '.translate("you_cant_update_status")], 202);
         }
 
-        $wallet_status = Helpers::get_business_settings('wallet_status');
-        $loyalty_point_status = Helpers::get_business_settings('loyalty_point_status');
+        $wallet_status = getWebConfig(name: 'wallet_status');
+        $loyalty_point_status = getWebConfig(name: 'loyalty_point_status');
 
         if ($order->order_status == 'delivered') {
             return response()->json(['success' => 0, 'message' => translate('order is already delivered')], 200);
@@ -192,9 +198,10 @@ class OrderController extends Controller
 
 
         $order->order_status = $request->order_status;
-        if ($request->order_status == 'delivered'){
+        if ($request->order_status == 'delivered') {
             $order->payment_status = 'paid';
-            OrderDetail::where('order_id', $order->id)->update(['delivery_status'=>'delivered','payment_status'=>'paid']);
+            Order::where('id', $order->id)->update(['is_pause' => 0]);
+            OrderDetail::where('order_id', $order->id)->update(['delivery_status' => 'delivered', 'payment_status' => 'paid']);
         }
         OrderManager::stock_update_on_order_status_change($order, $request->order_status);
         if ($request->order_status == 'delivered' && $order['seller_id'] != null) {
@@ -211,14 +218,14 @@ class OrderController extends Controller
             if (empty($dm_wallet)) {
                 DeliverymanWallet::create([
                     'delivery_man_id' => $order->delivery_man_id,
-                    'current_balance' => BackEndHelper::currency_to_usd($order->deliveryman_charge) ?? 0,
-                    'cash_in_hand' => BackEndHelper::currency_to_usd($cash_in_hand),
+                    'current_balance' => $order?->deliveryman_charge ?? 0,
+                    'cash_in_hand' => $cash_in_hand,
                     'pending_withdraw' => 0,
                     'total_withdraw' => 0,
                 ]);
             } else {
-                $dm_wallet->current_balance += BackEndHelper::currency_to_usd($order->deliveryman_charge) ?? 0;
-                $dm_wallet->cash_in_hand += BackEndHelper::currency_to_usd($cash_in_hand);
+                $dm_wallet->current_balance += $order?->deliveryman_charge ?? 0;
+                $dm_wallet->cash_in_hand += $cash_in_hand;
                 $dm_wallet->save();
             }
 
@@ -227,7 +234,7 @@ class OrderController extends Controller
                     'delivery_man_id' => $order->delivery_man_id,
                     'user_id' => $seller->id,
                     'user_type' => 'seller',
-                    'credit' => BackEndHelper::currency_to_usd($order->deliveryman_charge) ?? 0,
+                    'credit' => $order?->deliveryman_charge ?? 0,
                     'transaction_id' => Uuid::uuid4(),
                     'transaction_type' => 'deliveryman_charge'
                 ]);
@@ -268,7 +275,7 @@ class OrderController extends Controller
         ]);
 
         if ($validator->errors()->count() > 0) {
-            return response()->json(['errors' => Helpers::error_processor($validator)]);
+            return response()->json(['errors' => Helpers::validationErrorProcessor($validator)]);
         }
 
         $order = Order::find($request->order_id);
@@ -291,7 +298,7 @@ class OrderController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => Helpers::error_processor($validator)], 403);
+            return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
         }
         if ($request->payment_status != 'paid') {
             return response()->json(['success' => 0, 'message' => translate('When payment status paid then you can`t change payment status paid to unpaid') . '.'], 200);

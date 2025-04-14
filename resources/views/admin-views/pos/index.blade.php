@@ -158,6 +158,8 @@
 <span id="message-cart-updated" data-text="{{ translate('cart_updated') }}"></span>
 <span id="message-update-to-cart" data-text="{{ translate('update_to_cart') }}"></span>
 <span id="message-cart-is-empty" data-text="{{ translate('cart_is_empty') }}"></span>
+<span id="message-enter-valid-amount" data-text="{{ translate('please_enter_a_valid_amount') }}"></span>
+<span id="message-less-than-total-amount" data-text="{{ translate('paid_amount_is_less_than_total_amount') }}"></span>
 <span id="message-coupon-is-invalid" data-text="{{ translate('coupon_is_invalid') }}"></span>
 <span id="message-product-quantity-updated" data-text="{{ translate('product_quantity_updated') }}"></span>
 <span id="message-coupon-added-successfully" data-text="{{ translate('coupon_added_successfully') }}"></span>
@@ -177,6 +179,7 @@
 @endsection
 
 @push('script_2')
+    <script src="{{ dynamicAsset(path: 'public/assets/back-end/libs/printThis/printThis.js') }}"></script>
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/plugins/intl-tel-input/js/intlTelInput.js') }}"></script>
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/country-picker-init.js') }}"></script>
     <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/pos-script.js') }}"></script>

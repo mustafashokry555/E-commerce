@@ -36,7 +36,7 @@
                                             <span>{{$product->code}}</span>
                                         @else
                                             <a class="title-color hover-c1"
-                                               href="{{route('admin.products.edit', [$product['id']]) }}">
+                                               href="{{route('admin.products.update', [$product['id']]) }}">
                                                 {{ translate('update_your_product_code') }}
                                             </a>
                                         @endif

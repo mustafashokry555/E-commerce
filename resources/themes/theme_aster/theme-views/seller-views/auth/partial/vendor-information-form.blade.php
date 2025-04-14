@@ -136,7 +136,7 @@
                                     </div>
                                     <div class="col-6 input-icons mb-2 rounded bg-white">
                                         <a id="re-captcha-vendor-register" class="d-flex align-items-center align-items-center">
-                                            <img src="{{ route('vendor.auth.recaptcha', ['tmp'=>1]).'?captcha_session_id=sellerRecaptchaSessionKey' }}" class="input-field rounded __h-40" alt="" id="default_recaptcha_id_regi">
+                                            <img src="{{ route('vendor.auth.recaptcha', ['tmp'=>1]).'?captcha_session_id=vendorRecaptchaSessionKey' }}" class="input-field rounded __h-40" alt="" id="default_recaptcha_id_regi">
                                             <i class="bi bi-arrow-repeat icon cursor-pointer p-2"></i>
                                         </a>
                                     </div>

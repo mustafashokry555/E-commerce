@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Customer;
 use App\Models\Order;
 use App\Models\OrderDetail;
 use App\Models\PaymentRequest;
-use App\User;
+use App\Models\User;
 use App\Utils\Helpers;
 use App\Http\Controllers\Controller;
 use App\Library\Payer;
@@ -27,7 +27,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Support\Facades\Validator;
-use function App\Utils\currency_converter;
 
 class PaymentController extends Controller
 {
@@ -35,7 +34,7 @@ class PaymentController extends Controller
 
     public function payment(Request $request): JsonResponse|Redirector|RedirectResponse
     {
-        $user = Helpers::get_customer($request);
+        $user = Helpers::getCustomerInformation($request);
         $orderAdditionalData = [];
         $validator = Validator::make($request->all(), [
             'payment_method' => 'required',
@@ -50,9 +49,9 @@ class PaymentController extends Controller
         });
 
         if ($validator->fails()) { //api
-            $errors = Helpers::error_processor($validator);
+            $errors = Helpers::validationErrorProcessor($validator);
             if (in_array($request['payment_request_from'], ['app'])) {
-                return response()->json(['errors' => Helpers::error_processor($validator)], 403);
+                return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
             } else {
                 foreach ($errors as $value) {
                     Toastr::error(translate($value['message']));
@@ -62,7 +61,9 @@ class PaymentController extends Controller
         }
 
         $cartGroupIds = CartManager::get_cart_group_ids(request: $request, type: 'checked');
-        $carts = Cart::whereIn('cart_group_id', $cartGroupIds)->where(['is_checked' => 1])->get();
+        $carts = Cart::whereHas('product', function ($query) {
+            return $query->active();
+        })->whereIn('cart_group_id', $cartGroupIds)->where(['is_checked' => 1])->get();
         $productStockCheck = CartManager::product_stock_check($carts);
         if (!$productStockCheck && in_array($request['payment_request_from'], ['app'])) {
             return response()->json(['errors' => ['code' => 'product-stock', 'message' => 'The following items in your cart are currently out of stock']], 403);
@@ -71,7 +72,7 @@ class PaymentController extends Controller
             return redirect()->route('shop-cart');
         }
 
-        $verifyStatus = OrderManager::minimum_order_amount_verify($request);
+        $verifyStatus = OrderManager::verifyCartListMinimumOrderAmount($request);
         if ($verifyStatus['status'] == 0 && in_array($request['payment_request_from'], ['app'])) {
             return response()->json(['errors' => ['code' => 'Check the minimum order amount requirement']], 403);
         } elseif ($verifyStatus['status'] == 0) {
@@ -80,7 +81,7 @@ class PaymentController extends Controller
         }
 
         if (in_array($request['payment_request_from'], ['app'])) {
-            $shippingMethod = Helpers::get_business_settings('shipping_method');
+            $shippingMethod = getWebConfig(name: 'shipping_method');
             $physicalProductExist = false;
             foreach ($carts as $cart) {
                 if ($cart->product_type == 'physical') {
@@ -224,11 +225,11 @@ class PaymentController extends Controller
     {
         $additionalData = [
             'business_name' => getWebConfig(name: 'company_name'),
-            'business_logo' => asset('storage/app/public/company') . '/' . getWebConfig(name: 'company_web_logo'),
+            'business_logo' => getStorageImages(path: getWebConfig('company_web_logo'), type:'shop'),
             'payment_mode' => $request->has('payment_platform') ? $request['payment_platform'] : 'web',
         ];
 
-        $user = Helpers::get_customer($request);
+        $user = Helpers::getCustomerInformation($request);
 
         $getGuestId = $request['is_guest'] ? $request['guest_id'] : (session('guest_id') ?? 0);
         $isGuestUser = ($user == 'offline') ? 1 : 0;
@@ -260,11 +261,20 @@ class PaymentController extends Controller
             $additionalData['coupon_code'] = $request['coupon_code'];
             $additionalData['coupon_discount'] = $request['coupon_discount'];
             $additionalData['payment_request_from'] = $request['payment_request_from'];
+        } else {
+            $additionalData['customer_id'] = $user != 'offline' ? $user->id : $getCustomerID;
+            $additionalData['order_note'] = session('order_note') ?? null;
+            $additionalData['address_id'] = session('address_id') ?? 0;
+            $additionalData['billing_address_id'] = session('billing_address_id') ?? 0;
+
+            $additionalData['coupon_code'] = session('coupon_code') ?? null;
+            $additionalData['coupon_discount'] = session('coupon_discount') ?? 0;
+            $additionalData['payment_request_from'] = $request['payment_mode'] ?? 'web';
         }
         $additionalData['new_customer_id'] = $getCustomerID;
         $additionalData['is_guest_in_order'] = $isGuestUserInOrder;
 
-        $currency_model = Helpers::get_business_settings('currency_model');
+        $currency_model = getWebConfig(name: 'currency_model');
         if ($currency_model == 'multi_currency') {
             $currency_code = 'USD';
         } else {
@@ -278,17 +288,17 @@ class PaymentController extends Controller
             $shippingCostSaved = 0;
             foreach ($cart_group_ids as $group_id) {
                 $cart_amount += CartManager::api_cart_grand_total($request, $group_id);
-                $shippingCostSaved += CartManager::get_shipping_cost_saved_for_free_delivery(groupId: $group_id, type: 'checked');
+                $shippingCostSaved += CartManager::getShippingCostSavedForFreeDelivery(groupId: $group_id, type: 'checked');
             }
-            $payment_amount = $cart_amount - $request['coupon_discount'] - $shippingCostSaved;
+            $paymentAmount = $cart_amount - $request['coupon_discount'] - $shippingCostSaved;
         } else {
             $discount = session()->has('coupon_discount') ? session('coupon_discount') : 0;
             $orderWiseShippingDiscount = CartManager::order_wise_shipping_discount();
-            $shippingCostSaved = CartManager::get_shipping_cost_saved_for_free_delivery(type: 'checked');
-            $payment_amount = CartManager::cart_grand_total(type: 'checked') - $discount - $orderWiseShippingDiscount - $shippingCostSaved;
+            $shippingCostSaved = CartManager::getShippingCostSavedForFreeDelivery(type: 'checked');
+            $paymentAmount = CartManager::cart_grand_total(type: 'checked') - $discount - $orderWiseShippingDiscount - $shippingCostSaved;
         }
 
-        $customer = Helpers::get_customer($request);
+        $customer = Helpers::getCustomerInformation($request);
 
         if ($customer == 'offline') {
             $address = ShippingAddress::where(['customer_id' => $request['customer_id'], 'is_guest' => 1])->latest()->first();
@@ -329,7 +339,7 @@ class PaymentController extends Controller
             payer_id: $customer == 'offline' ? $request['customer_id'] : $customer['id'],
             receiver_id: '100',
             additional_data: $additionalData,
-            payment_amount: $payment_amount,
+            payment_amount: $paymentAmount,
             external_redirect_link: $request['payment_platform'] == 'web' ? $request['external_redirect_link'] : null,
             attribute: 'order',
             attribute_id: idate("U")
@@ -341,7 +351,7 @@ class PaymentController extends Controller
 
     public function customer_add_to_fund_request(Request $request): JsonResponse|Redirector|RedirectResponse
     {
-        if (Helpers::get_business_settings('add_funds_to_wallet') != 1) {
+        if (getWebConfig(name: 'add_funds_to_wallet') != 1) {
             if (in_array($request['payment_request_from'], ['app'])) {
                 return response()->json(['message' => 'Add funds to wallet is deactivated'], 403);
             }
@@ -356,7 +366,7 @@ class PaymentController extends Controller
         ]);
 
         if ($validator->fails()) {
-            $errors = Helpers::error_processor($validator);
+            $errors = Helpers::validationErrorProcessor($validator);
             if (in_array($request->payment_request_from, ['app'])) {
                 return response()->json(['errors' => $errors]);
             } else {
@@ -367,41 +377,41 @@ class PaymentController extends Controller
             }
         }
 
-        $currency_model = Helpers::get_business_settings('currency_model');
+        $currency_model = getWebConfig(name: 'currency_model');
         if ($currency_model == 'multi_currency') {
-            $default_currency = Currency::find(Helpers::get_business_settings('system_default_currency'));
+            $default_currency = Currency::find(getWebConfig(name: 'system_default_currency'));
             $currency_code = $default_currency['code'];
-            $current_currency = $request->current_currency_code ?? session('currency_code');
+            $currentCurrency = $request->current_currency_code ?? session('currency_code');
         } else {
             $default = BusinessSetting::where(['type' => 'system_default_currency'])->first()->value;
             $currency_code = Currency::find($default)->code;
-            $current_currency = $currency_code;
+            $currentCurrency = $currency_code;
         }
 
 
-        $minimum_add_fund_amount = Helpers::get_business_settings('minimum_add_fund_amount') ?? 0;
-        $maximum_add_fund_amount = Helpers::get_business_settings('maximum_add_fund_amount') ?? 0;
+        $minimumAddFundAmount = getWebConfig(name: 'minimum_add_fund_amount') ?? 0;
+        $maximumAddFundAmount = getWebConfig(name: 'maximum_add_fund_amount') ?? 0;
 
-        if (!(Convert::usdPaymentModule($request->amount, $current_currency) >= Convert::usdPaymentModule($minimum_add_fund_amount, 'USD')) || !(Convert::usdPaymentModule($request->amount, $current_currency) <= Convert::usdPaymentModule($maximum_add_fund_amount, 'USD'))) {
+        if (!(Convert::usdPaymentModule($request->amount, $currentCurrency) >= Convert::usdPaymentModule($minimumAddFundAmount, 'USD')) || !(Convert::usdPaymentModule($request->amount, $currentCurrency) <= Convert::usdPaymentModule($maximumAddFundAmount, 'USD'))) {
             $errors = [
-                'minimum_amount' => $minimum_add_fund_amount ?? 0,
-                'maximum_amount' => $maximum_add_fund_amount ?? 1000,
+                'minimum_amount' => $minimumAddFundAmount ?? 0,
+                'maximum_amount' => $maximumAddFundAmount ?? 1000,
             ];
             if (in_array($request->payment_request_from, ['app'])) {
                 return response()->json($errors, 202);
             } else {
-                Toastr::error(translate('the_amount_needs_to_be_between') . ' ' . currency_converter($minimum_add_fund_amount) . ' - ' . currency_converter($maximum_add_fund_amount));
+                Toastr::error(translate('the_amount_needs_to_be_between') . ' ' . webCurrencyConverter($minimumAddFundAmount) . ' - ' . webCurrencyConverter($maximumAddFundAmount));
                 return back();
             }
         }
 
         $additional_data = [
             'business_name' => BusinessSetting::where(['type' => 'company_name'])->first()->value,
-            'business_logo' => asset('storage/app/public/company') . '/' . Helpers::get_business_settings('company_web_logo'),
+            'business_logo' => getWebConfig('company_web_logo')['path'],
             'payment_mode' => $request->has('payment_platform') ? $request->payment_platform : 'web',
         ];
 
-        $customer = Helpers::get_customer($request);
+        $customer = Helpers::getCustomerInformation($request);
 
         if (in_array($request->payment_request_from, ['app'])) {
             $additional_data['customer_id'] = $customer->id;
@@ -418,13 +428,13 @@ class PaymentController extends Controller
         $payment_info = new PaymentInfo(
             success_hook: 'add_fund_to_wallet_success',
             failure_hook: 'add_fund_to_wallet_fail',
-            currency_code: $currency_code,
+            currency_code: getWebConfig(name: 'currency_model') == 'multi_currency' ? 'USD' : $currency_code,
             payment_method: $request->payment_method,
             payment_platform: $request->payment_platform,
             payer_id: $customer->id,
             receiver_id: '100',
             additional_data: $additional_data,
-            payment_amount: Convert::usdPaymentModule($request->amount, $current_currency),
+            payment_amount: Convert::usdPaymentModule($request->amount, $currentCurrency),
             external_redirect_link: $request->payment_platform == 'web' ? $request->external_redirect_link : null,
             attribute: 'add_funds_to_wallet',
             attribute_id: idate("U")

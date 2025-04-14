@@ -51,7 +51,7 @@ class ProductCompareController extends BaseController
         $compareLists = $this->productCompareRepo->getListWhere(
             orderBy: ['id' => 'desc'],
             filters: ['user_id' => $customerId, 'whereHas' => 'product'],
-            relations: ['product'],
+            relations: ['product', 'product.digitalVariation'],
             dataLimit: 'all'
         );
         $attributes = [];
@@ -124,7 +124,7 @@ class ProductCompareController extends BaseController
                     ]);
                 }
             } else {
-                return response()->json(['error' => translate('login_first'), 'value' => 0]);
+                return response()->json(['error' => translate('please_login_your_account'), 'value' => 0]);
             }
         } else {
             $customerId = auth('customer')->id();

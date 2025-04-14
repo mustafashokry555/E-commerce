@@ -59,6 +59,34 @@
                                 </label>
                             </div>
                         </div>
+
+                        <div class="col-xl-4 col-md-6">
+                            <label class="title-color d-flex">
+                                {{translate('forgot_password_verification_by')}}
+                                <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
+                                      data-placement="right"
+                                      title="{{translate('set_how_deliverymen_recover_their_forgotten_passwords')}}">
+                                <img width="16" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}"
+                                     alt="">
+                            </span>
+                            </label>
+                            <div class="form-control form-group d-flex gap-2">
+                                <div class="custom-control custom-radio flex-grow-1">
+                                    <input type="radio" class="custom-control-input" value="email"
+                                           name="deliveryman_forgot_password_method"
+                                           id="verification_by_email" {{ getWebconfig(name: 'deliveryman_forgot_password_method') == 'email' ? 'checked':'' }}>
+                                    <label class="custom-control-label"
+                                           for="verification_by_email">{{translate('email')}}</label>
+                                </div>
+                                <div class="custom-control custom-radio flex-grow-1">
+                                    <input type="radio" class="custom-control-input" value="phone"
+                                           name="deliveryman_forgot_password_method"
+                                           id="verification_by_phone" {{ getWebconfig(name: 'deliveryman_forgot_password_method') == 'phone' ? 'checked':'' }}>
+                                    <label class="custom-control-label"
+                                           for="verification_by_phone">{{translate('phone').' '.'('.translate('OTP').')'}}</label>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="d-flex justify-content-end">
                         <button type="submit" id="submit" class="btn btn--primary px-4">{{translate('save')}}</button>

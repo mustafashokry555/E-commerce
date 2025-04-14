@@ -82,7 +82,7 @@
                                      src="{{dynamicAsset(path: 'public/assets/back-end/img/email-template/8.png')}}"
                                      loading="lazy" alt="">
                                 <h4 class="lh-md mb-3 text-capitalize">{{translate('save_and_publish')}}</h4>
-                                <p class="text-center">{{translate('once_you’ve_set_up_all_the_elements_of_your_email_template_save_and_publish_it_for_use').'.'}}</p>
+                                <p class="text-center">{{translate('once_you_have_set_up_all_the_elements_of_your_email_template_save_and_publish_it_for_use').'.'}}</p>
                                 <button class="btn btn-primary w-100 max-w-250 mx-auto mt-3 text-capitalize"
                                         data-dismiss="modal">{{ translate('got_it') }}</button>
                             </div>

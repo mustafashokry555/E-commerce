@@ -148,7 +148,7 @@
                                             </td>
                                             <td>
                                                 <img class="rounded" width="64"
-                                                     src="{{ getValidImage(path: 'storage/app/public/category/'.$item->category['icon'], type: 'backend-category') }}" alt="">
+                                                     src="{{ getStorageImages(path: $item->category->icon_full_url, type: 'backend-category') }}" alt="">
                                             </td>
                                             <td>
                                                 {{$item->category->name}}
@@ -321,6 +321,10 @@
                 </div>
                 @if(count($shippingMethods)==0)
                     @include('layouts.back-end._empty-state',['text'=>'no_data_found'],['image'=>'default'])
+                @else
+                    <div class="d-flex justify-content-end my-2 mx-2">
+                        {!! $shippingMethods->links() !!}
+                    </div>
                 @endif
             </div>
         </div>

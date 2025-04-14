@@ -48,7 +48,7 @@
                                 <div class="profile--info mb-4">
                                     <div class="position-relative profile-img mb-3">
                                         <img id="blah" alt=""
-                                             src="{{ getValidImage(path: 'storage/app/public/profile/'.$customerDetail['image'], type: 'avatar') }}">
+                                             src="{{ getStorageImages(path: $customerDetail->image_full_url, type: 'avatar') }}">
                                         <label class="change-profile-icon m-0">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
                                                  viewBox="0 0 18 18" fill="none">
@@ -84,20 +84,58 @@
                                         <label for="phone" class="mb-2 text-capitalize">
                                             {{ translate('phone_number') }}
                                         </label>
+                                        <div class="position-relative d-flex align-items-center">
+
                                         @php($userCountryAndPhone = ($customerDetail['country_code'] ? '+'.$customerDetail['country_code'] : '').$customerDetail['phone'])
                                         <input class="form-control phone-input-with-country-picker" id="phone" type="text"
-                                               value="{{ $userCountryAndPhone }}" placeholder="{{ translate('enter_phone_number') }}" required>
+                                               value="{{ $userCountryAndPhone }}" placeholder="{{ translate('enter_phone_number') }}" required
+                                            {{ $customerDetail['is_phone_verified'] ? 'disabled' : '' }}>
 
                                         <div class="">
                                             <input type="hidden" class="country-picker-phone-number w-50" name="phone" value="{{ $customerDetail['phone'] }}" readonly>
+                                        </div>
+
+                                        @if($customerDetail['phone'] && getLoginConfig(key: 'phone_verification'))
+                                            @if($customerDetail['is_phone_verified'])
+                                                <span class="position-absolute inset-inline-end-10px cursor-pointer" data-toggle="tooltip" data-placement="top" title="{{ translate('Your_phone_is_verified') }}">
+                                                    <img width="16"
+                                                         src="{{theme_asset('public/assets/front-end/img/icons/verified.svg')}}"
+                                                         class="dark-support" alt="">
+                                                </span>
+                                            @else
+                                                <span class="position-absolute inset-inline-end-10px cursor-pointer" data-toggle="tooltip" data-placement="top"
+                                                      title="{{ translate('Phone_not_verified.') }} {{ translate('Please_verify_through_the_user_app') }}">
+                                                    <img width="16"
+                                                         src="{{theme_asset('public/assets/front-end/img/icons/verified-error.svg')}}"
+                                                         class="dark-support" alt="">
+                                                </span>
+                                            @endif
+                                        @endif
                                         </div>
                                     </div>
 
                                     <div class="form-group col-md-6 mb-0">
                                         <label for="inputEmail4"
                                                class="mb-2 text-capitalize">{{translate('email')}} </label>
-                                        <input type="email" class="form-control" id="account-email"
-                                               value="{{$customerDetail['email']}}" disabled>
+                                        <div class="position-relative d-flex align-items-center">
+                                            <input type="email" class="form-control" id="account-email" name="email" value="{{$customerDetail['email']}}">
+                                            @if($customerDetail['email'] && getLoginConfig(key: 'email_verification'))
+                                                @if($customerDetail['is_email_verified'])
+                                                    <span class="position-absolute inset-inline-end-10px cursor-pointer" data-toggle="tooltip" data-placement="top" title="{{ translate('Your_email_is_verified') }}">
+                                                            <img width="16"
+                                                                 src="{{theme_asset('public/assets/front-end/img/icons/verified.svg')}}"
+                                                                 class="dark-support" alt="">
+                                                    </span>
+                                                @else
+                                                    <span class="position-absolute inset-inline-end-10px cursor-pointer" data-toggle="tooltip" data-placement="top"
+                                                          title="{{ translate('Email_not_verified.') }} {{ translate('Please_verify_through_the_user_app.') }}">
+                                                            <img width="16"
+                                                                 src="{{theme_asset('public/assets/front-end/img/icons/verified-error.svg')}}"
+                                                                 class="dark-support" alt="">
+                                                    </span>
+                                                @endif
+                                            @endif
+                                        </div>
                                     </div>
                                     <div class="form-group col-md-6 mb-0">
                                         <label for="si-password"

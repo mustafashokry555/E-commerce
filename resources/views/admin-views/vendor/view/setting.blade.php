@@ -60,6 +60,10 @@
                            href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'product']) }}">{{translate('product')}}</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link"
+                           href="{{ route('admin.vendors.view',['id'=>$seller['id'], 'tab'=>'clearance_sale']) }}">{{translate('clearance_sale_products')}}</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link active"
                            href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'setting']) }}">{{translate('setting')}}</a>
                     </li>

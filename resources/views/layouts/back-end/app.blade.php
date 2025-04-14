@@ -8,15 +8,18 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="robots" content="nofollow, noindex ">
     <title>@yield('title')</title>
-    <meta name="_token" content="{{csrf_token()}}">
-    <link rel="shortcut icon" href="{{dynamicStorage(path: 'storage/app/public/company/'.getWebConfig(name: 'company_fav_icon'))}}">
+    <meta name="_token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="shortcut icon" href="{{getStorageImages(path: getWebConfig(name: 'company_fav_icon'), type:'backend-logo')}}">
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/vendor.min.css')}}">
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/bootstrap.min.css')}}">
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/google-fonts.css')}}">
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/custom.css')}}">
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/vendor/icon-set/style.css')}}">
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/theme.minc619.css?v=1.0')}}">
+    <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/daterangepicker.css')}}">
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/style.css')}}">
     <link rel="stylesheet" href="{{dynamicAsset(path: 'public/assets/back-end/css/toastr.css')}}">
     @if(Session::get('direction') === "rtl")
@@ -90,12 +93,17 @@
 <span id="get-customer-list-without-all-customer-route" data-action="{{route('admin.customer.customer-list-without-all-customer')}}"></span>
 
 <span id="get-search-product-route" data-action="{{route('admin.products.search-product')}}"></span>
-<span id="get-orders-list-route" data-action="{{route('admin.orders.list',['status'=>'all'])}}"></span>
+<span id="get-search-product-for-clearnace-route" data-action="{{route('admin.deal.clearance-sale.search-product-for-clearance')}}"></span>
+<span id="get-search-vendor-for-clearnace-route" data-action="{{route('admin.deal.clearance-sale.search-vendor-for-clearance')}}"></span>
+<span id="get-multiple-product-details-route" data-action="{{route('admin.products.multiple-product-details')}}"></span>
+<span id="get-multiple-clearance-product-details-route" data-action="{{route('admin.deal.clearance-sale.multiple-clearance-product-details')}}"></span>
+<span id="get-clearance-vendor-add-route" data-action="{{route('admin.deal.clearance-sale.vendor-add')}}"></span>
+<span id="get-orders-list-route" data-action="{{ route('admin.orders.list', ['status'=>'all'])}}"></span>
 <span id="get-stock-limit-status" data-action="{{route('admin.products.stock-limit-status',['type'=>'in_house'])}}"></span>
 <span id="get-product-stock-limit-title" data-title="{{translate('warning')}}"></span>
 <span id="get-product-stock-limit-image" data-warning-image="{{ dynamicAsset(path: 'public/assets/back-end/img/warning-2.png') }}"></span>
 <span id="get-product-stock-limit-message"
-      data-message-for-multiple="{{ translate('there_isn’t_enough_quantity_on_stock').' . '.translate('please_check_products_in_limited_stock').'.' }}"
+      data-message-for-multiple="{{ translate('there_is_not_enough_quantity_on_stock').' . '.translate('please_check_products_in_limited_stock').'.' }}"
       data-message-for-three-plus-product="{{translate('_more_products_have_low_stock') }}"
       data-message-for-one-product="{{translate('this_product_is_low_on_stock')}}">
 </span>
@@ -104,7 +112,11 @@
 >
 </span>
 <span id="getChattingNewNotificationCheckRoute" data-route="{{ route('admin.messages.new-notification') }}"></span>
+<span id="route-for-real-time-activities" data-route="{{ route('admin.dashboard.real-time-activities') }}"></span>
 <span class="system-default-country-code" data-value="{{ getWebConfig(name: 'country_code') ?? 'us' }}"></span>
+<span id="get-confirm-and-cancel-button-text-for-delete-all-products" data-sure ="{{translate('are_you_sure').'?'}}"
+      data-text="{{translate('want_to_clear_all_stock_clearance_products?').'!'}}"
+      data-confirm="{{translate('yes_delete_it')}}" data-cancel="{{translate('cancel')}}"></span>
 
 <audio id="myAudio">
     <source src="{{ dynamicAsset(path: 'public/assets/back-end/sound/notification.mp3') }}" type="audio/mpeg">
@@ -117,6 +129,10 @@
 <script src="{{dynamicAsset(path: 'public/assets/back-end/js/sweet_alert.js')}}"></script>
 <script src="{{dynamicAsset(path: 'public/assets/back-end/js/toastr.js')}}"></script>
 <script src="{{dynamicAsset(path: 'public/js/lightbox.min.js')}}"></script>
+
+<script src="{{dynamicAsset(path: 'public/assets/back-end/js/moment.min.js')}}"></script>
+<script src="{{dynamicAsset(path: 'public/assets/back-end/js/daterangepicker.min.js')}}"></script>
+
 <script src="{{dynamicAsset(path: 'public/assets/back-end/js/custom.js')}}"></script>
 <script src="{{dynamicAsset(path: 'public/assets/back-end/js/app-script.js')}}"></script>
 
@@ -136,25 +152,16 @@
 
 @stack('script')
 
-@if(Helpers::module_permission_check('order_management') && env('APP_MODE')!='dev')
+@if(Helpers::module_permission_check('order_management') && env('APP_MODE') != 'dev')
 <script>
     'use strict'
-        setInterval(function () {
-            $.get({
-                url: '{{route('admin.orders.get-order-data')}}',
-                dataType: 'json',
-                success: function (response) {
-                    let data = response.data;
-                    if (data.new_order > 0) {
-                        playAudio();
-                        $('#popup-modal').appendTo("body").modal('show');
-                    }
-                },
-            });
-        }, 5000);
+    setInterval(function () {
+        getInitialDataForPanel();
+    }, 5000);
 </script>
 @endif
-@if(env('APP_MODE') == 'demo')
+
+@if(env('APP_MODE') == 'dev')
     <script>
         'use strict'
         function checkDemoResetTime() {
@@ -169,7 +176,6 @@
         setInterval(checkDemoResetTime, 60000);
     </script>
 @endif
-
 
 <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/common-script.js') }}"></script>
 

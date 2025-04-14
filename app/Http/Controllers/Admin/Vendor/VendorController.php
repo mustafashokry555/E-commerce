@@ -10,6 +10,8 @@ use App\Contracts\Repositories\ProductRepositoryInterface;
 use App\Contracts\Repositories\ReviewRepositoryInterface;
 use App\Contracts\Repositories\ShippingAddressRepositoryInterface;
 use App\Contracts\Repositories\ShopRepositoryInterface;
+use App\Contracts\Repositories\StockClearanceProductRepositoryInterface;
+use App\Contracts\Repositories\StockClearanceSetupRepositoryInterface;
 use App\Contracts\Repositories\VendorRepositoryInterface;
 use App\Contracts\Repositories\VendorWalletRepositoryInterface;
 use App\Contracts\Repositories\WithdrawRequestRepositoryInterface;
@@ -46,19 +48,21 @@ class VendorController extends BaseController
     use EmailTemplateTrait;
 
     public function __construct(
-        private readonly VendorRepositoryInterface $vendorRepo,
-        private readonly OrderRepositoryInterface $orderRepo,
-        private readonly ProductRepositoryInterface $productRepo,
-        private readonly ReviewRepositoryInterface $reviewRepo,
-        private readonly DeliveryManRepositoryInterface $deliveryManRepo,
+        private readonly VendorRepositoryInterface           $vendorRepo,
+        private readonly OrderRepositoryInterface            $orderRepo,
+        private readonly ProductRepositoryInterface          $productRepo,
+        private readonly ReviewRepositoryInterface           $reviewRepo,
+        private readonly DeliveryManRepositoryInterface      $deliveryManRepo,
         private readonly OrderTransactionRepositoryInterface $orderTransactionRepo,
-        private readonly ShippingAddressRepositoryInterface $shippingAddressRepo,
-        private readonly DeliveryZipCodeRepositoryInterface $deliveryZipCodeRepo,
-        private readonly WithdrawRequestRepositoryInterface $withdrawRequestRepo,
-        private readonly VendorWalletRepositoryInterface $vendorWalletRepo,
-        private readonly ShopRepositoryInterface $shopRepo,
-        private readonly VendorService $vendorService,
-        private readonly ShopService $shopService,
+        private readonly ShippingAddressRepositoryInterface  $shippingAddressRepo,
+        private readonly DeliveryZipCodeRepositoryInterface  $deliveryZipCodeRepo,
+        private readonly WithdrawRequestRepositoryInterface  $withdrawRequestRepo,
+        private readonly VendorWalletRepositoryInterface     $vendorWalletRepo,
+        private readonly ShopRepositoryInterface             $shopRepo,
+        private readonly VendorService                       $vendorService,
+        private readonly ShopService                         $shopService,
+        private readonly StockClearanceProductRepositoryInterface $stockClearanceProductRepo,
+        private readonly StockClearanceSetupRepositoryInterface   $stockClearanceSetupRepo,
     )
     {
     }
@@ -78,10 +82,10 @@ class VendorController extends BaseController
     {
         $current_date = date('Y-m-d');
         $vendors = $this->vendorRepo->getListWhere(
-            orderBy:['id'=>'desc'],
+            orderBy: ['id' => 'desc'],
             searchValue: $request['searchValue'],
             relations: ['orders', 'product'],
-            dataLimit:getWebConfig(name: WebConfigKey::PAGINATION_LIMIT)
+            dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT)
         );
         return view(Vendor::LIST[VIEW], compact('vendors', 'current_date'));
     }
@@ -90,11 +94,12 @@ class VendorController extends BaseController
     {
         return view(Vendor::ADD[VIEW]);
     }
-    public function add(VendorAddRequest $request):JsonResponse
+
+    public function add(VendorAddRequest $request): JsonResponse
     {
         $vendor = $this->vendorRepo->add(data: $this->vendorService->getAddData($request));
-        $this->shopRepo->add($this->shopService->getAddShopDataForRegistration(request:$request,vendorId: $vendor['id']));
-        $this->vendorWalletRepo->add($this->vendorService->getInitialWalletData(vendorId:$vendor['id']));
+        $this->shopRepo->add($this->shopService->getAddShopDataForRegistration(request: $request, vendorId: $vendor['id']));
+        $this->vendorWalletRepo->add($this->vendorService->getInitialWalletData(vendorId: $vendor['id']));
         $data = [
             'vendorName' => $request['f_name'],
             'status' => 'pending',
@@ -103,13 +108,13 @@ class VendorController extends BaseController
             'userType' => 'vendor',
             'templateName' => 'registration',
         ];
-        event(new VendorRegistrationEvent(email: $request['email'],data: $data));
-        return response()->json(['message'=>translate('vendor_added_successfully')]);
+        event(new VendorRegistrationEvent(email: $request['email'], data: $data));
+        return response()->json(['message' => translate('vendor_added_successfully')]);
     }
 
     public function updateStatus(Request $request): RedirectResponse
     {
-        $vendor = $this->vendorRepo->getFirstWhere(params:['id' => $request['id']]);
+        $vendor = $this->vendorRepo->getFirstWhere(params: ['id' => $request['id']]);
         $this->vendorRepo->update(id: $request['id'], data: ['status' => $request['status']]);
         if ($request['status'] == "approved") {
             Toastr::success(translate('Vendor_has_been_approved_successfully'));
@@ -119,8 +124,8 @@ class VendorController extends BaseController
             $this->vendorRepo->update(id: $request['id'], data: ['auth_token' => Str::random(80)]);
             Toastr::info(translate('Vendor_has_been_suspended_successfully'));
         }
-        if ($vendor['status'] == 'pending'){
-            if ($request['status'] == "approved"){
+        if ($vendor['status'] == 'pending') {
+            if ($request['status'] == "approved") {
                 $data = [
                     'vendorName' => $vendor['f_name'],
                     'status' => 'approved',
@@ -129,7 +134,7 @@ class VendorController extends BaseController
                     'userType' => 'vendor',
                     'templateName' => 'registration-approved',
                 ];
-            }elseif ($request['status'] == "rejected"){
+            } elseif ($request['status'] == "rejected") {
                 $data = [
                     'vendorName' => $vendor['f_name'],
                     'status' => 'denied',
@@ -139,8 +144,8 @@ class VendorController extends BaseController
                     'templateName' => 'registration-denied',
                 ];
             }
-        }else{
-            if ($request['status'] == "suspended"){
+        } else {
+            if ($request['status'] == "suspended") {
                 $data = [
                     'vendorName' => $vendor['f_name'],
                     'status' => 'suspended',
@@ -149,7 +154,7 @@ class VendorController extends BaseController
                     'userType' => 'vendor',
                     'templateName' => 'account-suspended',
                 ];
-            }else{
+            } else {
                 $data = [
                     'vendorName' => $vendor['f_name'],
                     'status' => 'approved',
@@ -160,45 +165,46 @@ class VendorController extends BaseController
                 ];
             }
         }
-        event(new VendorRegistrationEvent(email:$vendor['email'],data: $data));
+        event(new VendorRegistrationEvent(email: $vendor['email'], data: $data));
         return back();
     }
 
     public function exportList(Request $request): BinaryFileResponse
     {
         $vendors = $this->vendorRepo->getListWhere(
-            orderBy:['id'=>'desc'],
+            orderBy: ['id' => 'desc'],
             searchValue: $request['searchValue'],
             relations: ['orders', 'product'],
             dataLimit: 'all'
         );
 
-        $active = $vendors->where('status','approved')->count();
-        $inactive = $vendors->where('status','!=','approved')->count();
+        $active = $vendors->where('status', 'approved')->count();
+        $inactive = $vendors->where('status', '!=', 'approved')->count();
         $data = [
             'vendors' => $vendors,
             'search' => $request['searchValue'],
-            'active' =>$active,
+            'active' => $active,
             'inactive' => $inactive,
         ];
-        return Excel::download(new VendorListExport($data),VendorExport::EXPORT_XLSX);
+        return Excel::download(new VendorListExport($data), VendorExport::EXPORT_XLSX);
     }
 
     public function getOrderListView(Request $request, $seller_id): View
     {
         $orders = $this->orderRepo->getListWhere(
-            orderBy: ['id'=>'desc'],
+            orderBy: ['id' => 'desc'],
             searchValue: $request['searchValue'],
-            filters: ['seller_id'=> $seller_id, 'seller_is'=> 'seller'],
-            dataLimit:getWebConfig(name: WebConfigKey::PAGINATION_LIMIT),
+            filters: ['seller_id' => $seller_id, 'seller_is' => 'seller'],
+            dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT),
         );
-        $seller = $this->vendorRepo->getFirstWhere(params: ['id'=>$seller_id]);
+        $seller = $this->vendorRepo->getFirstWhere(params: ['id' => $seller_id]);
         return view(Vendor::ORDER_LIST[VIEW], compact('orders', 'seller'));
     }
-    public function exportOrderList(Request $request,$vendorId): BinaryFileResponse
+
+    public function exportOrderList(Request $request, $vendorId): BinaryFileResponse
     {
-        $shop = $this->shopRepo->getFirstWhere(params:['seller_id' => $vendorId]);
-        $orders = $this->orderRepo->getListWhere(orderBy:['id'=>'desc'],searchValue:$request['searchValue'], filters: ['seller_id'=>$vendorId,'seller_is'=>'seller'],dataLimit:'all');
+        $shop = $this->shopRepo->getFirstWhere(params: ['seller_id' => $vendorId]);
+        $orders = $this->orderRepo->getListWhere(orderBy: ['id' => 'desc'], searchValue: $request['searchValue'], filters: ['seller_id' => $vendorId, 'seller_is' => 'seller'], dataLimit: 'all');
         $statusArray = [
             'pending' => 0,
             'confirmed' => 0,
@@ -216,10 +222,10 @@ class VendorController extends BaseController
         });
         $data = [
             'shop' => $shop,
-            'statusArray' =>$statusArray,
+            'statusArray' => $statusArray,
             'orders' => $orders,
         ];
-        return Excel::download(new VendorOrderListExport($data),VendorExport::ORDER_LIST_EXPORT);
+        return Excel::download(new VendorOrderListExport($data), VendorExport::ORDER_LIST_EXPORT);
     }
 
     public function getProductListView(Request $request, $seller_id): View
@@ -232,7 +238,7 @@ class VendorController extends BaseController
             relations: ['translations'],
             dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT)
         );
-        $seller = $this->vendorRepo->getFirstWhere(params: ['id'=>$seller_id]);
+        $seller = $this->vendorRepo->getFirstWhere(params: ['id' => $seller_id]);
         return view(Vendor::PRODUCT_LIST[VIEW], compact('products', 'seller'));
     }
 
@@ -256,13 +262,13 @@ class VendorController extends BaseController
         $zip_codes = $zip_restrict_status ? $this->deliveryZipCodeRepo->getListWhere(dataLimit: 'all') : 0;
 
         $order = $this->orderRepo->getFirstWhere(
-            params: ['id'=> $order_id],
-            relations: ['shipping','customer'],
+            params: ['id' => $order_id],
+            relations: ['shipping', 'customer'],
         );
 
         $physical_product = false;
-        foreach($order->details as $product){
-            if(isset($product->product) && $product->product->product_type == 'physical'){
+        foreach ($order->details as $product) {
+            if (isset($product->product) && $product->product->product_type == 'physical') {
                 $physical_product = true;
             }
         }
@@ -270,19 +276,19 @@ class VendorController extends BaseController
         $shipping_method = getWebConfig(name: 'shipping_method');
 
         $delivery_men = $this->deliveryManRepo->getListWhereIn(
-            filters: ['is_active'=>1, 'order_seller' => $order['seller_is'], 'seller_id' => $order['seller_id'], 'shipping_method' => $shipping_method],
+            filters: ['is_active' => 1, 'order_seller' => $order['seller_is'], 'seller_id' => $order['seller_id'], 'shipping_method' => $shipping_method],
             dataLimit: 'all',
         );
 
-        $shipping_address = $this->shippingAddressRepo->getFirstWhere(params: ['id'=>$order['shipping_address']]);
+        $shipping_address = $this->shippingAddressRepo->getFirstWhere(params: ['id' => $order['shipping_address']]);
         $total_delivered = $this->orderRepo->getListWhere(
-            filters: ['seller_id' => $order['seller_id'], 'seller_is'=> 'seller', 'order_status' => 'delivered', 'order_type' => 'default_type'],
+            filters: ['seller_id' => $order['seller_id'], 'seller_is' => 'seller', 'order_status' => 'delivered', 'order_type' => 'default_type'],
             dataLimit: 'all',
         )->count();
 
         $linked_orders = $this->orderRepo->getListWhereNotIn(
             filters: ['order_group_id' => $order['order_group_id']],
-            whereNotIn: ['order_group_id' => ['def-order-group'],'id' => [$order['id']]],
+            whereNotIn: ['order_group_id' => ['def-order-group'], 'id' => [$order['id']]],
             dataLimit: 'all',
         );
         if ($order['order_type'] == 'default_type') {
@@ -290,21 +296,23 @@ class VendorController extends BaseController
         } else {
             $orderCount = $this->orderRepo->getListWhereCount(filters: ['customer_id' => $order['customer_id'], 'order_type' => 'POS']);
         }
-        return view(Vendor::ORDER_DETAILS[VIEW], compact('order', 'seller_id','delivery_men', 'linked_orders','physical_product',
-            'shipping_address','total_delivered', 'countries','zip_codes','zip_restrict_status','country_restrict_status','orderCount'));
+        return view(Vendor::ORDER_DETAILS[VIEW], compact('order', 'seller_id', 'delivery_men', 'linked_orders', 'physical_product',
+            'shipping_address', 'total_delivered', 'countries', 'zip_codes', 'zip_restrict_status', 'country_restrict_status', 'orderCount'));
     }
 
     public function getView(Request $request, $id, $tab = null): View|RedirectResponse
     {
-
         $seller = $this->vendorRepo->getFirstWhere(
-            params: ['id'=>$id, 'withCount' => ['orders', 'product']],
+            params: ['id' => $id, 'withCount' => ['product', 'orders' => function ($query) use ($id) {
+                $query->where(['seller_id' => $id, 'seller_is' => ($id == 0 ? 'admin' : 'seller')]);
+            }]],
             relations: ['orders', 'product']
         );
-        if(!$seller){
-          return redirect()->route('admin.vendors.vendor-list');
+
+        if (!$seller) {
+            return redirect()->route('admin.vendors.vendor-list');
         }
-        $seller?->product?->map(function($product){
+        $seller?->product?->map(function ($product) {
             $product['rating'] = $product?->reviews->pluck('rating')->sum();
             $product['rating_count'] = $product->reviews->count();
             $product['single_rating_5'] = 0;
@@ -312,9 +320,9 @@ class VendorController extends BaseController
             $product['single_rating_3'] = 0;
             $product['single_rating_2'] = 0;
             $product['single_rating_1'] = 0;
-            foreach($product->reviews as $review) {
+            foreach ($product->reviews as $review) {
                 $rating = $review->rating;
-                if($rating>0){
+                if ($rating > 0) {
                     match ($rating) {
                         5 => $product->single_rating_5++,
                         4 => $product->single_rating_4++,
@@ -334,21 +342,23 @@ class VendorController extends BaseController
         $seller['rating_count'] = $seller->product->pluck('rating_count')->sum();
         $seller['average_rating'] = $seller['total_rating'] / ($seller['rating_count'] == 0 ? 1 : $seller['rating_count']);
 
-        if(!isset($seller)){
+        if (!isset($seller)) {
             Toastr::error(translate('vendor_not_found_It_may_be_deleted'));
             return back();
         }
 
         if ($tab == 'order') {
-            return $this->getOrderListTabView(request:$request, seller:$seller);
+            return $this->getOrderListTabView(request: $request, seller: $seller);
         } else if ($tab == 'product') {
-            return $this->getProductListTabView(request:$request, seller:$seller);
+            return $this->getProductListTabView(request: $request, seller: $seller);
         } else if ($tab == 'setting') {
-            return $this->getSettingListTabView(request:$request, seller:$seller, id:$id);
+            return $this->getSettingListTabView(request: $request, seller: $seller, id: $id);
         } else if ($tab == 'transaction') {
-            return $this->getTransactionListTabView(request:$request, seller:$seller);
+            return $this->getTransactionListTabView(request: $request, seller: $seller);
         } else if ($tab == 'review') {
-            return $this->getReviewListTabView(request:$request, seller:$seller);
+            return $this->getReviewListTabView(request: $request, seller: $seller);
+        } else if ($tab == 'clearance_sale') {
+            return $this->getClearanceSaleTabView(request: $request, seller: $seller);
         }
 
         return view(Vendor::VIEW[VIEW], [
@@ -360,25 +370,25 @@ class VendorController extends BaseController
     public function getOrderListTabView(Request $request, $seller): View
     {
         $orders = $this->orderRepo->getListWhere(
-            orderBy: ['id'=>'desc'],
+            orderBy: ['id' => 'desc'],
             searchValue: $request['searchValue'],
-            filters: ['seller_id'=> $seller['id'], 'seller_is'=> 'seller', 'order_type'=>'default_type'],
-            dataLimit:getWebConfig(name: WebConfigKey::PAGINATION_LIMIT),
+            filters: ['seller_id' => $seller['id'], 'seller_is' => 'seller', 'order_type' => 'default_type'],
+            dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT),
         );
         $pendingOrder = $this->orderRepo->getListWhere(
-            orderBy: ['id'=>'desc'],
+            orderBy: ['id' => 'desc'],
             searchValue: $request['searchValue'],
-            filters: ['seller_id'=> $seller['id'], 'seller_is'=> 'seller', 'order_type'=>'default_type','order_status'=>'pending'],
+            filters: ['seller_id' => $seller['id'], 'seller_is' => 'seller', 'order_type' => 'default_type', 'order_status' => 'pending'],
             dataLimit: 'all',
         )->count();
         $deliveredOrder = $this->orderRepo->getListWhere(
-            orderBy: ['id'=>'desc'],
+            orderBy: ['id' => 'desc'],
             searchValue: $request['searchValue'],
-            filters: ['seller_id'=> $seller['id'], 'seller_is'=> 'seller', 'order_type'=>'default_type','order_status'=>'delivered'],
+            filters: ['seller_id' => $seller['id'], 'seller_is' => 'seller', 'order_type' => 'default_type', 'order_status' => 'delivered'],
             dataLimit: 'all',
         )->count();
 
-        return view(Vendor::VIEW_ORDER[VIEW], compact('seller', 'orders','pendingOrder','deliveredOrder'));
+        return view(Vendor::VIEW_ORDER[VIEW], compact('seller', 'orders', 'pendingOrder', 'deliveredOrder'));
     }
 
     public function getProductListTabView(Request $request, $seller): View
@@ -397,7 +407,8 @@ class VendorController extends BaseController
     {
         return view(Vendor::VIEW_SETTING[VIEW], compact('seller'));
     }
-    public function updateSetting(Request $request ,$id):RedirectResponse
+
+    public function updateSetting(Request $request, $id): RedirectResponse
     {
         if ($request->has('commission')) {
             request()->validate([
@@ -428,17 +439,17 @@ class VendorController extends BaseController
     public function getTransactionListTabView(Request $request, $seller): View
     {
         $filters = [
-            'seller_is'=>'seller',
-            'seller_id'=>$seller['id'],
+            'seller_is' => 'seller',
+            'seller_id' => $seller['id'],
             'status' => $request['status'] ?? 'all'
 
         ];
         $transactions = $this->orderTransactionRepo->getListWhere(
-            orderBy:['id'=>'desc'],
+            orderBy: ['id' => 'desc'],
             searchValue: $request['searchValue'],
             filters: $filters,
             relations: ['order.customer'],
-            dataLimit:getWebConfig(name: WebConfigKey::PAGINATION_LIMIT),
+            dataLimit: getWebConfig(name: WebConfigKey::PAGINATION_LIMIT),
         );
         return view(Vendor::VIEW_TRANSACTION[VIEW], compact('seller', 'transactions'));
     }
@@ -448,13 +459,13 @@ class VendorController extends BaseController
         if ($request->has('searchValue')) {
             $product_id = $this->productRepo->getListWhere(
                 searchValue: $request['searchValue'],
-                filters: ['added_by'=>'seller', 'seller_id'=>$seller['id']],
+                filters: ['added_by' => 'seller', 'seller_id' => $seller['id']],
                 dataLimit: 'all')->pluck('id')->toArray();
             $filtersBy = [
                 'product_id' => $product_id,
             ];
             $reviews = $this->reviewRepo->getListWhereIn(
-                orderBy:['id'=>'desc'],
+                orderBy: ['id' => 'desc'],
                 filters: ['added_by' => 'seller'],
                 whereInFilters: $filtersBy,
                 relations: ['product'],
@@ -462,10 +473,10 @@ class VendorController extends BaseController
                 dataLimit: getWebConfig(name: 'pagination_limit'));
         } else {
             $reviews = $this->reviewRepo->getListWhereIn(
-                orderBy:['id'=>'desc'],
+                orderBy: ['id' => 'desc'],
                 filters: ['product_user_id' => $seller['id']],
                 relations: ['product', 'customer'],
-                dataLimit:getWebConfig(name: 'pagination_limit'));
+                dataLimit: getWebConfig(name: 'pagination_limit'));
         }
         return view(Vendor::VIEW_REVIEW[VIEW], [
             'seller' => $seller,
@@ -473,13 +484,30 @@ class VendorController extends BaseController
         ]);
     }
 
-    public function getWithdrawView($withdrawId,$vendorId): View|RedirectResponse
+    public function getClearanceSaleTabView(Request $request, $seller): View
+    {
+        $searchValue = $request['searchValue'] ?? null;
+        $clearanceConfig = $this->stockClearanceSetupRepo->getFirstWhere(params: ['setup_by' => 'vendor', 'user_id' => $seller->id]);
+        $stockClearanceProduct = $this->stockClearanceProductRepo->getListWhere(
+            orderBy: ['id' => 'desc'],
+            searchValue: $searchValue,
+            filters: ['added_by' => 'vendor', 'user_id' => $seller->id],
+            relations: ['product']
+        );
+        return view(Vendor::VIEW_CLEARANCE_SALE[VIEW], [
+            'seller' => $seller,
+            'stockClearanceProduct' => $stockClearanceProduct,
+            'clearanceConfig' => $clearanceConfig,
+        ]);
+    }
+
+    public function getWithdrawView($withdrawId, $vendorId): View|RedirectResponse
     {
         $withdrawRequest = $this->withdrawRequestRepo->getFirstWhere(params: ['id' => $withdrawId], relations: ['seller']);
         if ($withdrawRequest) {
             $withdrawalMethod = is_array($withdrawRequest['withdrawal_method_fields']) ? $withdrawRequest['withdrawal_method_fields'] : json_decode($withdrawRequest['withdrawal_method_fields']);
             $direction = session('direction');
-            return view(Vendor::WITHDRAW_VIEW[VIEW], compact('withdrawRequest', 'withdrawalMethod','direction'));
+            return view(Vendor::WITHDRAW_VIEW[VIEW], compact('withdrawRequest', 'withdrawalMethod', 'direction'));
         }
         Toastr::error(translate('withdraw_request_not_found'));
         return back();
@@ -488,12 +516,12 @@ class VendorController extends BaseController
     public function getWithdrawListView(Request $request): View
     {
         $withdrawRequests = $this->withdrawRequestRepo->getListWhereNull(
-            orderBy:['id'=>'desc'],
+            orderBy: ['id' => 'desc'],
             searchValue: $request['searchValue'],
             filters: ['approved' => $request['approved']],
             nullFilters: ['delivery_man_id'],
             relations: ['seller'],
-            dataLimit:getWebConfig(name: 'pagination_limit')
+            dataLimit: getWebConfig(name: 'pagination_limit')
         );
         return view(Vendor::WITHDRAW_LIST[VIEW], compact('withdrawRequests'));
     }
@@ -501,7 +529,7 @@ class VendorController extends BaseController
     public function exportWithdrawList(Request $request): BinaryFileResponse
     {
         $withdrawRequests = $this->withdrawRequestRepo->getListWhereNull(
-            orderBy:['id'=>'desc'],
+            orderBy: ['id' => 'desc'],
             filters: ['approved' => $request['approved']],
             nullFilters: ['delivery_man_id'],
             relations: ['seller'],
@@ -514,12 +542,12 @@ class VendorController extends BaseController
             $query->shop_address = isset($query->seller) ? $query->seller->shop->address : '';
             $query->shop_email = isset($query->seller) ? $query->seller->email : '';
             $query->withdrawal_amount = setCurrencySymbol(amount: usdToDefaultCurrency(amount: $query->amount), currencyCode: getCurrencyCode(type: 'default'));
-            $query->status = $query->approved == 0 ? 'Pending' : ($query->approved == 1 ? 'Approved':'Denied');
+            $query->status = $query->approved == 0 ? 'Pending' : ($query->approved == 1 ? 'Approved' : 'Denied');
             $query->note = $query->transaction_note;
             $query->withdraw_method_name = isset($query->withdraw_method) ? $query->withdraw_method->method_name : '';
-            if(!empty($query->withdrawal_method_fields)){
+            if (!empty($query->withdrawal_method_fields)) {
                 $withdrawal_method_fields = is_array($query->withdrawal_method_fields) ? $query->withdrawal_method_fields : json_decode($query->withdrawal_method_fields);
-                foreach ($withdrawal_method_fields as $key=>$field) {
+                foreach ($withdrawal_method_fields as $key => $field) {
                     $query[$key] = $field;
                 }
             }
@@ -530,13 +558,13 @@ class VendorController extends BaseController
         $denied = $withdrawRequests->where('approved', 2)->count();
 
         return Excel::download(new VendorWithdrawRequest([
-                'data-from' =>'admin',
-                'withdraw_request'=>$withdrawRequests,
-                'filter' => session('withdraw_status_filter'),
-                'pending'=> $pending,
-                'approved'=> $approved,
-                'denied'=> $denied,
-                ]), 'Vendor-Withdraw-Request.xlsx'
+            'data-from' => 'admin',
+            'withdraw_request' => $withdrawRequests,
+            'filter' => session('withdraw_status_filter'),
+            'pending' => $pending,
+            'approved' => $approved,
+            'denied' => $denied,
+        ]), 'Vendor-Withdraw-Request.xlsx'
         );
     }
 
@@ -548,30 +576,28 @@ class VendorController extends BaseController
             'transaction_note' => $request['note'],
         ];
 
-        $withdraw = $this->withdrawRequestRepo->getFirstWhere(params: ['id'=>$id], relations: ['seller']);
-        if(isset($withdraw->seller->cm_firebase_token) && $withdraw->seller->cm_firebase_token) {
+        $withdraw = $this->withdrawRequestRepo->getFirstWhere(params: ['id' => $id], relations: ['seller']);
+        if (isset($withdraw->seller->cm_firebase_token) && $withdraw->seller->cm_firebase_token) {
             event(new WithdrawStatusUpdateEvent(key: 'withdraw_request_status_message', type: 'seller', lang: $withdraw->deliveryMan?->app_language ?? getDefaultLanguage(), status: $request['approved'], fcmToken: $withdraw->seller?->cm_firebase_token));
         }
 
         if ($request['approved'] == 1) {
-            $this->vendorWalletRepo->getFirstWhere(params: ['seller_id'=>$withdraw['seller_id']])->increment('withdrawn', $withdraw['amount']);
-            $this->vendorWalletRepo->getFirstWhere(params: ['seller_id'=>$withdraw['seller_id']])->decrement('pending_withdraw', $withdraw['amount']);
+            $this->vendorWalletRepo->getFirstWhere(params: ['seller_id' => $withdraw['seller_id']])->increment('withdrawn', $withdraw['amount']);
+            $this->vendorWalletRepo->getFirstWhere(params: ['seller_id' => $withdraw['seller_id']])->decrement('pending_withdraw', $withdraw['amount']);
 
             $this->withdrawRequestRepo->update(id: $id, data: $withdrawData);
             Toastr::success(translate('Vendor_Payment_has_been_approved_successfully'));
             return redirect()->route('admin.vendors.withdraw_list');
         }
 
-        $this->vendorWalletRepo->getFirstWhere(params: ['seller_id'=>$withdraw['seller_id']])->increment('total_earning', $withdraw['amount']);
-        $this->vendorWalletRepo->getFirstWhere(params: ['seller_id'=>$withdraw['seller_id']])->decrement('pending_withdraw', $withdraw['amount']);
+        $this->vendorWalletRepo->getFirstWhere(params: ['seller_id' => $withdraw['seller_id']])->increment('total_earning', $withdraw['amount']);
+        $this->vendorWalletRepo->getFirstWhere(params: ['seller_id' => $withdraw['seller_id']])->decrement('pending_withdraw', $withdraw['amount']);
         $this->withdrawRequestRepo->update(id: $id, data: $withdrawData);
 
         Toastr::info(translate('Vendor_Payment_request_has_been_Denied_successfully'));
         return redirect()->route('admin.vendors.withdraw_list');
 
     }
-
-
 
 
 }

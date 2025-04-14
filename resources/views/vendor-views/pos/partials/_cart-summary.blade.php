@@ -26,6 +26,12 @@
                     </div>
                 </div>
             </div>
+            @php( $walletStatus = getWebConfig('wallet_status') ?? 0)
+            @if ($walletStatus)
+                <input type="hidden" class="form-control customer-wallet-balance"
+                       value="{{usdToDefaultCurrency(amount: $currentCustomerData?->wallet_balance ?? 0)}}"
+                       readonly>
+            @endif
         </div>
     </div>
 @endif

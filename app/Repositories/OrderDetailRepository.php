@@ -19,6 +19,7 @@ class OrderDetailRepository implements OrderDetailRepositoryInterface
 
     public function add(array $data): string|object
     {
+        cacheRemoveByType(type: 'order_details');
         return $this->orderDetail->create($data);
     }
 
@@ -58,6 +59,7 @@ class OrderDetailRepository implements OrderDetailRepositoryInterface
     }
     public function update(string $id, array $data): bool
     {
+        cacheRemoveByType(type: 'order_details');
         return $this->orderDetail->find($id)->update($data);
     }
 
@@ -68,6 +70,7 @@ class OrderDetailRepository implements OrderDetailRepositoryInterface
 
     public function updateWhere(array $params, array $data): bool
     {
+        cacheRemoveByType(type: 'order_details');
         return $this->orderDetail->where($params)->update($data);
     }
 

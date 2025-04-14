@@ -50,7 +50,7 @@
                                                 {{ translate('All_Shops') }}
                                             @elseif($item->seller_id == NULL)
                                                 <a class="shop-name" href="{{route('shopView',['id'=>0])}}">
-                                                    {{ $web_config['name']->value }}
+                                                    {{ $web_config['company_name'] }}
                                                 </a>
                                             @else
                                                 <a class="shop-name" href="{{isset($item->seller->shop) ? route('shopView',['id'=>$item->seller->shop['id']]) : 'javascript:'}} ">
@@ -61,8 +61,7 @@
                                     </div>
                                     <div class="ticket-border"></div>
                                     <div class="ticket-end">
-                                        <button class="ticket-welcome-btn couponid couponid-{{ $item->code }} click-to-copy-coupon" data-value="{{ $item->code }}">{{ $item->code }}</button>
-                                        <button class="ticket-welcome-btn couponid-hide couponhideid-{{ $item->code }} d-none">{{ translate('copied') }}</button>
+                                        <button class="ticket-welcome-btn click-to-copy-coupon" data-value="{{ $item->code }}">{{ $item->code }}</button>
                                         <h6>{{ translate('valid_till') }} {{ $item->expire_date->format('d M, Y') }}</h6>
                                         <p class="m-0">{{ translate('available_from_minimum_purchase') }} {{ webCurrencyConverter(amount: $item->min_purchase) }}</p>
                                     </div>

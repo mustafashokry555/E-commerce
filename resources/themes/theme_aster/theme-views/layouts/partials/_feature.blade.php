@@ -8,8 +8,8 @@
                             <img src="{{theme_asset('assets/img/icons/f1.png')}}" alt="{{translate('image')}}">
                         </div>
                         <div class="media-body">
-                            <h5 class="mb-2 text-capitalize">{{translate('first_shipping')}}</h5>
-                            <div class="fs-12">{{translate('first_shipping_all_across_the_country')}}</div>
+                            <h5 class="mb-2 text-capitalize">{{translate('fast_shipping')}}</h5>
+                            <div class="fs-12">{{translate('fast_shipping_all_across_the_country')}}</div>
                         </div>
                     </div>
                 </div>
@@ -30,7 +30,7 @@
                             <img src="{{theme_asset('assets/img/icons/f3.png')}}" alt="{{translate('image')}}">
                         </div>
                         <div class="media-body">
-                            <h5 class="mb-2 text-capitalize">{{'100%'.translate('secure_payment')}}</h5>
+                            <h5 class="mb-2 text-capitalize">{{ '100% '.translate('secure_payment') }}</h5>
                             <div class="fs-12 text-capitalize">{{translate('we_ensure_secure_transactions')}}</div>
                         </div>
                     </div>

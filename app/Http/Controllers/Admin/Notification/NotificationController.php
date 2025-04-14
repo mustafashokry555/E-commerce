@@ -20,7 +20,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class NotificationController extends BaseController
 {
-    use PushNotificationTrait,FileManagerTrait{
+    use PushNotificationTrait, FileManagerTrait {
         delete as deleteFile;
     }
 
@@ -30,7 +30,7 @@ class NotificationController extends BaseController
      */
     public function __construct(
         private readonly NotificationRepositoryInterface $notificationRepo,
-        private readonly NotificationService $notificationService,
+        private readonly NotificationService             $notificationService,
     )
     {
 
@@ -43,31 +43,36 @@ class NotificationController extends BaseController
      */
     public function index(?Request $request, string $type = null): View|Collection|LengthAwarePaginator|null|callable|RedirectResponse
     {
-       return $this->getNotificationView(request: $request);
+        return $this->getNotificationView(request: $request);
     }
 
     /**
      * @param $request
      * @return View
      */
-    public function getNotificationView($request):View
+    public function getNotificationView($request): View
     {
         $searchValue = $request['searchValue'];
         $notifications = $this->notificationRepo->getListWhere(
             orderBy: ['id' => 'desc'],
             searchValue: $searchValue,
-            filters: ['sent_to'=>'customer'],
+            filters: ['sent_to' => 'customer'],
             dataLimit: getWebConfig(WebConfigKey::PAGINATION_LIMIT),
         );
-        return view(Notification::INDEX[VIEW],compact('searchValue','notifications'));
+        return view(Notification::INDEX[VIEW], compact('searchValue', 'notifications'));
     }
 
     /**
      * @param NotificationRequest $request
      * @return RedirectResponse
      */
-    public function add(NotificationRequest $request):RedirectResponse
+    public function add(NotificationRequest $request): RedirectResponse
     {
+        if (env('APP_MODE') === 'demo') {
+            Toastr::info(translate('push_notification_is_disable_for_demo'));
+            return back();
+        }
+
         $notification = $this->notificationRepo->add(data: $this->notificationService->getNotificationAddData(request: $request));
         try {
             $this->sendPushNotificationToTopic($notification);
@@ -83,10 +88,10 @@ class NotificationController extends BaseController
      * @param string|int $id
      * @return View
      */
-    public function getUpdateView(string|int $id):View
+    public function getUpdateView(string|int $id): View
     {
-        $notification = $this->notificationRepo->getFirstWhere(params: ['id'=>$id]);
-        return view(Notification::UPDATE[VIEW],compact('notification'));
+        $notification = $this->notificationRepo->getFirstWhere(params: ['id' => $id]);
+        return view(Notification::UPDATE[VIEW], compact('notification'));
     }
 
     /**
@@ -94,9 +99,9 @@ class NotificationController extends BaseController
      * @param string|int $id
      * @return RedirectResponse
      */
-    public function update(NotificationRequest $request, string|int $id):RedirectResponse
+    public function update(NotificationRequest $request, string|int $id): RedirectResponse
     {
-        $notification = $this->notificationRepo->getFirstWhere(params: ['id'=>$id]);
+        $notification = $this->notificationRepo->getFirstWhere(params: ['id' => $id]);
         $this->notificationRepo->update(id: $notification['id'],
             data: $this->notificationService->getNotificationUpdateData(
                 request: $request, notificationImage: $notification['image']
@@ -110,10 +115,10 @@ class NotificationController extends BaseController
      * @param Request $request
      * @return JsonResponse
      */
-    public function updateStatus(Request $request):JsonResponse
+    public function updateStatus(Request $request): JsonResponse
     {
-        $notification = $this->notificationRepo->getFirstWhere(params: ['id'=>$request['id']]);
-        $this->notificationRepo->update(id:$notification['id'],data: ['status'=> $request['status']]);
+        $notification = $this->notificationRepo->getFirstWhere(params: ['id' => $request['id']]);
+        $this->notificationRepo->update(id: $notification['id'], data: ['status' => $request['status']]);
         return response()->json($request['status']);
     }
 
@@ -121,10 +126,10 @@ class NotificationController extends BaseController
      * @param Request $request
      * @return JsonResponse
      */
-    public function delete(Request $request):JsonResponse
+    public function delete(Request $request): JsonResponse
     {
-        $notification = $this->notificationRepo->getFirstWhere(params: ['id'=>$request['id']]);
-        $this->deleteFile('/notification/'.$notification['image']);
+        $notification = $this->notificationRepo->getFirstWhere(params: ['id' => $request['id']]);
+        $this->deleteFile('/notification/' . $notification['image']);
         $this->notificationRepo->delete(params: ['id' => $notification['id']]);
         return response()->json();
     }
@@ -133,14 +138,20 @@ class NotificationController extends BaseController
      * @param Request $request
      * @return JsonResponse
      */
-    public function resendNotification(Request $request):JsonResponse
+    public function resendNotification(Request $request): JsonResponse
     {
-        $notification = $this->notificationRepo->getFirstWhere(params: ['id'=>$request['id']]);
+        if (env('APP_MODE') === 'demo') {
+            $data['success'] = false;
+            $data['message'] = translate("push_notification_is_disable_for_demo");
+            return response()->json($data);
+        }
         $data = [];
         try {
+            $notification = $this->notificationRepo->getFirstWhere(params: ['id' => $request['id']])->toArray();
+            $notification['type'] = 'notification';
             $this->sendPushNotificationToTopic($notification);
             $count = $notification['notification_count'] += 1;
-            $this->notificationRepo->update(id:$notification['id'],data: ['notification_count' => $count] );
+            $this->notificationRepo->update(id: $notification['id'], data: ['notification_count' => $count]);
             $data['success'] = true;
             $data['message'] = translate("push_notification_successfully");
         } catch (\Exception $e) {

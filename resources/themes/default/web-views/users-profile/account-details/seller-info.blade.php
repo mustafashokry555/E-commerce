@@ -16,7 +16,7 @@
                             <div class="media flex-wrap gap-2 gap-sm-3 border rounded p-3">
                                 <div class="aspect-1 d-flex justify-content-center align-items-center overflow-hidden rounded border">
                                     <img width="77"  alt=""
-                                         src="{{ getValidImage(path: 'storage/app/public/shop/'.$order->seller->shop->image, type: 'shop') }}">
+                                         src="{{ getStorageImages(path: $order?->seller?->shop->image_full_url, type: 'shop') }}">
                                 </div>
                                 <div class="media-body">
                                     <div class="d-flex gap-2 gap-sm-3 align-items-sm-center justify-content-between">
@@ -60,12 +60,12 @@
                             <div class="media flex-wrap gap-3 border rounded p-3">
                                 <div class="aspect-1 d-flex justify-content-center align-items-center overflow-hidden rounded border">
                                     <img width="77"  alt=""
-                                         src="{{ getValidImage(path: 'storage/app/public/company/'.$web_config['fav_icon']->value, type: 'shop') }}">
+                                         src="{{ getStorageImages(path: $web_config['fav_icon'], type: 'shop') }}">
                                 </div>
                                 <div class="media-body">
                                     <div class="d-flex flex-wrap gap-3 align-items-center justify-content-between">
                                         <div>
-                                            <h6 class="text-capitalize">{{$web_config['name']->value}}</h6>
+                                            <h6 class="text-capitalize">{{$web_config['company_name']}}</h6>
                                             <div class="rating-show justify-content-between">
                                                 <span class="d-inline-block font-size-sm text-body">
                                                     @for($inc=1;$inc<=5;$inc++)

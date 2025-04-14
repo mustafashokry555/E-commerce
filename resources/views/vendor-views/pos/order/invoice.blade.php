@@ -1,9 +1,11 @@
 <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/pos-invoice.css') }}">
-
+<?php
+$orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(order: $order);
+?>
 <div class="width-363px">
     <div class="text-center pt-4 mb-3">
         <h2 class="line-height-1">{{ getWebConfig('company_name') }}</h2>
-        <h5 class="line-height-1 font-size-16px font-weight-lighter">
+        <h5 class="line-height-1 font-size-16px">
             {{ translate('phone') }} : {{ getWebConfig('company_phone') }}
         </h5>
     </div>
@@ -14,7 +16,7 @@
             <h5>{{ translate('order_ID') }} : {{ $order['id'] }}</h5>
         </div>
         <div class="col-6">
-            <h5 class="font-weight-lighter">
+            <h5 class="">
                 {{ date('d/M/Y h:i a', strtotime($order['created_at'])) }}
             </h5>
         </div>
@@ -67,12 +69,12 @@
                         @endif
 
                         {{ translate('discount') }}
-                        : {{setCurrencySymbol(amount: usdToDefaultCurrency(amount:round($detail['discount'],2)), currencyCode: getCurrencyCode()) }}
+                        : {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $detail['discount']), currencyCode: getCurrencyCode()) }}
                     </td>
                     <td class="text-right">
                         @php($amount=($detail['price']*$detail['qty'])-$detail['discount'])
                         @php($product_price = $detail['price']*$detail['qty'])
-                        {{setCurrencySymbol(amount: usdToDefaultCurrency(amount:round($amount,2)), currencyCode: getCurrencyCode()) }}
+                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $amount), currencyCode: getCurrencyCode()) }}
                     </td>
                 </tr>
                 @php($sub_total+=$amount)
@@ -84,43 +86,37 @@
         </tbody>
     </table>
     <span class="dashed-hr"></span>
-    <?php
 
-
-    if ($order['extra_discount_type'] == 'percent') {
-        $ext_discount = ($total_product_price / 100) * $order['extra_discount'];
-    } else {
-        $ext_discount = $order['extra_discount'];
-    }
-    if (isset($order['discount_amount'])) {
-        $coupon_discount = $order['discount_amount'];
-    }
-    ?>
     <table class="w-100 color-black">
         <tr>
             <td colspan="2"></td>
             <td class="text-right">{{ translate('items_Price') }}:</td>
-            <td class="text-right">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:round($sub_total,2)), currencyCode: getCurrencyCode()) }}</td>
+            <td class="text-right">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['itemPrice']), currencyCode: getCurrencyCode()) }}</td>
         </tr>
         <tr>
             <td colspan="2"></td>
-            <td class="text-right">{{ translate('tax') }} / {{ translate('VAT') }}:</td>
-            <td class="text-right">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:round($total_tax,2)), currencyCode: getCurrencyCode()) }}</td>
-        </tr>
-        <tr>
-            <td colspan="2"></td>
-            <td class="text-right">{{ translate('subtotal') }}:</td>
-            <td class="text-right">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:round($sub_total+$total_tax,2)), currencyCode: getCurrencyCode()) }}</td>
+            <td class="text-right">{{ translate('item_discount') }}:</td>
+            <td class="text-right">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['itemDiscount']), currencyCode: getCurrencyCode()) }}</td>
         </tr>
         <tr>
             <td colspan="2"></td>
             <td class="text-right">{{ translate('extra_discount') }}:</td>
-            <td class="text-right">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:round($ext_discount,2)), currencyCode: getCurrencyCode()) }}</td>
+            <td class="text-right">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['extraDiscount']), currencyCode: getCurrencyCode()) }}</td>
+        </tr>
+        <tr>
+            <td colspan="2"></td>
+            <td class="text-right">{{ translate('subtotal') }}:</td>
+            <td class="text-right">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['subTotal']), currencyCode: getCurrencyCode()) }}</td>
+        </tr>
+        <tr>
+            <td colspan="2"></td>
+            <td class="text-right">{{ translate('tax') }} / {{ translate('VAT') }}:</td>
+            <td class="text-right">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['taxTotal']), currencyCode: getCurrencyCode()) }}</td>
         </tr>
         <tr>
             <td colspan="2"></td>
             <td class="text-right">{{ translate('coupon_discount') }}:</td>
-            <td class="text-right">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount:round($coupon_discount,2)), currencyCode: getCurrencyCode()) }}</td>
+            <td class="text-right">{{setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['couponDiscount']), currencyCode: getCurrencyCode()) }}</td>
         </tr>
         <tr>
             <td colspan="2"></td>
@@ -128,9 +124,35 @@
                 {{ translate('total') }}:
             </td>
             <td class="text-right font-size-20px">
-                {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount:round($order->order_amount,2)), currencyCode: getCurrencyCode()) }}
+                {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['totalAmount']), currencyCode: getCurrencyCode()) }}
             </td>
         </tr>
+        @if ($order->order_type == 'pos' || $order->order_type == 'POS')
+            <tr>
+                <td colspan="4">
+                    <span class="dashed-hr"></span>
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2"></td>
+                <td class="text-right">
+                    {{ translate('Paid_Amount') }}:
+                </td>
+                <td class="text-right">
+                    {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['paidAmount']), currencyCode: getCurrencyCode()) }}
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="2"></td>
+                <td class="text-right">
+                    {{ translate('Change_Amount') }}:
+                </td>
+                <td class="text-right">
+                    {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['changeAmount']), currencyCode: getCurrencyCode()) }}
+                </td>
+            </tr>
+        @endif
     </table>
 
 

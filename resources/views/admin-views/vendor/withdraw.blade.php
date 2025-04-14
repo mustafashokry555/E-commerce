@@ -21,29 +21,21 @@
                                     <span class="badge badge-soft-dark radius-50 fz-12 ml-1">{{ $withdrawRequests->total() }}</span>
                                 </h5>
                             </div>
-                            <div class="d-flex col-auto gap-3">
-                                <select name="withdraw_status_filter" data-action="{{url()->current()}}"
-                                        class="custom-select min-w-120 withdraw-status-filter">
-                                    <option value="all" {{request('approved') == 'all' ? 'selected' : ''}}>{{translate('all')}}</option>
-                                    <option value="approved" {{request('approved') == 'approved' ? 'selected' : ''}}>{{translate('approved')}}</option>
-                                    <option value="denied" {{request('approved') == 'denied' ? 'selected' : ''}}>{{translate('denied')}}</option>
-                                    <option value="pending" {{request('approved') == 'pending' ? 'selected' : ''}}>{{translate('pending')}}</option>
-                                </select>
-                                <div>
-                                    <button type="button" class="btn btn-outline--primary text-nowrap btn-block"
-                                            data-toggle="dropdown">
-                                        <i class="tio-download-to"></i>
-                                        {{translate('export')}}
-                                        <i class="tio-chevron-down"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-right">
-                                        <li>
-                                            <a class="dropdown-item" href="{{ route('admin.vendors.withdraw-list-export-excel') }}?approved={{request('approved')}}">
-                                                <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" alt="">
-                                                {{translate('excel')}}
-                                            </a>
-                                        </li>
-                                    </ul>
+                            <div class="col-auto">
+                                <div class="d-flex gap-3">
+                                    <select name="withdraw_status_filter" data-action="{{url()->current()}}"
+                                            class="custom-select min-w-120 withdraw-status-filter">
+                                        <option value="all" {{request('approved') == 'all' ? 'selected' : ''}}>{{translate('all')}}</option>
+                                        <option value="approved" {{request('approved') == 'approved' ? 'selected' : ''}}>{{translate('approved')}}</option>
+                                        <option value="denied" {{request('approved') == 'denied' ? 'selected' : ''}}>{{translate('denied')}}</option>
+                                        <option value="pending" {{request('approved') == 'pending' ? 'selected' : ''}}>{{translate('pending')}}</option>
+                                    </select>
+                                    <div class="dropdown w-100">
+                                        <a type="button" class="btn btn-outline--primary text-nowrap" href="{{ route('admin.vendors.withdraw-list-export-excel') }}?approved={{request('approved')}}">
+                                            <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
+                                            <span class="ps-2">{{ translate('export') }}</span>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -66,7 +58,9 @@
                             @foreach($withdrawRequests as $key => $withdrawRequest)
                                 <tr>
                                     <td>{{$withdrawRequests->firstItem() + $key }}</td>
-                                    <td>{{setCurrencySymbol(currencyConverter($withdrawRequest['amount']), currencyCode: getCurrencyCode(type: 'default'))}}</td>
+                                    <td>
+                                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $withdrawRequest['amount']), currencyCode: getCurrencyCode(type: 'default')) }}
+                                    </td>
 
                                     <td>
                                         @if (isset($withdrawRequest->seller))

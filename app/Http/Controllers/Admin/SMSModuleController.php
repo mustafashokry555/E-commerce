@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Utils\Helpers;
 use App\Http\Controllers\Controller;
+use App\Models\BusinessSetting;
 use App\Models\Setting;
 use App\Traits\Processor;
 use Illuminate\Http\Request;
@@ -27,22 +28,20 @@ class SMSModuleController extends Controller
 
     public function sms_index()
     {
-        $payment_published_status = config('get_payment_publish_status') ?? 0;
-        $payment_gateway_published_status = isset($payment_published_status[0]['is_published']) ? $payment_published_status[0]['is_published'] : 0;
-
-        $sms_gateways = Setting::whereIn('settings_type', ['sms_config'])->whereIn('key_name', Helpers::default_sms_gateways())->get();
+        $paymentGatewayPublishedStatus = config('get_payment_publish_status') ?? 0;
+        $sms_gateways = Setting::whereIn('settings_type', ['sms_config'])->whereIn('key_name', Helpers::getDefaultSMSGateways())->get();
 
         $sms_gateways = $sms_gateways->sortBy(function ($item) {
             return count($item['live_values']);
         })->values()->all();
 
-        return view('admin-views.business-settings.sms-index', compact('sms_gateways','payment_gateway_published_status'));
+        return view('admin-views.business-settings.sms-index', compact('sms_gateways','paymentGatewayPublishedStatus'));
     }
 
     public function sms_update(Request $request, $module)
     {
         if ($module == 'twilio_sms') {
-            DB::table('business_settings')->updateOrInsert(['type' => 'twilio_sms'], [
+            BusinessSetting::updateOrInsert(['type' => 'twilio_sms'], [
                 'type' => 'twilio_sms',
                 'value' => json_encode([
                     'status' => $request['status']??0,
@@ -56,7 +55,7 @@ class SMSModuleController extends Controller
                 'updated_at' => now(),
             ]);
         } elseif ($module == 'nexmo_sms') {
-            DB::table('business_settings')->updateOrInsert(['type' => 'nexmo_sms'], [
+            BusinessSetting::updateOrInsert(['type' => 'nexmo_sms'], [
                 'type' => 'nexmo_sms',
                 'value' => json_encode([
                     'status' => $request['status']??0,
@@ -72,7 +71,7 @@ class SMSModuleController extends Controller
                 'updated_at' => now(),
             ]);
         } elseif ($module == '2factor_sms') {
-            DB::table('business_settings')->updateOrInsert(['type' => '2factor_sms'], [
+            BusinessSetting::updateOrInsert(['type' => '2factor_sms'], [
                 'type' => '2factor_sms',
                 'value' => json_encode([
                     'status' => $request['status']??0,
@@ -82,7 +81,7 @@ class SMSModuleController extends Controller
                 'updated_at' => now(),
             ]);
         } elseif ($module == 'msg91_sms') {
-            DB::table('business_settings')->updateOrInsert(['type' => 'msg91_sms'], [
+            BusinessSetting::updateOrInsert(['type' => 'msg91_sms'], [
                 'type' => 'msg91_sms',
                 'value' => json_encode([
                     'status' => $request['status'],
@@ -93,7 +92,7 @@ class SMSModuleController extends Controller
                 'updated_at' => now(),
             ]);
         } elseif ($module == 'releans_sms') {
-            DB::table('business_settings')->updateOrInsert(['type' => 'releans_sms'], [
+            BusinessSetting::updateOrInsert(['type' => 'releans_sms'], [
                 'type' => 'releans_sms',
                 'value' => json_encode([
                     'status' => $request['status']??0,
@@ -107,9 +106,9 @@ class SMSModuleController extends Controller
         }
 
         if ($request['status'] == 1) {
-            $config = Helpers::get_business_settings('twilio_sms');
+            $config = getWebConfig(name: 'twilio_sms');
             if (isset($config) && $module != 'twilio_sms') {
-                DB::table('business_settings')->updateOrInsert(['type' => 'twilio_sms'], [
+                BusinessSetting::updateOrInsert(['type' => 'twilio_sms'], [
                     'type' => 'twilio_sms',
                     'value' => json_encode([
                         'status' => 0,
@@ -123,9 +122,9 @@ class SMSModuleController extends Controller
                 ]);
             }
 
-            $config = Helpers::get_business_settings('nexmo_sms');
+            $config = getWebConfig(name: 'nexmo_sms');
             if (isset($config) && $module != 'nexmo_sms') {
-                DB::table('business_settings')->updateOrInsert(['type' => 'nexmo_sms'], [
+                BusinessSetting::updateOrInsert(['type' => 'nexmo_sms'], [
                     'type' => 'nexmo_sms',
                     'value' => json_encode([
                         'status' => 0,
@@ -142,9 +141,9 @@ class SMSModuleController extends Controller
                 ]);
             }
 
-            $config = Helpers::get_business_settings('2factor_sms');
+            $config = getWebConfig(name: '2factor_sms');
             if (isset($config) && $module != '2factor_sms') {
-                DB::table('business_settings')->updateOrInsert(['type' => '2factor_sms'], [
+                BusinessSetting::updateOrInsert(['type' => '2factor_sms'], [
                     'type' => '2factor_sms',
                     'value' => json_encode([
                         'status' => 0,
@@ -155,9 +154,9 @@ class SMSModuleController extends Controller
                 ]);
             }
 
-            $config = Helpers::get_business_settings('msg91_sms');
+            $config = getWebConfig(name: 'msg91_sms');
             if (isset($config) && $module != 'msg91_sms') {
-                DB::table('business_settings')->updateOrInsert(['type' => 'msg91_sms'], [
+                BusinessSetting::updateOrInsert(['type' => 'msg91_sms'], [
                     'type' => 'msg91_sms',
                     'value' => json_encode([
                         'status' => 0,
@@ -169,9 +168,9 @@ class SMSModuleController extends Controller
                 ]);
             }
 
-            $config = Helpers::get_business_settings('releans_sms');
+            $config = getWebConfig(name: 'releans_sms');
             if (isset($config) && $module != 'releans_sms') {
-                DB::table('business_settings')->updateOrInsert(['type' => 'releans_sms'], [
+                BusinessSetting::updateOrInsert(['type' => 'releans_sms'], [
                     'type' => 'releans_sms',
                     'value' => json_encode([
                         'status' => 0,

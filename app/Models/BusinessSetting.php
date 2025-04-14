@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
-use App\Models\Scopes\RememberScope;
+use App\Traits\CacheManagerTrait;
 use Illuminate\Database\Eloquent\Model;
-use Watson\Rememberable\Rememberable;
 
 class BusinessSetting extends Model
 {
-//    use Rememberable;
+    use CacheManagerTrait;
 
     protected $fillable = ['type', 'value', 'created_at', 'updated_at'];
 
@@ -21,6 +20,13 @@ class BusinessSetting extends Model
     protected static function boot(): void
     {
         parent::boot();
-//        static::addGlobalScope(new RememberScope);
+
+        static::saved(function ($model) {
+            cacheRemoveByType(type: 'business_settings');
+        });
+
+        static::deleted(function ($model) {
+            cacheRemoveByType(type: 'business_settings');
+        });
     }
 }

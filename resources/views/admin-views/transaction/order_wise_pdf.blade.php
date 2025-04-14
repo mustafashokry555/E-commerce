@@ -9,6 +9,10 @@
     <link rel="stylesheet" href="{{ dynamicAsset(path: 'public/assets/back-end/css/admin/order-transaction.css') }}">
 </head>
 
+<?php
+    $companyLogo = getWebConfig(name: 'company_web_logo');
+?>
+
 <body>
 <table class="content-position">
     <tr>
@@ -19,7 +23,7 @@
                         {{translate('order_Transaction_Statement')}}
                     </th>
                     <th class="p-0 text-right">
-                        <img class="logo" src="{{getValidImage(path:'storage/app/public/company/'.$company_web_logo,type:'backend-logo')}}" alt="">
+                        <img class="logo" src="{{ getStorageImages(path: $companyLogo, type: 'backend-logo') }}" alt="">
                     </th>
                 </tr>
             </table>

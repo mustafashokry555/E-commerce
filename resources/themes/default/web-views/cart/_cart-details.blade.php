@@ -1,9 +1,9 @@
 <h3 class="mt-4 mb-3 text-center text-lg-left mobile-fs-20 fs-18 font-bold">{{ translate('shopping_cart')}}</h3>
 
 @php($shippingMethod=getWebConfig(name: 'shipping_method'))
-@php($cart=\App\Models\Cart::where(['customer_id' => (auth('customer')->check() ? auth('customer')->id() : session('guest_id'))])->get()->groupBy('cart_group_id'))
+@php($cart=\App\Utils\CartManager::getCartListGroupQuery())
 
-<div class="row g-3 mx-max-md-0">
+<div class="row g-3 mx-max-md-0 mb-3">
     <section class="col-lg-8 px-max-md-0">
         @if(count($cart)==0)
             @php($isPhysicalProductExist = false)
@@ -68,7 +68,7 @@
                         @if($cart_key==0)
                             <div
                                 class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2 px-12">
-                                @php($verify_status = \App\Utils\OrderManager::minimum_order_amount_verify($request, $group_key))
+                                @php($verify_status = \App\Utils\OrderManager::verifyCartListMinimumOrderAmount($request, $group_key))
                                 @if($cartItem->seller_is=='admin')
                                     <div class="d-flex gap-2">
                                         <div class="d-flex gap-3 align-items-center">
@@ -96,7 +96,7 @@
                                         @if($shopIdentity)
                                         <div class="d-flex gap-3 align-items-center">
                                             <input type="checkbox" class="shop-head-check shop-head-check-desktop">
-                                            <a href="{{ route('shopView',['id'=>$cartItem->seller_id]) }}"
+                                            <a href="{{ route('shopView',['id' => $shopIdentity->id]) }}"
                                                 class="text-primary d-flex align-items-center gap-2 fs-16">
                                                  <img src="{{theme_asset(path: 'public/assets/front-end/img/cart-store.png')}}" alt="">
                                                      {{ $shopIdentity->name }}
@@ -128,7 +128,7 @@
                                         @if(isset($chosenShipping)==false)
                                             @php($chosenShipping['shipping_method_id']=0)
                                         @endif
-                                        @php($shippings=\App\Utils\Helpers::get_shipping_methods($cartItem['seller_id'], $cartItem['seller_is']))
+                                        @php($shippings=\App\Utils\Helpers::getShippingMethods($cartItem['seller_id'], $cartItem['seller_is']))
                                         @if($isPhysicalProductExist && $shippingMethod=='sellerwise_shipping' && $shipping_type == 'order_wise')
 
                                             <div class="d-sm-flex">
@@ -138,7 +138,7 @@
                                                             {{ translate('shipping_cost')}}
                                                         </span>:
                                                         <span>
-                                                            {{App\Utils\Helpers::currency_converter($chosenShipping['shipping_cost'])}}
+                                                            {{webCurrencyConverter($chosenShipping['shipping_cost'])}}
                                                         </span>
                                                     </div>
                                                 @endisset
@@ -151,7 +151,7 @@
                                                                     $shippingTitle = translate('choose_shipping_method');
                                                                     foreach ($shippings as $shipping) {
                                                                         if ($chosenShipping['shipping_method_id'] == $shipping['id']) {
-                                                                            $shippingTitle = ucfirst($shipping['title']) . ' ( ' . $shipping['duration'] . ' ) ' . \App\Utils\Helpers::currency_converter($shipping['cost']);
+                                                                            $shippingTitle = ucfirst($shipping['title']) . ' ( ' . $shipping['duration'] . ' ) ' . webCurrencyConverter($shipping['cost']);
                                                                         }
                                                                     }
                                                                     ?>
@@ -168,7 +168,7 @@
                                                                             data-id="{{$shipping['id']}}"
                                                                             data-cart-group="{{$cartItem['cart_group_id']}}"
                                                                         >
-                                                                            {{ucfirst($shipping['title']).' ( '.$shipping['duration'].' ) '.\App\Utils\Helpers::currency_converter($shipping['cost'])}}
+                                                                            {{ucfirst($shipping['title']).' ( '.$shipping['duration'].' ) '.webCurrencyConverter($shipping['cost'])}}
                                                                         </li>
                                                                     @endforeach
                                                                 </ul>
@@ -265,7 +265,7 @@
                                                 <a href="{{ $checkProductStatus == 1 ? route('product', $cartItem['slug']) : 'javascript:'}}"
                                                    class="position-relative overflow-hidden">
                                                     <img class="rounded __img-62 {{ $checkProductStatus == 0?'custom-cart-opacity-50':'' }}"
-                                                         src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$cartItem['thumbnail'], type: 'product') }}"
+                                                         src="{{ getStorageImages(path: $cartItem?->product?->thumbnail_full_url, type: 'product') }}"
                                                         alt="{{ translate('product') }}">
                                                     @if ($checkProductStatus == 0)
                                                         <span class="temporary-closed position-absolute text-center p-2">
@@ -277,19 +277,14 @@
                                             <div class="d-flex flex-column gap-1">
                                                 <div
                                                     class="text-break __line-2 __w-18rem {{ $checkProductStatus == 0?'custom-cart-opacity-50':'' }}">
-                                                    <a href="{{ $checkProductStatus == 1 ? route('product',$cartItem['slug']) : 'javascript:'}}">{{$cartItem['name']}}</a>
-                                                </div>
-
-                                                <div
-                                                    class="d-flex flex-wrap gap-2 {{ $checkProductStatus == 0?'custom-cart-opacity-50':'' }}">
-                                                    @foreach(json_decode($cartItem['variations'], true) as $key1 => $variation)
-                                                        <div class="">
-                                                                <span class="__text-12px text-capitalize">
-                                                                    <span class="text-muted">{{$key1}} </span> : <span
-                                                                        class="fw-semibold">{{$variation}}</span>
-                                                                </span>
+                                                    <a href="{{ $checkProductStatus == 1 ? route('product', $cartItem['slug']) : 'javascript:'}}">
+                                                        {{$cartItem['name']}}
+                                                    </a>
+                                                    @if(!empty($cartItem['variant']))
+                                                        <div>
+                                                            <span class="__text-12px">{{translate('variant')}} : {{$cartItem['variant']}}</span>
                                                         </div>
-                                                    @endforeach
+                                                    @endif
                                                 </div>
 
                                                 @if ($product->product_type == 'physical' && $shipping_type != 'order_wise')
@@ -388,7 +383,7 @@
                         </tbody>
                     </table>
 
-                    @php($free_delivery_status = \App\Utils\OrderManager::free_delivery_order_amount($group[0]->cart_group_id))
+                    @php($free_delivery_status = \App\Utils\OrderManager::getFreeDeliveryOrderAmountArray($group[0]->cart_group_id))
                     @if ($free_delivery_status['status'] && (session()->missing('coupon_type') || session('coupon_type') !='free_delivery'))
                         <div class="free-delivery-area px-3 mb-3 mb-lg-2">
                             <div class="d-flex align-items-center gap-8">
@@ -454,7 +449,7 @@
                     @if($cart_key==0)
                         <div
                             class="card-header d-flex flex-column gap-2 border-0 justify-content-between px-12">
-                            @php($verify_status = \App\Utils\OrderManager::minimum_order_amount_verify($request, $group_key))
+                            @php($verify_status = \App\Utils\OrderManager::verifyCartListMinimumOrderAmount($request, $group_key))
                             @if($cartItem->seller_is=='admin')
                                 <div class="d-flex gap-2">
                                     <div class="d-flex gap-3 align-items-center">
@@ -482,7 +477,7 @@
                                     @if($shopIdentity)
                                         <div class="d-flex gap-3 align-items-center">
                                             <input type="checkbox" class="shop-head-check shop-head-check-mobile">
-                                            <a href="{{ route('shopView',['id'=>$cartItem->seller_id]) }}"
+                                            <a href="{{ route('shopView',['id' => $shopIdentity->id]) }}"
                                                class="text-primary d-flex align-items-center gap-2 fs-16">
                                                 <img src="{{ theme_asset(path: 'public/assets/front-end/img/cart-store.png') }}" alt="">
                                                 {{ $shopIdentity->name }}
@@ -513,7 +508,7 @@
                                     @if(isset($chosenShipping)==false)
                                         @php($chosenShipping['shipping_method_id']=0)
                                     @endif
-                                    @php( $shippings=\App\Utils\Helpers::get_shipping_methods($cartItem['seller_id'],$cartItem['seller_is']))
+                                    @php( $shippings=\App\Utils\Helpers::getShippingMethods($cartItem['seller_id'],$cartItem['seller_is']))
                                     @if($isPhysicalProductExist && $shippingMethod=='sellerwise_shipping' && $shipping_type == 'order_wise')
 
                                         @if(count($shippings) > 0)
@@ -541,7 +536,7 @@
                                         @isset($chosenShipping['shipping_cost'])
                                             <div class="text-sm-nowrap mt-2 text-center fs-12">
                                                 <span class="font-weight-bold">{{ translate('shipping_cost')}}</span>
-                                                :<span>{{App\Utils\Helpers::currency_converter($chosenShipping['shipping_cost'])}}</span>
+                                                :<span>{{webCurrencyConverter($chosenShipping['shipping_cost'])}}</span>
                                             </div>
                                         @endisset
                                     @endif
@@ -606,7 +601,7 @@
                                     <a href="{{ $checkProductStatus == 1 ? route('product',$cartItem['slug']) : 'javascript:'}}"
                                     class="position-relative overflow-hidden">
                                         <img class="rounded __img-48 {{ $checkProductStatus == 0?'custom-cart-opacity-50':'' }}"
-                                            src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$cartItem['thumbnail'], type: 'product') }}"
+                                            src="{{ getStorageImages(path: $cartItem?->product?->thumbnail_full_url, type: 'product') }}"
                                             alt="{{ translate('product') }}">
                                         @if ($checkProductStatus == 0)
                                             <span class="temporary-closed position-absolute text-center p-2">
@@ -620,16 +615,11 @@
                                         <a href="{{ $checkProductStatus == 1 ? route('product',$cartItem['slug']) : 'javascript:'}}">{{$cartItem['name']}}</a>
                                     </div>
 
-                                    <div class="d-flex flex-wrap column-gap-2">
-                                        @foreach(json_decode($cartItem['variations'],true) as $key1 =>$variation)
-                                            <div class="">
-                                                <span class="__text-12px text-capitalize">
-                                                <span class="text-muted"> {{$key1}} </span> : <span
-                                                        class="fw-semibold">{{$variation}}</span>
-                                                </span>
-                                            </div>
-                                        @endforeach
-                                    </div>
+                                    @if(!empty($cartItem['variant']))
+                                        <div>
+                                            <span class="__text-12px">{{translate('variant')}} : {{$cartItem['variant']}}</span>
+                                        </div>
+                                    @endif
                                     <div class="d-flex flex-wrap column-gap-2">
                                         <div class="text-nowrap text-muted">{{ translate('unit_price')}} :</div>
                                         <div class="text-start d-flex gap-1 flex-wrap">
@@ -674,8 +664,8 @@
                         <div>
                             @php($minimum_order=\App\Utils\ProductManager::get_product($cartItem['product_id']))
                             @if ($minimum_order && $checkProductStatus)
-                                <div class="qty d-flex flex-column align-items-center gap-3">
-                                    <span class="qty_plus action-update-cart-quantity-list-mobile"
+                                <div class="qty d-flex flex-column align-items-center gap-1">
+                                    <span class="qty_plus action-update-cart-quantity-list-mobile p-2"
                                           data-minimum-order="{{ $product->minimum_order_qty }}"
                                           data-cart-id="{{ $cartItem['id'] }}"
                                           data-increment="1">
@@ -690,7 +680,7 @@
                                            data-current-stock="{{ $getProductCurrentStock }}"
                                            data-min="{{ isset($cartItem->product->minimum_order_qty) ? $cartItem->product->minimum_order_qty : 1 }}"
                                            oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                                    <span class="qty_minus action-update-cart-quantity-list-mobile"
+                                    <span class="qty_minus action-update-cart-quantity-list-mobile p-2"
                                           data-minimum-order="{{ $product->minimum_order_qty }}"
                                           data-cart-id="{{ $cartItem['id'] }}"
                                           data-increment="-1"
@@ -719,7 +709,7 @@
                     </div>
                 @endforeach
 
-                @php($free_delivery_status = \App\Utils\OrderManager::free_delivery_order_amount($group[0]->cart_group_id))
+                @php($free_delivery_status = \App\Utils\OrderManager::getFreeDeliveryOrderAmountArray($group[0]->cart_group_id))
                 @if ($free_delivery_status['status'] && (session()->missing('coupon_type') || session('coupon_type') !='free_delivery'))
                     <div class="free-delivery-area px-3 mb-3 mb-lg-2">
                         <div class="d-flex align-items-center gap-8">
@@ -763,7 +753,7 @@
                 $shipping_type = isset($admin_shipping) == true ? $admin_shipping->shipping_type : 'order_wise';
                 ?>
             @if ($shipping_type == 'order_wise' && $isPhysicalProductExist)
-                @php($shippings=\App\Utils\Helpers::get_shipping_methods(1,'admin'))
+                @php($shippings=\App\Utils\Helpers::getShippingMethods(1,'admin'))
                 @php($chosenShipping=\App\Models\CartShipping::where(['cart_group_id'=>$cartItem['cart_group_id']])->first())
 
                 @if(isset($chosenShipping)==false)

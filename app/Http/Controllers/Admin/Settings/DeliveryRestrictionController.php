@@ -108,6 +108,7 @@ class DeliveryRestrictionController extends BaseController
                 'status' => true,
             ]);
         }
+        clearWebConfigCacheKeys();
         return back();
     }
 

@@ -23,6 +23,7 @@ class VendorService
     }
 
     /**
+     * @param int $vendorId
      * @return array
      */
     public function getInitialWalletData(int $vendorId): array

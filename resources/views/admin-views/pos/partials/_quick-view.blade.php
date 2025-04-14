@@ -5,9 +5,9 @@
     <div class="row gy-3">
         <div class="col-md-5">
             <div class="d-flex align-items-center justify-content-center active">
-                <img class="img-responsive w-100 rounded"
-                     src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$product['thumbnail'], type: 'backend-product') }}"
-                     data-zoom="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$product['thumbnail'], type: 'backend-product') }}"
+                <img class="img-responsive w-100 rounded aspect-1"
+                     src="{{ getStorageImages(path:$product->thumbnail_full_url, type: 'backend-product') }}"
+                     data-zoom="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'backend-product') }}"
                      alt="{{translate('product_image')}}">
                 <div class="cz-image-zoom-pane"></div>
             </div>
@@ -40,42 +40,50 @@
             </div>
         </div>
         <div class="col-md-7">
-            <div class="details">
-                <div class="d-flex flex-wrap gap-3 mb-3">
-                    <div class="d-flex gap-2 align-items-center text-success rounded-pill bg-success-light px-2 py-1 stock-status-in-quick-view">
-                        <i class="tio-checkmark-circle-outlined"></i>
-                        {{translate('in_stock')}}
-                    </div>
-                </div>
-                <h2 class="mb-3 product-title">{{ $product->name }}</h2>
-                @if($product->reviews_count > 0)
-                <div class="d-flex align-items-center gap-2 mb-3">
-                    <i class="tio-star text-warning"></i>
-                    <span class="text-muted text-capitalize">({{$product->reviews_count.' '.translate('customer_review')}})</span>
-                </div>
-                @endif
-                <div class="d-flex flex-wrap align-items-center gap-3 mb-2 text-dark">
-                    <h2 class="c1 text-accent price-range-with-discount d-flex gap-2 align-items-center">
-                        {!! getPriceRangeWithDiscount(product: $product) !!}
-                    </h2>
-                </div>
-            </div>
 
             <div class="mt-3">
-                <?php
-                $cart = false;
-                if (session()->has('cart')) {
-                    foreach (session()->get('cart') as $key => $cartItem) {
-                        if (is_array($cartItem) && $cartItem['id'] == $product['id']) {
-                            $cart = $cartItem;
+                <form id="add-to-cart-form" class="add-to-cart-details-form">
+                    @csrf
+                    <div class="details">
+                        <div class="d-flex flex-wrap gap-3 mb-3">
+                            <div class="d-flex gap-2 align-items-center text-success rounded-pill bg-success-light px-2 py-1 stock-status-in-quick-view">
+                                <i class="tio-checkmark-circle-outlined"></i>
+                                {{translate('in_stock')}}
+                            </div>
+                        </div>
+                        <h2 class="mb-3 product-title">{{ $product->name }}</h2>
+                        @if($product->reviews_count > 0)
+                            <div class="d-flex align-items-center gap-2 mb-3">
+                                <i class="tio-star text-warning"></i>
+                                <span class="text-muted text-capitalize">({{$product->reviews_count.' '.translate('customer_review')}})</span>
+                            </div>
+                        @endif
+                        <div class="d-flex flex-wrap align-items-center gap-3 mb-2 text-dark">
+                            <h2 class="c1 text-accent price-range-with-discount d-flex gap-2 align-items-center">
+                            <span class="discounted-unit-price fs-24 font-bold">
+                                {{ getProductPriceByType(product: $product, type: 'discounted_unit_price', result: 'string') }}
+                            </span>
+                            @if(getProductPriceByType(product: $product, type: 'discount', result: 'value') > 0)
+                                <del class="product-total-unit-price align-middle text-muted fs-18 font-semibold">
+                                    {{ webCurrencyConverter(amount: $product->unit_price) }}
+                                </del>
+                            @endif
+                            </h2>
+                        </div>
+                    </div>
+
+                    <?php
+                    $cart = false;
+                    if (session()->has('cart')) {
+                        foreach (session()->get('cart') as $key => $cartItem) {
+                            if (is_array($cartItem) && $cartItem['id'] == $product['id']) {
+                                $cart = $cartItem;
+                            }
                         }
                     }
-                }
 
-                ?>
+                    ?>
 
-                <form id="add-to-cart-form">
-                    @csrf
                     <input type="hidden" name="id" value="{{ $product->id }}">
                     <div class="variant-change">
                         <div class="position-relative mb-4">
@@ -107,11 +115,13 @@
                                 }
                             @endphp
                         </div>
+
                         @foreach (json_decode($product->choice_options) as $key => $choice)
                             <div class="d-flex gap-3 flex-wrap align-items-center mb-3">
                                 <div class="my-2 w-43px">
                                     <strong class="text-dark">{{ ucfirst($choice->title) }}</strong>
                                 </div>
+
                                 <div class="d-flex gap-2 flex-wrap">
                                     @foreach ($choice->options as $index => $option)
                                         <input class="btn-check" type="radio"
@@ -124,6 +134,34 @@
                                 </div>
                             </div>
                         @endforeach
+
+                        @php($extensionIndex=0)
+                        @if($product['product_type'] == 'digital' && $product['digital_product_file_types'] && count($product['digital_product_file_types']) > 0 && $product['digital_product_extensions'])
+                            @foreach($product['digital_product_extensions'] as $extensionKey => $extensionGroup)
+                                <div class="d-flex gap-3 flex-wrap align-items-center mb-3">
+                                    <div class="my-2">
+                                        <strong class="text-dark">{{ translate($extensionKey) }} :</strong>
+                                    </div>
+
+                                    @if(count($extensionGroup) > 0)
+                                        <div class="d-flex gap-2 flex-wrap">
+                                            @foreach($extensionGroup as $index => $extension)
+                                                <input class="btn-check" type="radio"
+                                                       id="extension_{{ str_replace(' ', '-', $extension) }}"
+                                                       name="variant_key" value="{{ $extensionKey.'-'.preg_replace('/\s+/', '-', $extension) }}"
+                                                       {{ $extensionIndex == 0 ? 'checked' : ''}} autocomplete="off">
+                                                <label class="btn btn-sm check-label border-0 mb-0 w-auto pos-check-label"
+                                                       for="extension_{{ str_replace(' ', '-', $extension) }}">
+                                                    {{ $extension }}
+                                                </label>
+                                                @php($extensionIndex++)
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        @endif
+
                     </div>
                     <div class="d-flex flex-wrap gap-2 position-relative price-section">
                         <div class="alert alert--message flex-row alert-dismissible fade show pos-alert-message gap-2 d-none" role="alert">
@@ -182,20 +220,17 @@
                         <div class="d-flex flex-column gap-1 mt-3 title-color">
                             <div class="product-description-label text-dark font-weight-bold">{{translate('total_Price')}}:</div>
                             <div class="product-price c1">
-                                <strong> {{getCurrencySymbol()}}</strong>
-                                <strong class="set-price"></strong>
-                                <span class="text-muted fz-10">
+                                <strong class="product-details-chosen-price-amount"></strong>
+                                <span class="text-muted fz-10 tax-container">
                                     ( {{ ($product->tax_model == 'include' ? '':'+').' '.translate('tax') }} <span class="set-product-tax"></span>)</span>
                             </div>
                         </div>
-                        <div class="align-self-center">
-                            @if ($product->discount > 0)
+                        <div class="align-self-center discounted-badge-element">
+                            @if (getProductPriceByType(product: $product, type: 'discount', result: 'value') > 0)
                                 <div class="d-flex gap-1 align-items-center text-primary rounded-pill bg-primary-light px-2 py-1">
-                                    @if ($product->discount_type === "percent")
-                                        {{$product->discount.' % '.translate('OFF')}}
-                                    @else
-                                        {{ translate('save').' '.getCurrencySymbol()}}<span class="set-discount-amount"></span>
-                                    @endif
+                                    <span class="set-discount-amount discounted_badge">
+                                        {{ getProductPriceByType(product: $product, type: 'discount', result: 'string') }}
+                                    </span>
                                 </div>
                             @endif
                         </div>

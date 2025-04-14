@@ -106,7 +106,6 @@
                                                name="DB_PASSWORD"
                                                required
                                                placeholder="Ex: password" autocomplete="off">
-                                        <input type="hidden" name="types[]" value="DB_PASSWORD">
                                         <div class="togglePassword">
                                             <img alt="" class="svg eye"
                                                 src="{{ dynamicAsset(path: 'public/assets/installation/assets/img/svg-icons/eye.svg') }}">

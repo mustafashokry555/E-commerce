@@ -1,7 +1,7 @@
 @php use App\Utils\Helpers; @endphp
 @extends('theme-views.layouts.app')
 
-@section('title', translate('my_Order_List').' | '.$web_config['name']->value.' '.translate('ecommerce'))
+@section('title', translate('my_Order_List').' | '.$web_config['company_name'].' '.translate('ecommerce'))
 
 @section('content')
     <main class="main-content d-flex flex-column gap-3 py-3 mb-4">
@@ -64,10 +64,10 @@
                                                             <div class="avatar rounded size-3-75rem aspect-1 overflow-hidden d-flex align-items-center">
                                                                 @if($order->seller_is == 'seller')
                                                                     <img class="img-fit dark-support rounded" alt=""
-                                                                        src="{{ getValidImage(path: 'storage/app/public/shop/'.($order?->seller?->shop->image), type:'shop') }}">
+                                                                        src="{{ getStorageImages(path:$order?->seller?->shop->image_full_url, type:'shop') }}">
                                                                 @elseif($order->seller_is == 'admin')
                                                                     <img class="img-fit dark-support rounded" alt=""
-                                                                        src="{{ getValidImage(path: 'storage/app/public/company/'.($web_config['fav_icon']->value), type:'shop') }}">
+                                                                        src="{{ getStorageImages(path: $web_config['fav_icon'], type:'shop') }}">
                                                                 @endif
                                                             </div>
                                                             <div class="media-body">
@@ -99,7 +99,10 @@
                                                         <div
                                                             class="{{ $order['payment_status']=='unpaid' ? 'text-danger':'text-dark' }} mt-1"> {{ translate($order['payment_status']) }}</div>
                                                     </td>
-                                                    <td>{{Helpers::currency_converter($order['order_amount'])}}</td>
+                                                    <td>
+                                                        @php($orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(order: $order))
+                                                        {{ webCurrencyConverter(amount:  $orderTotalPriceSummary['totalAmount']) }}
+                                                    </td>
                                                     <td>
                                                         <div class="d-flex justify-content-center gap-2 align-items-center">
                                                             <a href="{{ route('account-order-details', ['id'=>$order->id]) }}"
@@ -111,20 +114,6 @@
                                                                 <img src="{{theme_asset('assets/img/svg/download.svg')}}"
                                                                      alt="" class="svg">
                                                             </a>
-                                                            @if($order['order_status']=='pending')
-                                                                <a href="javascript:" title="{{translate('cancel')}}"
-                                                                   data-action="{{route('order-cancel',[$order->id])}}"
-                                                                   data-text="{{translate('want_to_cancel_this_order').'?'}}"
-                                                                   class="btn btn-danger btn-action delete-action">
-                                                                    <i class="bi bi-trash"></i>
-                                                                </a>
-                                                            @else
-                                                                <button class="btn btn-danger btn-action cancel-message"
-                                                                        title="{{ translate('cancel')}}">
-                                                                    <i class="bi bi-trash"></i>
-                                                                </button>
-                                                            @endif
-
                                                         </div>
                                                     </td>
                                                 </tr>
@@ -141,10 +130,10 @@
                                                 <div class="avatar rounded size-3-75rem">
                                                     @if($order->seller_is == 'seller')
                                                         <img class="img-fit dark-support rounded" alt=""
-                                                            src="{{ getValidImage(path: 'storage/app/public/shop/'.($order?->seller?->shop->image), type:'shop') }}">
+                                                            src="{{ getStorageImages(path: $order?->seller?->shop->image_full_url, type:'shop') }}">
                                                     @elseif($order->seller_is == 'admin')
                                                         <img class="img-fit dark-support rounded" alt=""
-                                                            src="{{ getValidImage(path: 'storage/app/public/company/'.($web_config['fav_icon']->value), type:'shop') }}">
+                                                            src="{{ getStorageImages(path: $web_config['fav_icon'], type:'shop') }}">
                                                     @endif
                                                 </div>
                                                 <div class="media-body">
@@ -155,7 +144,7 @@
                                                         class="text-muted fs-12">{{date('d M, Y h:i A',strtotime($order['created_at']))}}</div>
                                                     <div class="d-flex gap-2 align-items-center fs-12">
                                                         <div class="text-muted">{{ translate('price').':' }}</div>
-                                                        <div class="text-dark"> {{Helpers::currency_converter($order['order_amount'])}}</div>
+                                                        <div class="text-dark"> {{webCurrencyConverter($order['order_amount'])}}</div>
                                                     </div>
                                                     <div class="d-flex gap-2 align-items-center fs-12">
                                                         <div class="text-muted">{{ translate('status') }} :</div>
@@ -175,26 +164,6 @@
                                                         <div class="{{ $order['payment_status']=='unpaid' ? 'text-danger':'text-dark' }}"> {{ translate($order['payment_status']) }}</div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div class="">
-                                                <a href="{{route('generate-invoice',[$order->id])}}"
-                                                   class="btn btn-outline-success btn-action mb-1">
-                                                    <img src="{{theme_asset('assets/img/svg/download.svg')}}" alt=""
-                                                         class="svg">
-                                                </a>
-                                                @if($order['payment_method']=='cash_on_delivery' && $order['order_status']=='pending')
-                                                    <a href="javascript:" title="{{translate('cancel')}}"
-                                                       data-action="{{route('order-cancel',[$order->id])}}"
-                                                       data-text="{{translate('want_to_cancel_this_order').'?'}}"
-                                                       class="btn btn-danger btn-action mb-1 delete-action">
-                                                        <i class="bi bi-trash"></i>
-                                                    </a>
-                                                @else
-                                                    <button class="btn btn-danger btn-action mb-1 cancel-message"
-                                                            title="{{ translate('cancel')}}">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                @endif
                                             </div>
                                         </div>
                                     @endforeach

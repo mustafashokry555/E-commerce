@@ -26,4 +26,17 @@ class HelpTopic extends Model
     {
         return $query->where('status', 1);
     }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::saved(function ($model) {
+            cacheRemoveByType(type: 'help_topics');
+        });
+
+        static::deleted(function ($model) {
+            cacheRemoveByType(type: 'help_topics');
+        });
+    }
 }

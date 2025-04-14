@@ -466,7 +466,7 @@ const TELEPHONE_CODES = [
     ["name" => 'Zimbabwe (+263)', "code" => '263'],
 ];
 
-const SOFTWARE_VERSION = '14.6';
+const SOFTWARE_VERSION = '15.0';
 
 const THEME_RATIO = [
     'default' => [
@@ -559,6 +559,9 @@ const GATEWAYS_PAYMENT_METHODS = [
     ['key' => 'payfast', 'value' => 'Pay Fast'],
     ['key' => 'worldpay', 'value' => 'World Pay'],
     ['key' => 'sixcash', 'value' => 'Six Cash'],
+    ['key' => 'instamojo', 'value' => 'Instamojo'],
+    ['key' => 'phonepe', 'value' => 'PhonePe'],
+    ['key' => 'cashfree', 'value' => 'Cashfree'],
 ];
 
 //currencies
@@ -1154,3 +1157,43 @@ const GATEWAYS_LANGUAGES = [
     ["code" => "za", "name" => "Zhuang, Chuang", "nativeName" => "Saɯ cueŋƅ, Saw cuengh"]
 ];
 
+const CACHE_FOR_3_HOURS = 60 * 60 * 3;
+
+const CACHE_BUSINESS_SETTINGS_TABLE = 'cache_business_settings_table';
+const CACHE_CLEARANCE_SALE_SETUP_TABLE = 'cache_clearance_sale_setup_table';
+const CACHE_ROBOTS_META_CONTENT_TABLE = 'Cache_robots_meta_content_table';
+const CACHE_LOGIN_SETUP_TABLE = 'cache_login_setup_table';
+const CACHE_BANNER_TABLE = 'cache_banner_table';
+const CACHE_SHOP_TABLE = 'cache_shops_table';
+const CACHE_TAGS_TABLE = 'cache_tags_table';
+const CACHE_HELP_TOPICS_TABLE = 'cache_help_topics_table';
+const CACHE_ORDER_DETAILS_TABLE = 'cache_order_details_table';
+const IN_HOUSE_SHOP_TEMPORARY_CLOSE_STATUS = 'in_house_shop_temporary_close_status';
+const CACHE_PRIORITY_WISE_BRANDS_LIST = 'cache_priority_wise_brands_list';
+const CACHE_CONTAINER_FOR_LANGUAGE_WISE_CACHE_KEYS = 'cache_container_for_language_wise_cache_keys';
+const CACHE_MAIN_CATEGORIES_LIST = 'cache_main_categories_list';
+const CACHE_HOME_CATEGORIES_LIST = 'cache_home_categories_list';
+const CACHE_HOME_CATEGORIES_API_LIST = 'cache_home_categories_api_list';
+const FIND_WHAT_YOU_NEED_CATEGORIES_LIST = 'find_what_you_need_categories_list';
+const CACHE_FOR_IN_HOUSE_ALL_PRODUCTS = 'cache_for_in_house_all_products';
+const CACHE_FOR_HOME_PAGE_TOP_VENDORS_LIST = 'cache_for_home_page_top_vendors_list';
+const CACHE_FOR_HOME_PAGE_MORE_VENDORS_LIST = 'cache_for_home_page_more_vendors_list';
+const CACHE_FLASH_DEAL_KEYS = 'cache_flash_deal_keys';
+const CACHE_FOR_CLEARANCE_SALE_PRODUCTS_COUNT = 'cache_for_clearance_sale_products_count';
+const CACHE_ACTIVE_BRANDS_WITH_COUNTING_AND_PRIORITY = 'active_brands_with_counting_and_priority';
+const CACHE_FOR_MOST_DEMANDED_PRODUCT_ITEM = 'cache_for_most_demanded_product_item';
+const CACHE_FOR_BEST_SELLING_PRODUCT_ITEM = 'cache_for_most_demanded_product_item';
+const CACHE_FOR_MOST_SEARCHING_PRODUCTS_LIST = 'cache_for_most_searching_products_list';
+const CACHE_FOR_FEATURED_PRODUCTS_LIST = 'cache_for_featured_products_list';
+const CACHE_FOR_ALL_COLOR_LIST = 'cache_for_all_color_list';
+const CACHE_FOR_ALL_PRODUCTS_COLOR_LIST = 'cache_for_all_products_color_list';
+const CACHE_FOR_CURRENCY_TABLE = 'cache_for_currency_table';
+const CACHE_FOR_ALL_PRODUCTS_REVIEW_LIST = 'cache_for_all_products_review_list';
+const CACHE_BANNER_ALL_CACHE_KEYS = 'cache_banner_all_cache_keys';
+const CACHE_FOR_ANALYTIC_SCRIPT_ACTIVE_LIST = 'cache_for_analytic_script_active_list';
+const CACHE_FOR_RANDOM_SINGLE_PRODUCT = 'cache_for_random_single_product';
+const CACHE_FOR_HOME_PAGE_JUST_FOR_YOU_PRODUCT_LIST = 'cache_for_home_page_just_for_you_product_list';
+const CACHE_FOR_HOME_PAGE_LATEST_PRODUCT_LIST = 'cache_for_home_page_latest_product_list';
+const CACHE_FOR_HOME_PAGE_TOP_RATED_PRODUCT_LIST = 'cache_for_home_page_top_rated_product_list';
+const CACHE_FOR_HOME_PAGE_BEST_SELL_PRODUCT_LIST = 'cache_for_home_page_best_sell_product_list';
+const CACHE_FOR_IN_HOUSE_SHIPPING_TYPE = 'cache_for_in_house_shipping_type';

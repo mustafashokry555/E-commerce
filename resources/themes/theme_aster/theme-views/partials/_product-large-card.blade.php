@@ -3,14 +3,10 @@
 <div class="product border rounded text-center d-flex flex-column gap-10 ov-hidden cursor-pointer get-view-by-onclick"
      data-link="{{route('product',$product->slug)}}">
     <div class="product__top width--100 aspect-1">
-        @if($product->discount > 0)
+        @if(getProductPriceByType(product: $product, type: 'discount', result: 'value') > 0)
             <span class="product__discount-badge">
                 <span>
-                    @if ($product->discount_type == 'percent')
-                        {{'-'.' '.round($product->discount, $web_config['decimal_point_settings'])}}%
-                    @elseif($product->discount_type =='flat')
-                        {{'-'.' '.Helpers::currency_converter($product->discount)}}
-                    @endif
+                     -{{ getProductPriceByType(product: $product, type: 'discount', result: 'string') }}
                 </span>
             </span>
         @endif
@@ -21,19 +17,17 @@
                      class="svg text-white">
             </div>
         @endif
-        @php($wishlist = count($product->wishList)>0 ? 1 : 0)
-        @php($compare_list = count($product->compareList)>0 ? 1 : 0)
         <div class="product__actions d-flex flex-column gap-2">
             <a href="javascript:"
                data-action="{{route('store-wishlist')}}"
                data-product-id="{{$product['id']}}"
                id="wishlist-{{$product['id']}}"
-               class="btn-wishlist stopPropagation add-to-wishlist wishlist-{{$product['id']}} {{($wishlist == 1?'wishlist_icon_active':'')}}"
+               class="btn-wishlist stopPropagation add-to-wishlist wishlist-{{$product['id']}} {{ isProductInWishList($product->id) ?'wishlist_icon_active':'' }}"
                title="{{ translate('add_to_wishlist') }}">
                 <i class="bi bi-heart"></i>
             </a>
             <a href="javascript:"
-               class="btn-compare stopPropagation add-to-compare compare_list-{{$product['id']}} {{($compare_list == 1?'compare_list_icon_active':'')}}"
+               class="btn-compare stopPropagation add-to-compare compare_list-{{$product['id']}} {{ isProductInCompareList($product->id) ?'compare_list_icon_active':'' }}"
                data-action="{{route('product-compare.index')}}"
                data-product-id="{{$product['id']}}"
                id="compare_list-{{$product['id']}}" title="{{translate('add_to_compare_list')}}">
@@ -48,7 +42,7 @@
 
         <div class="product__thumbnail align-items-center d-flex h-100 justify-content-center">
             <img class="dark-support rounded" alt=""
-                 src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$product['thumbnail'], type: 'product') }}">
+                 src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'product') }}">
         </div>
         @if(($product['product_type'] == 'physical') && ($product['current_stock'] < 1))
             <div class="product__notify">
@@ -86,7 +80,7 @@
             @if($product->added_by=='seller')
                 {{ isset($product->seller->shop->name) ? Str::limit($product->seller->shop->name, 20) : '' }}
             @elseif($product->added_by=='admin')
-                {{$web_config['name']->value}}
+                {{$web_config['company_name']}}
             @endif
         </div>
         <h6 class="product__title text-truncate">
@@ -94,11 +88,11 @@
         </h6>
 
         <div class="product__price d-flex justify-content-center flex-wrap column-gap-2">
-            @if($product->discount > 0)
-                <del class="product__old-price">{{Helpers::currency_converter($product->unit_price)}}</del>
+            @if(getProductPriceByType(product: $product, type: 'discount', result: 'value') > 0)
+                <del class="product__old-price">{{webCurrencyConverter($product->unit_price)}}</del>
             @endif
             <ins class="product__new-price">
-                {{Helpers::currency_converter($product->unit_price-Helpers::get_product_discount($product,$product->unit_price))}}
+                {{ getProductPriceByType(product: $product, type: 'discounted_unit_price', result: 'string') }}
             </ins>
         </div>
     </div>

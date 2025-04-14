@@ -105,7 +105,7 @@
         </label>
     </div>
     <div class="bg-soft--primary p-3 rounded mb-3">
-        <p>{{translate('product_information_will_be_automatically_bind_from_database').' '.translate('If_you_don’t_want_to_see_the_information_in_the_mail').' '.translate('just_turn_the_switch_button_off').'.'}}</p>
+        <p>{{translate('product_information_will_be_automatically_bind_from_database').' '.translate('If_you_do_not_want_to_see_the_information_in_the_mail').' '.translate('just_turn_the_switch_button_off').'.'}}</p>
     </div>
     @endif
     @if(!in_array('banner_image',$template['hide_field']))
@@ -202,7 +202,7 @@
         </label>
     </div>
     <div class="bg-soft--primary p-3 rounded mb-3">
-        <p class="mb-0">{{translate('order_Information_will_be_automatically_bind_from_database').'. '.translate('if_you don’t_want_to
+        <p class="mb-0">{{translate('order_Information_will_be_automatically_bind_from_database').'. '.translate('if_you_do_not_want_to
             see_the_information_in_the_mail').'. '.translate('just_turn_the_switch_button_off').'.'}}</p>
     </div>
     @endif
@@ -233,7 +233,7 @@
                     <input type="text" name="footer_text[{{ $lang}}]" data-id="footer-text"
                            id="{{ $lang}}-footer-text"
                            value="{{ $translate[$lang]['footer_text'] ?? ($lang == 'en' ? $template['footer_text'] : '')}}"
-                           class="form-control" placeholder="{{translate('ex').' : '.translate('please_contact_us_for_any_queries').','.translate('we’re_always_happy_to_help').'.'}}">
+                           class="form-control" placeholder="{{translate('ex').' : '.translate('please_contact_us_for_any_queries').','.translate('we_are_always_happy_to_help').'.'}}">
                 </div>
             </div>
         @endforeach

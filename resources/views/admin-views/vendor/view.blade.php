@@ -15,7 +15,7 @@
                 <ul class="nav nav-tabs flex-wrap page-header-tabs">
                     <li class="nav-item">
                         <a class="nav-link active"
-                           href="{{ route('admin.vendors.view',$seller['id']) }}">{{translate('shop_overview')}}</a>
+                           href="{{ route('admin.vendors.view', $seller['id']) }}">{{translate('shop_overview')}}</a>
                     </li>
                     @if ($seller['status']!="pending")
                         <li class="nav-item">
@@ -25,6 +25,10 @@
                         <li class="nav-item">
                             <a class="nav-link"
                                href="{{ route('admin.vendors.view',['id'=>$seller['id'], 'tab'=>'product']) }}">{{translate('product')}}</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link"
+                               href="{{ route('admin.vendors.view',['id'=>$seller['id'], 'tab'=>'clearance_sale']) }}">{{translate('clearance_sale_products')}}</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link"
@@ -46,8 +50,8 @@
             <div class="card-body">
                 <div class="d-flex flex-wrap gap-3 justify-content-between">
                     <div class="media flex-column flex-sm-row gap-3">
-                        <img class="avatar avatar-170 rounded-0"
-                             src="{{ getValidImage(path: 'storage/app/public/shop/'.$seller?->shop->image, type: 'backend-basic') }}"
+                        <img class="avatar avatar-170 rounded object-fit-cover"
+                             src="{{ getStorageImages(path: $seller?->shop->image_full_url, type: 'backend-basic') }}"
                              alt="{{translate('image')}}">
                         <div class="media-body">
                             @if($seller?->shop->temporary_close || ($seller?->shop->vacation_status && $current_date >= date('Y-m-d', strtotime($seller?->shop->vacation_start_date)) && $current_date <= date('Y-m-d', strtotime($seller?->shop->vacation_end_date))))
@@ -124,8 +128,8 @@
                                     <a href="{{ $seller['status']!="pending" ? route('admin.vendors.view',['id'=>$seller['id'], 'tab'=>'review']): 'javascript:' }}"
                                        class="text-dark">{{$seller->rating_count}} {{translate('reviews')}}</a>
                                 </div>
-                                @if ( $seller['status']!="pending" && $seller['status']!="suspended" && $seller['status']!="rejected")
-                                    <a href="{{route('shopView',['id'=>$seller['id']])}}"
+                                @if ( $seller['status']!="pending" && $seller['status']!="suspended" && $seller['status']!="rejected" && $seller?->shop)
+                                    <a href="{{route('shopView', ['id'=> $seller?->shop['id']])}}"
                                        class="btn btn-outline--primary px-4" target="_blank"><i
                                                 class="tio-globe"></i> {{translate('view_live')}}
                                         @endif

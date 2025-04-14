@@ -3,15 +3,11 @@
 <div class="product-single-hover style--card">
     <div class="overflow-hidden position-relative">
         <div class=" inline_product clickable d-flex justify-content-center">
-            @if($product->discount > 0)
+            @if(getProductPriceByType(product: $product, type: 'discount', result: 'value') > 0)
                 <div class="d-flex">
                     <span class="for-discount-value p-1 pl-2 pr-2 font-bold fs-13">
                         <span class="direction-ltr d-block">
-                            @if ($product->discount_type == 'percent')
-                                -{{ round($product->discount,(!empty($decimalPointSettings) ? $decimalPointSettings: 0))}}%
-                            @elseif($product->discount_type =='flat')
-                                -{{ webCurrencyConverter(amount: $product->discount) }}
-                            @endif
+                            -{{ getProductPriceByType(product: $product, type: 'discount', result: 'string') }}
                         </span>
                     </span>
                 </div>
@@ -23,7 +19,7 @@
             <div class="p-10px pb-0">
                 <a href="{{route('product',$product->slug)}}" class="w-100">
                     <img alt=""
-                         src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$product['thumbnail'], type: 'product') }}">
+                         src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'product') }}">
                 </a>
             </div>
 
@@ -50,7 +46,7 @@
             @endif
             <div class="text-center">
                 <a href="{{route('product',$product->slug)}}">
-                    {{ Str::limit($product['name'], 23) }}
+                    {{ $product['name'] }}
                 </a>
             </div>
             <div class="justify-content-between text-center">

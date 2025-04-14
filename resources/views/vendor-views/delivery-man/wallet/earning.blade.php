@@ -30,7 +30,9 @@
                     <div class="col-sm-6 col-lg-4">
                         <div class="business-analytics">
                             <h5 class="business-analytics__subtitle">{{ translate('total_earning') }}</h5>
-                            <h2 class="business-analytics__title">{{ $totalEarn ? setCurrencySymbol(amount: usdToDefaultCurrency(amount: $totalEarn), currencyCode: getCurrencyCode()) : setCurrencySymbol(amount: 0, currencyCode: getCurrencyCode()) }}</h2>
+                            <h2 class="business-analytics__title">
+                                {{ $totalEarn ? setCurrencySymbol(amount: usdToDefaultCurrency(amount: $totalEarn), currencyCode: getCurrencyCode()) : setCurrencySymbol(amount: 0, currencyCode: getCurrencyCode()) }}
+                            </h2>
                             <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/aw.png') }}" width="40" class="business-analytics__img" alt="">
                         </div>
                     </div>

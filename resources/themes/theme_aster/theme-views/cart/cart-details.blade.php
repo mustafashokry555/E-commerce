@@ -7,7 +7,11 @@
     use App\Utils\ProductManager;
     use function App\Utils\get_shop_name;
     $shippingMethod = getWebConfig(name: 'shipping_method');
-    $cart = Cart::where(['customer_id' => (auth('customer')->check() ? auth('customer')->id() : session('guest_id'))])->with(['seller','allProducts.category'])->get()->groupBy('cart_group_id');
+    $cart = Cart::whereHas('product', function ($query) {
+                return $query->active();
+            })->where(['customer_id' => (auth('customer')->check() ? auth('customer')->id() : session('guest_id'))])->with(['seller','allProducts.category'])
+            ->get()
+            ->groupBy('cart_group_id');
 @endphp
 <div class="container">
     <h4 class="text-center mb-3 text-capitalize">{{ translate('cart_list') }}</h4>
@@ -29,7 +33,6 @@
                         @if(count($cart)==0)
                             @php $physical_product = false; @endphp
                         @endif
-
 
                         @foreach($cart as $group_key=>$group)
                             @php
@@ -60,14 +63,15 @@
                                     @endif
                                     @if($cart_key==0)
                                         @php
-                                            $verify_status = OrderManager::minimum_order_amount_verify($request, $group_key);
+                                            $verify_status = OrderManager::verifyCartListMinimumOrderAmount($request, $group_key);
                                         @endphp
                                         <div class="bg-primary-light py-2 px-2 px-sm-3 mb-3 mb-sm-4">
                                             <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
                                                 <div class="d-flex align-items-center">
                                                     @if($cartItem->seller_is=='admin')
                                                         <div class="d-flex gap-3 align-items-center">
-                                                            <input type="checkbox" class="shop-head-check shop-head-check-desktop">
+                                                            <input type="checkbox"
+                                                                   class="shop-head-check shop-head-check-desktop">
                                                             <a href="{{route('shopView',['id'=>0])}}">
                                                                 <h5>
                                                                     {{getWebConfig(name: 'company_name')}}
@@ -92,7 +96,7 @@
                                                             data-bs-toggle="tooltip"
                                                             data-bs-placement="right"
                                                             data-bs-custom-class="custom-tooltip"
-                                                            data-bs-title="{{ translate('minimum_Order_Amount') }} {{ Helpers::currency_converter($verify_status['minimum_order_amount']) }} {{ translate('for') }} @if($cartItem->seller_is=='admin') {{getWebConfig(name: 'company_name')}} @else {{ get_shop_name($cartItem['seller_id']) }} @endif">
+                                                            data-bs-title="{{ translate('minimum_Order_Amount') }} {{ webCurrencyConverter($verify_status['minimum_order_amount']) }} {{ translate('for') }} @if($cartItem->seller_is=='admin') {{getWebConfig(name: 'company_name')}} @else {{ get_shop_name($cartItem['seller_id']) }} @endif">
                                                         <i class="bi bi-info-circle"></i>
                                                     </span>
                                                     @endif
@@ -106,7 +110,7 @@
                                                         @php $choosen_shipping['shipping_method_id']=0 @endphp
                                                     @endif
                                                     @php
-                                                        $shippings=Helpers::get_shipping_methods($cartItem['seller_id'],$cartItem['seller_is'])
+                                                        $shippings=Helpers::getShippingMethods($cartItem['seller_id'],$cartItem['seller_is'])
                                                     @endphp
                                                     @if($physical_product && $shippingMethod=='sellerwise_shipping' && $shipping_type == 'order_wise')
                                                         @if(count($shippings) > 0)
@@ -123,7 +127,7 @@
                                                                                 $shippings_title = translate('choose_shipping_method');
                                                                                 foreach ($shippings as $shipping) {
                                                                                     if ($choosen_shipping['shipping_method_id'] == $shipping['id']) {
-                                                                                        $shippings_title = ucfirst($shipping['title']) . ' ( ' . $shipping['duration'] . ' ) ' . Helpers::currency_converter($shipping['cost']);
+                                                                                        $shippings_title = ucfirst($shipping['title']) . ' ( ' . $shipping['duration'] . ' ) ' . webCurrencyConverter($shipping['cost']);
                                                                                     }
                                                                                 }
                                                                                 ?>
@@ -132,7 +136,7 @@
                                                                         <ul class="dropdown-menu dropdown-left-auto bs-dropdown-min-width--8rem">
                                                                             @foreach($shippings as $shipping)
                                                                                 <li class="cursor-pointer set-shipping-id" data-id="{{$shipping['id']}}" data-cart-group="{{$cartItem['cart_group_id']}}">
-                                                                                    {{$shipping['title'].' ( '.$shipping['duration'].' ) '.Helpers::currency_converter($shipping['cost'])}}
+                                                                                    {{$shipping['title'].' ( '.$shipping['duration'].' ) '.webCurrencyConverter($shipping['cost'])}}
                                                                                 </li>
                                                                             @endforeach
                                                                         </ul>
@@ -183,20 +187,20 @@
                                                 @php($product = $cartItem)
                                             @endif
 
-                                            <?php
+                                                <?php
                                                 $getProductCurrentStock = $product->current_stock;
-                                                if(!empty($product->variation)) {
-                                                    foreach(json_decode($product->variation, true) as $productVariantSingle) {
-                                                        if($productVariantSingle['type'] == $cartItem->variant) {
+                                                if (!empty($product->variation)) {
+                                                    foreach (json_decode($product->variation, true) as $productVariantSingle) {
+                                                        if ($productVariantSingle['type'] == $cartItem->variant) {
                                                             $getProductCurrentStock = $productVariantSingle['qty'];
                                                         }
                                                     }
                                                 }
-                                            ?>
+                                                ?>
 
-                                            <?php
+                                                <?php
                                                 $checkProductStatus = $cartItem->allProducts?->status ?? 0;
-                                                if($cartItem->seller_is == 'admin') {
+                                                if ($cartItem->seller_is == 'admin') {
                                                     $inhouseTemporaryClose = getWebConfig(name: 'temporary_close') ? getWebConfig(name: 'temporary_close')['status'] : 0;
                                                     $inhouseVacation = getWebConfig(name: 'vacation_add');
                                                     $vacationStartDate = $inhouseVacation['vacation_start_date'] ? date('Y-m-d', strtotime($inhouseVacation['vacation_start_date'])) : null;
@@ -205,29 +209,31 @@
                                                     if ($inhouseTemporaryClose || ($vacationStatus && (date('Y-m-d') >= $vacationStartDate) && (date('Y-m-d') <= $vacationEndDate))) {
                                                         $checkProductStatus = 0;
                                                     }
-                                                }else{
+                                                } else {
                                                     if (!isset($cartItem->allProducts->seller) || (isset($cartItem->allProducts->seller) && $cartItem->allProducts->seller->status != 'approved')) {
                                                         $checkProductStatus = 0;
                                                     }
                                                     if (!isset($cartItem->allProducts->seller->shop) || $cartItem->allProducts->seller->shop->temporary_close) {
                                                         $checkProductStatus = 0;
                                                     }
-                                                    if(isset($cartItem->allProducts->seller->shop) && ($cartItem->allProducts->seller->shop->vacation_status && (date('Y-m-d') >= $cartItem->allProducts->seller->shop->vacation_start_date) && (date('Y-m-d') <= $cartItem->allProducts->seller->shop->vacation_end_date))) {
+                                                    if (isset($cartItem->allProducts->seller->shop) && ($cartItem->allProducts->seller->shop->vacation_status && (date('Y-m-d') >= $cartItem->allProducts->seller->shop->vacation_start_date) && (date('Y-m-d') <= $cartItem->allProducts->seller->shop->vacation_end_date))) {
                                                         $checkProductStatus = 0;
                                                     }
                                                 }
-                                            ?>
+                                                ?>
 
                                             <tr>
                                                 <td>
                                                     <div class="d-flex gap-3 align-items-center">
-                                                        <input type="checkbox" class="shop-item-check shop-item-check-desktop" value="{{ $cartItem['id'] }}" {{ $cartItem['is_checked'] ? 'checked' : '' }}>
+                                                        <input type="checkbox"
+                                                               class="shop-item-check shop-item-check-desktop"
+                                                               value="{{ $cartItem['id'] }}" {{ $cartItem['is_checked'] ? 'checked' : '' }}>
                                                         <div class="media align-items-center gap-3">
                                                             <div
-                                                                class="avatar avatar-xxl rounded border position-relative overflow-hidden">
+                                                                    class="avatar avatar-xxl rounded border position-relative overflow-hidden">
                                                                 <img alt="{{ translate('product') }}"
-                                                                    src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$cartItem['thumbnail'], type: 'product') }}"
-                                                                    class="dark-support img-fit rounded img-fluid overflow-hidden {{ $cartItem->allProducts ? ($product->status == 0 ?'custom-cart-opacity-50':'') : 'custom-cart-opacity-50' }}">
+                                                                     src="{{ getStorageImages(path: $cartItem->product->thumbnail_full_url, type: 'product') }}"
+                                                                     class="dark-support img-fit rounded img-fluid overflow-hidden {{ $cartItem->allProducts ? ($product->status == 0 ?'custom-cart-opacity-50':'') : 'custom-cart-opacity-50' }}">
 
                                                                 @if ($checkProductStatus == 0)
                                                                     <span class="temporary-closed position-absolute text-center p-2">
@@ -236,14 +242,17 @@
                                                                 @endif
                                                             </div>
                                                             <div class="media-body d-flex gap-1 flex-column {{ $checkProductStatus == 0 ? 'custom-cart-opacity-50' : '' }}">
-                                                                <h6 class="text-truncate text-capitalize width--20ch" >
+                                                                <h6 class="text-truncate text-capitalize width--20ch">
                                                                     <a href="{{ $checkProductStatus ? route('product', $cartItem['slug']):'javascript:' }}">{{$cartItem['name']}}</a>
                                                                 </h6>
-                                                                @foreach(json_decode($cartItem['variations'],true) as $key1 =>$variation)
-                                                                    <div class="fs-12">{{$key1}} : {{$variation}}</div>
-                                                                @endforeach
+
+                                                                @if(!empty($cartItem['variant']))
+                                                                    <div>
+                                                                        <span class="fs-12">{{translate('variant')}} : {{ $cartItem['variant'] }}</span>
+                                                                    </div>
+                                                                @endif
                                                                 <div class="fs-12 text-capitalize">{{ translate('unit_price') }}
-                                                                    : {{ Helpers::currency_converter($cartItem['price']) }}</div>
+                                                                    : {{ webCurrencyConverter($cartItem['price']) }}</div>
 
                                                                 @if($product->product_type == 'physical' && $getProductCurrentStock < $cartItem['quantity'])
                                                                     <div class="d-flex text-danger font-bold">
@@ -308,12 +317,12 @@
                                                     @endif
 
                                                 </td>
-                                                <td class="text-end">{{ Helpers::currency_converter($cartItem['price']*$cartItem['quantity']) }}</td>
-                                                <td class="text-end">{{ Helpers::currency_converter($cartItem['discount']*$cartItem['quantity']) }}</td>
-                                                <td class="text-end">{{ Helpers::currency_converter(($cartItem['price']-$cartItem['discount'])*$cartItem['quantity']) }}</td>
+                                                <td class="text-end">{{ webCurrencyConverter($cartItem['price']*$cartItem['quantity']) }}</td>
+                                                <td class="text-end">{{ webCurrencyConverter($cartItem['discount']*$cartItem['quantity']) }}</td>
+                                                <td class="text-end">{{ webCurrencyConverter(($cartItem['price']-$cartItem['discount'])*$cartItem['quantity']) }}</td>
                                                 <td>
                                                     @if ( $shipping_type != 'order_wise')
-                                                        {{ Helpers::currency_converter($cartItem['shipping_cost']) }}
+                                                        {{ webCurrencyConverter($cartItem['shipping_cost']) }}
                                                     @endif
                                                 </td>
                                             </tr>
@@ -321,22 +330,25 @@
                                         </tbody>
                                     </table>
 
-                                    @php($free_delivery_status = OrderManager::free_delivery_order_amount($group[0]->cart_group_id))
+                                    @php($free_delivery_status = OrderManager::getFreeDeliveryOrderAmountArray($group[0]->cart_group_id))
 
                                     @if ($free_delivery_status['status'] && (session()->missing('coupon_type') || session('coupon_type') !='free_delivery'))
                                         <div class="free-delivery-area px-3 mb-3">
                                             <div class="d-flex align-items-center gap-2">
                                                 <img
-                                                    src="{{ dynamicAsset(path: 'public/assets/front-end/img/icons/free-shipping.png') }}"
-                                                    alt="{{translate('image')}}" width="40">
+                                                    src="{{ theme_asset(path: 'assets/img/icons/free-shipping.png') }}"
+                                                    alt="{{ translate('image') }}" width="40">
                                                 @if ($free_delivery_status['amount_need'] <= 0)
-                                                    <span
-                                                        class="text-muted fs-16 text-capitalize">{{ translate('you_get_free_delivery_bonus') }}</span>
+                                                    <span class="text-muted fs-16 text-capitalize">
+                                                        {{ translate('you_get_free_delivery_bonus') }}
+                                                    </span>
                                                 @else
-                                                    <span
-                                                        class="need-for-free-delivery font-bold">{{ Helpers::currency_converter($free_delivery_status['amount_need']) }}</span>
-                                                    <span
-                                                        class="text-muted fs-16">{{ translate('add_more_for_free_delivery') }}</span>
+                                                    <span class="need-for-free-delivery font-bold">
+                                                        {{ webCurrencyConverter($free_delivery_status['amount_need']) }}
+                                                    </span>
+                                                    <span class="text-muted fs-16">
+                                                        {{ translate('add_more_for_free_delivery') }}
+                                                    </span>
                                                 @endif
                                             </div>
                                             <div class="progress free-delivery-progress">
@@ -354,9 +366,9 @@
                                             @php($product = $cartItem->allProducts)
                                         @endif
 
-                                        <?php
+                                            <?php
                                             $checkProductStatus = $cartItem->allProducts?->status ?? 0;
-                                            if($cartItem->seller_is == 'admin') {
+                                            if ($cartItem->seller_is == 'admin') {
                                                 $inhouseTemporaryClose = getWebConfig(name: 'temporary_close') ? getWebConfig(name: 'temporary_close')['status'] : 0;
                                                 $inhouseVacation = getWebConfig(name: 'vacation_add');
                                                 $vacationStartDate = $inhouseVacation['vacation_start_date'] ? date('Y-m-d', strtotime($inhouseVacation['vacation_start_date'])) : null;
@@ -365,18 +377,18 @@
                                                 if ($inhouseTemporaryClose || ($vacationStatus && (date('Y-m-d') >= $vacationStartDate) && (date('Y-m-d') <= $vacationEndDate))) {
                                                     $checkProductStatus = 0;
                                                 }
-                                            }else{
+                                            } else {
                                                 if (!isset($cartItem->allProducts->seller) || (isset($cartItem->allProducts->seller) && $cartItem->allProducts->seller->status != 'approved')) {
                                                     $checkProductStatus = 0;
                                                 }
                                                 if (!isset($cartItem->allProducts->seller->shop) || $cartItem->allProducts->seller->shop->temporary_close) {
                                                     $checkProductStatus = 0;
                                                 }
-                                                if(isset($cartItem->allProducts->seller->shop) && ($cartItem->allProducts->seller->shop->vacation_status && (date('Y-m-d') >= $cartItem->allProducts->seller->shop->vacation_start_date) && (date('Y-m-d') <= $cartItem->allProducts->seller->shop->vacation_end_date))) {
+                                                if (isset($cartItem->allProducts->seller->shop) && ($cartItem->allProducts->seller->shop->vacation_status && (date('Y-m-d') >= $cartItem->allProducts->seller->shop->vacation_start_date) && (date('Y-m-d') <= $cartItem->allProducts->seller->shop->vacation_end_date))) {
                                                     $checkProductStatus = 0;
                                                 }
                                             }
-                                        ?>
+                                            ?>
 
                                         <div class="border-bottom d-flex align-items-start justify-content-between gap-2 py-2">
                                             <div class="d-flex gap-2 align-items-center">
@@ -385,7 +397,7 @@
                                                     <div
                                                         class="avatar avatar-lg rounded border position-relative overflow-hidden">
                                                         <img
-                                                            src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$cartItem['thumbnail'], type: 'product') }}"
+                                                            src="{{ getStorageImages(path: $cartItem?->product?->thumbnail_full_url, type: 'product') }}"
                                                             class="dark-support img-fit rounded img-fluid overflow-hidden {{ $checkProductStatus == 0 ? 'custom-cart-opacity-50' : '' }}"
                                                             alt="">
                                                         @if ($checkProductStatus == 0)
@@ -400,18 +412,20 @@
                                                                 {{ $cartItem['name'] }}
                                                             </a>
                                                         </h6>
-                                                        @foreach(json_decode($cartItem['variations'],true) as $key1 =>$variation)
-                                                            <div class="fs-12">{{$key1}} : {{$variation}}</div>
-                                                        @endforeach
+                                                        @if(!empty($cartItem['variant']))
+                                                            <div>
+                                                                <span class="fs-12">{{translate('variant')}} : {{ $cartItem['variant'] }}</span>
+                                                            </div>
+                                                        @endif
                                                         <div class="fs-12 text-capitalize">{{ translate('unit_price') }}
-                                                            : {{ Helpers::currency_converter($cartItem['price']*$cartItem['quantity']) }}</div>
+                                                            : {{ webCurrencyConverter($cartItem['price']*$cartItem['quantity']) }}</div>
                                                         <div class="fs-12">{{ translate('discount') }}
-                                                            : {{ Helpers::currency_converter($cartItem['discount']*$cartItem['quantity']) }}</div>
+                                                            : {{ webCurrencyConverter($cartItem['discount']*$cartItem['quantity']) }}</div>
                                                         <div class="fs-12">{{ translate('total') }}
-                                                            : {{ Helpers::currency_converter(($cartItem['price']-$cartItem['discount'])*$cartItem['quantity']) }}</div>
+                                                            : {{ webCurrencyConverter(($cartItem['price']-$cartItem['discount'])*$cartItem['quantity']) }}</div>
                                                         @if ( $shipping_type != 'order_wise')
                                                             <div class="fs-12">{{ translate('shipping_cost') }}
-                                                                : {{ Helpers::currency_converter($cartItem['shipping_cost']) }}</div>
+                                                                : {{ webCurrencyConverter($cartItem['shipping_cost']) }}</div>
                                                         @endif
 
                                                         @if($product->product_type == 'physical' && $getProductCurrentStock < $cartItem['quantity'])
@@ -472,20 +486,20 @@
                                         </div>
                                     @endforeach
 
-                                    @php($free_delivery_status = OrderManager::free_delivery_order_amount($group[0]->cart_group_id))
+                                    @php($free_delivery_status = OrderManager::getFreeDeliveryOrderAmountArray($group[0]->cart_group_id))
 
                                     @if ($free_delivery_status['status'] && (session()->missing('coupon_type') || session('coupon_type') !='free_delivery'))
                                         <div class="free-delivery-area px-3 mb-3">
                                             <div class="d-flex align-items-center gap-3">
                                                 <img
-                                                    src="{{ dynamicAsset(path: 'public/assets/front-end/img/icons/free-shipping.png') }}"
+                                                    src="{{ theme_asset(path: 'assets/img/icons/free-shipping.png') }}"
                                                     alt="" width="40">
                                                 @if ($free_delivery_status['amount_need'] <= 0)
                                                     <span
                                                         class="text-muted fs-16">{{ translate('you_Get_Free_Delivery_Bonus') }}</span>
                                                 @else
                                                     <span
-                                                        class="need-for-free-delivery font-bold">{{ Helpers::currency_converter($free_delivery_status['amount_need']) }}</span>
+                                                        class="need-for-free-delivery font-bold">{{ webCurrencyConverter($free_delivery_status['amount_need']) }}</span>
                                                     <span
                                                         class="text-muted fs-16">{{ translate('add_more_for_free_delivery') }}</span>
                                                 @endif
@@ -519,7 +533,7 @@
                                 $shipping_type = isset($admin_shipping) === true ? $admin_shipping->shipping_type : 'order_wise';
                                 ?>
                             @if ($shipping_type == 'order_wise' && $physical_product)
-                                @php($shippings=Helpers::get_shipping_methods(1,'admin'))
+                                @php($shippings=Helpers::getShippingMethods(1,'admin'))
                                 @php($choosen_shipping=CartShipping::where(['cart_group_id'=>$cartItem['cart_group_id']])->first())
 
                                 @if(isset($choosen_shipping)===false)
@@ -531,8 +545,8 @@
                                             <option>{{ translate('choose_shipping_method')}}</option>
                                             @foreach($shippings as $shipping)
                                                 <option
-                                                    value="{{$shipping['id']}}" {{$choosen_shipping['shipping_method_id']==$shipping['id']?'selected':''}}>
-                                                    {{$shipping['title'].' ( '.$shipping['duration'].' ) '.Helpers::currency_converter($shipping['cost'])}}
+                                                        value="{{$shipping['id']}}" {{$choosen_shipping['shipping_method_id']==$shipping['id']?'selected':''}}>
+                                                    {{$shipping['title'].' ( '.$shipping['duration'].' ) '.webCurrencyConverter($shipping['cost'])}}
                                                 </option>
                                             @endforeach
                                         </select>
@@ -558,7 +572,7 @@
                                     <div class="col-12">
                                         <label for="order-note"
                                                class="form-label input-label">{{translate('order_note')}} <span
-                                                class="input-label-secondary">({{translate('optional')}})</span></label>
+                                                    class="input-label-secondary">({{translate('optional')}})</span></label>
                                         <textarea class="form-control w-100" rows="5" id="order-note"
                                                   name="order_note">{{ session('order_note')}}</textarea>
                                     </div>

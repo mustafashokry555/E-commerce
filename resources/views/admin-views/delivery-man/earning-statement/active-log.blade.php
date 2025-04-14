@@ -38,20 +38,11 @@
                                         </button>
                                     </div>
                                 </form>
-                                <div class="dropdown text-nowrap">
-                                    <button type="button" class="btn btn-outline--primary" data-toggle="dropdown">
-                                        <i class="tio-download-to"></i>
-                                        {{translate('export')}}
-                                        <i class="tio-chevron-down"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-right">
-                                        <li>
-                                            <a type="submit" class="dropdown-item d-flex align-items-center gap-2 " href="{{route('admin.delivery-man.order-history-log-export',['id'=>$deliveryMan->id,'type'=>'log','searchValue'=>request('searchValue')])}}">
-                                                <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" alt="">
-                                                {{translate('excel')}}
-                                            </a>
-                                        </li>
-                                    </ul>
+                                <div class="dropdown">
+                                    <a type="button" class="btn btn-outline--primary text-nowrap btn-block" href="{{route('admin.delivery-man.order-history-log-export',['id'=>$deliveryMan->id,'type'=>'log','searchValue'=>request('searchValue')])}}">
+                                        <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
+                                        <span class="ps-2">{{ translate('export') }}</span>
+                                    </a>
                                 </div>
                             </div>
                         </div>

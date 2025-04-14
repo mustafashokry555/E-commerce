@@ -45,6 +45,13 @@ class Currency extends Model
     protected static function boot(): void
     {
         parent::boot();
-//        static::addGlobalScope(new RememberScope);
+
+        static::saved(function ($model) {
+            cacheRemoveByType(type: 'currencies');
+        });
+
+        static::deleted(function ($model) {
+            cacheRemoveByType(type: 'currencies');
+        });
     }
 }

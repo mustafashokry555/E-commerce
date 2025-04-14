@@ -12,11 +12,11 @@
             @php($total_shipping_cost=0)
             @php($order_wise_shipping_discount=CartManager::order_wise_shipping_discount())
             @php($total_discount_on_product=0)
-            @php($cart=CartManager::get_cart(type: 'checked'))
-            @php($cartAll=CartManager::get_cart())
+            @php($cart=CartManager::getCartListQuery(type: 'checked'))
+            @php($cartAll=CartManager::getCartListQuery())
             @php($cart_group_ids=CartManager::get_cart_group_ids())
             @php($shipping_cost=CartManager::get_shipping_cost(type: 'checked'))
-            @php($get_shipping_cost_saved_for_free_delivery=CartManager::get_shipping_cost_saved_for_free_delivery(type: 'checked'))
+            @php($get_shipping_cost_saved_for_free_delivery=CartManager::getShippingCostSavedForFreeDelivery(type: 'checked'))
             @if($cart->count() > 0)
                 @foreach($cart as $key => $cartItem)
                     @php($product_price_total+=$cartItem['price']*$cartItem['quantity'])
@@ -42,11 +42,11 @@
             </div>
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div>{{ translate('item_price') }}</div>
-                <div>{{Helpers::currency_converter($product_price_total)}}</div>
+                <div>{{webCurrencyConverter($product_price_total)}}</div>
             </div>
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div class="text-capitalize">{{ translate('product_discount') }}</div>
-                <div>{{Helpers::currency_converter($total_discount_on_product)}}</div>
+                <div>{{webCurrencyConverter($total_discount_on_product)}}</div>
             </div>
             @php($coupon_discount = 0)
             @php($coupon_dis=0)
@@ -67,15 +67,15 @@
 
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div>{{ translate('sub_total') }}</div>
-                <div>{{Helpers::currency_converter($product_price_total - $total_discount_on_product)}}</div>
+                <div>{{webCurrencyConverter($product_price_total - $total_discount_on_product)}}</div>
             </div>
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div>{{ translate('tax') }}</div>
-                <div>{{Helpers::currency_converter($total_tax)}}</div>
+                <div>{{webCurrencyConverter($total_tax)}}</div>
             </div>
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <div>{{ translate('shipping') }}</div>
-                <div class="text-primary">{{Helpers::currency_converter($total_shipping_cost)}}</div>
+                <div class="text-primary">{{webCurrencyConverter($total_shipping_cost)}}</div>
             </div>
 
             @php($coupon_discount = session()->has('coupon_discount')?session('coupon_discount'):0)
@@ -84,18 +84,18 @@
                 <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                     <div>{{ translate('coupon_discount') }}</div>
                     <div class="text-primary">
-                         {{'-'.Helpers::currency_converter($coupon_discount+$order_wise_shipping_discount)}}</div>
+                         {{'-'.webCurrencyConverter($coupon_discount+$order_wise_shipping_discount)}}</div>
                 </div>
             @endif
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <h4>{{ translate('total') }}</h4>
-                <h2 class="text-primary">{{Helpers::currency_converter($product_price_total+$total_tax+$total_shipping_cost-$coupon_dis-$total_discount_on_product-$order_wise_shipping_discount)}}</h2>
+                <h2 class="text-primary">{{webCurrencyConverter($product_price_total+$total_tax+$total_shipping_cost-$coupon_dis-$total_discount_on_product-$order_wise_shipping_discount)}}</h2>
             </div>
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mt-4">
                 <a href="{{ route('home') }}" class="btn-link text-primary text-capitalize"><i
                         class="bi bi-chevron-double-left fs-10"></i> {{ translate('continue_shopping') }}</a>
                 <button
-                    class="btn btn-primary text-capitalize {{ str_contains(request()->url(), 'checkout-payment') ? 'd-none':''}}"
+                    class="btn btn-primary text-capitalize {{$cart->count() <= 0 ? 'custom-disabled' : ''}} {{ str_contains(request()->url(), 'checkout-payment') ? 'd-none':''}}"
                     id="proceed-to-next-action" data-goto-checkout="{{route('customer.choose-shipping-address-other')}}"
                     data-checkout-payment="{{ route('checkout-payment') }}"
                     {{ (isset($product_null_status) && $product_null_status == 1) ? 'disabled':''}}

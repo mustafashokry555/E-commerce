@@ -5,9 +5,17 @@
     <meta charset="utf-8">
     <title>@yield('title')</title>
     <meta name="_token" content="{{csrf_token()}}">
+    <meta name="robots" content="index, follow">
+    <meta property="og:site_name" content="{{ $web_config['company_name'] }}" />
+
+    <meta name="google-site-verification" content="{{getWebConfig('google_search_console_code')}}">
+    <meta name="msvalidate.01" content="{{getWebConfig('bing_webmaster_code')}}">
+    <meta name="baidu-site-verification" content="{{getWebConfig('baidu_webmaster_code')}}">
+    <meta name="yandex-verification" content="{{getWebConfig('yandex_webmaster_code')}}">
+
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ getValidImage(path: 'storage/app/public/company/'.$web_config['fav_icon']->value, type: 'logo') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ getValidImage(path: 'storage/app/public/company/'.$web_config['fav_icon']->value, type: 'logo') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ $web_config['fav_icon']['path'] }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ $web_config['fav_icon']['path'] }}">
     <link rel="stylesheet" media="screen" href="{{ theme_asset(path: 'public/assets/front-end/vendor/simplebar/dist/simplebar.min.css') }}">
     <link rel="stylesheet" media="screen" href="{{ theme_asset(path: 'public/assets/front-end/vendor/tiny-slider/dist/tiny-slider.css') }}">
     <link rel="stylesheet" media="screen" href="{{ theme_asset(path: 'public/assets/front-end/vendor/drift-zoom/dist/drift-basic.min.css') }}">
@@ -24,9 +32,10 @@
 
     @stack('css_or_js')
 
+    @include(VIEW_FILE_NAMES['robots_meta_content_partials'])
+
     <link rel="stylesheet" href="{{ theme_asset(path: 'public/assets/front-end/css/home.css') }}"/>
     <link rel="stylesheet" href="{{ theme_asset(path: 'public/assets/front-end/css/responsive1.css') }}"/>
-
     <link rel="stylesheet" href="{{ theme_asset(path: 'public/assets/front-end/css/style.css') }}">
 
     <style>
@@ -56,48 +65,10 @@
 
     <link rel="stylesheet" href="{{theme_asset(path: 'public/assets/front-end/css/custom.css')}}">
 
-    @php($google_tag_manager_id = getWebConfig(name: 'google_tag_manager_id'))
-    @if($google_tag_manager_id )
-    <!-- Google Tag Manager -->
-        <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-        })(window,document,'script','dataLayer','{{$google_tag_manager_id}}');</script>
-    <!-- End Google Tag Manager -->
-    @endif
-
-    @php($pixel_analytics_user_code =getWebConfig(name: 'pixel_analytics'))
-    @if($pixel_analytics_user_code)
-        <!-- Facebook Pixel Code -->
-            <script>
-            !function(f,b,e,v,n,t,s)
-            {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-            n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-            if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-            n.queue=[];t=b.createElement(e);t.async=!0;
-            t.src=v;s=b.getElementsByTagName(e)[0];
-            s.parentNode.insertBefore(t,s)}(window, document,'script',
-            'https://connect.facebook.net/en_US/fbevents.js');
-            fbq('init', '{{ $pixel_analytics_user_code }}');
-            fbq('track', 'PageView');
-            </script>
-            <noscript>
-            <img height="1" width="1" style="display:none"
-                src="https://www.facebook.com/tr?id={{ $pixel_analytics_user_code }}&ev=PageView&noscript=1"/>
-            </noscript>
-        <!-- End Facebook Pixel Code -->
-    @endif
+    {!! getSystemDynamicPartials(type: 'analytics_script') !!}
 </head>
 
 <body class="toolbar-enabled">
-
-@if($google_tag_manager_id)
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{$google_tag_manager_id}}"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
-@endif
 
 @include('layouts.front-end.partials._modals')
 
@@ -114,7 +85,7 @@
         <div id="loading" class="d--none">
            <div class="text-center">
             <img width="200" alt=""
-                 src="{{ getValidImage(path: 'storage/app/public/company/'.getWebConfig(name: 'loader_gif'), type: 'source', source: theme_asset(path: 'public/assets/front-end/img/loader.gif')) }}">
+                 src="{{ getStorageImages(path: getWebConfig(name: 'loader_gif'), type: 'source', source: theme_asset(path: 'public/assets/front-end/img/loader.gif')) }}">
             </div>
         </div>
     </div>
@@ -144,7 +115,7 @@
 <span id="message-sorry-the-minimum-order-quantity-not-match" data-text="{{ translate('sorry_the_minimum_order_quantity_does_not_match') }}"></span>
 <span id="message-cart" data-text="{{ translate('cart') }}"></span>
 
-<span id="route-messages-store" data-url="{{ route('messages_store') }}"></span>
+<span id="route-messages-store" data-url="{{ route('messages') }}"></span>
 <span id="route-address-update" data-url="{{ route('address-update') }}"></span>
 <span id="route-coupon-apply" data-url="{{ route('coupon.apply') }}"></span>
 <span id="route-cart-add" data-url="{{ route('cart.add') }}"></span>
@@ -166,6 +137,11 @@
 <span id="route-checkout-payment" data-url="{{ route('checkout-payment') }}"></span>
 <span id="route-set-shipping-id" data-url="{{ route('customer.set-shipping-method') }}"></span>
 <span id="route-order-note" data-url="{{ route('order_note') }}"></span>
+<span id="route-product-restock-request" data-url="{{ route('cart.product-restock-request') }}"></span>
+<span id="route-get-session-recaptcha-code"
+      data-route="{{ route('get-session-recaptcha-code') }}"
+      data-mode="{{ env('APP_MODE') }}"
+></span>
 <span id="password-error-message" data-max-character="{{translate('at_least_8_characters').'.'}}" data-uppercase-character="{{translate('at_least_one_uppercase_letter_').'(A...Z)'.'.'}}" data-lowercase-character="{{translate('at_least_one_uppercase_letter_').'(a...z)'.'.'}}"
       data-number="{{translate('at_least_one_number').'(0...9)'.'.'}}" data-symbol="{{translate('at_least_one_symbol').'(!...%)'.'.'}}"></span>
 <span class="system-default-country-code" data-value="{{ getWebConfig(name: 'country_code') ?? 'us' }}"></span>
@@ -179,19 +155,20 @@
 @include('layouts.front-end.partials._footer')
 @include('layouts.front-end.partials.modal._dynamic-modals')
 
-<a class="btn-scroll-top btn--primary" href="#top" data-scroll>
-    <span class="btn-scroll-top-tooltip text-muted font-size-sm mr-2">{{ translate('top')}}</span>
-    <i class="btn-scroll-top-icon czi-arrow-up"></i>
-</a>
-<div class="__floating-btn">
-    @php($whatsapp = getWebConfig(name: 'whatsapp'))
-    @if(isset($whatsapp['status']) && $whatsapp['status'] == 1 )
-        <div class="wa-widget-send-button">
-            <a href="https://wa.me/{{ $whatsapp['phone'] }}?text=Hello%20there!" target="_blank">
-                <img src="{{theme_asset(path: 'public/assets/front-end/img/whatsapp.svg')}}" class="wa-messenger-svg-whatsapp wh-svg-icon" alt="{{ translate('Chat_with_us_on_WhatsApp') }}">
-            </a>
-        </div>
-    @endif
+<div class="floating-btn-grp">
+    <div class="__floating-btn">
+        @php($whatsapp = getWebConfig(name: 'whatsapp'))
+        @if(isset($whatsapp['status']) && $whatsapp['status'] == 1 )
+            <div class="wa-widget-send-button">
+                <a href="https://wa.me/{{ $whatsapp['phone'] }}?text=Hello%20there!" target="_blank">
+                    <img src="{{theme_asset(path: 'public/assets/front-end/img/whatsapp.svg')}}" class="wa-messenger-svg-whatsapp wh-svg-icon" alt="{{ translate('Chat_with_us_on_WhatsApp') }}">
+                </a>
+            </div>
+        @endif
+    </div>
+    <a class="btn-scroll-top btn--primary" href="#top" data-scroll>
+        <i class="btn-scroll-top-icon czi-arrow-up"></i>
+    </a>
 </div>
 
 <script src="{{ theme_asset(path: 'public/assets/front-end/vendor/jquery/dist/jquery-2.2.4.min.js') }}"></script>
@@ -213,6 +190,8 @@
 <script src="{{ theme_asset(path: 'public/assets/front-end/js/custom.js') }}"></script>
 
 {!! Toastr::message() !!}
+
+@include('layouts.front-end.partials._firebase-script')
 
 <script>
     "use strict";

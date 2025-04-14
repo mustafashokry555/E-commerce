@@ -3,7 +3,6 @@
 @section('title', translate('order_Details'))
 
 @section('content')
-
     <div class="container pb-5 mb-2 mb-md-4 mt-3 rtl __inline-47 text-align-direction">
         <div class="row g-3">
             @include('web-views.partials._profile-aside')
@@ -204,28 +203,15 @@
                                                     <td class="for-tab-img">
                                                         <div class="media gap-3 align-items-center">
                                                             <div class="position-relative border rounded overflow-hidden">
-                                                                @if($product['discount'] > 0)
+                                                                @if(getProductPriceByType(product: $product, type: 'discount', result: 'value') > 0)
                                                                     <span class="for-discount-value px-1 direction-ltr">
-                                                                            @if ($product['discount_type'] == 'percent')
-                                                                            -{{round($product['discount'],(!empty($decimal_point_settings) ? $decimal_point_settings: 0))}}
-                                                                            %
-                                                                        @elseif($product['discount_type'] =='flat')
-                                                                            -{{ webCurrencyConverter(amount: $product['discount']) }}
-                                                                        @endif
+                                                                            -{{ getProductPriceByType(product: $product, type: 'discount', result: 'string') }}
                                                                         </span>
                                                                 @endif
-
-                                                                @if($detail->productAllStatus)
-                                                                    <img class="d-block get-view-by-onclick"
-                                                                         data-link="{{ route('product',$product['slug']) }}"
-                                                                         src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$detail->productAllStatus['thumbnail'], type: 'product') }}"
-                                                                         alt="{{ translate('product') }}" width="100">
-                                                                @else
-                                                                    <img class="d-block get-view-by-onclick"
-                                                                         data-link="{{ route('product',$product['slug']) }}"
-                                                                         src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$product['thumbnail'], type: 'product') }}"
-                                                                         alt="{{ translate('product') }}" width="100">
-                                                                @endif
+                                                                <img class="d-block get-view-by-onclick aspect-1 object-cover"
+                                                                     data-link="{{ route('product',$product['slug']) }}"
+                                                                     src="{{ getStorageImages(path: $detail?->productAllStatus?->thumbnail_full_url, type: 'product') }}"
+                                                                     alt="{{ translate('product') }}" width="100">
                                                             </div>
 
                                                             <div class="media-body">
@@ -255,12 +241,12 @@
                                                                 @endif
 
                                                                 <div class="d-flex flex-wrap gap-2 mt-2">
-                                                                    @if($detail->product && $order->payment_status == 'paid' && $detail->product->digital_product_type == 'ready_product')
+                                                                    @if($detail?->product && $order->payment_status == 'paid' && $detail?->product->digital_product_type == 'ready_product')
                                                                         <a class="btn btn-sm rounded btn--primary action-digital-product-download"
                                                                            data-link="{{ route('digital-product-download', $detail->id) }}"
                                                                            href="javascript:">{{translate('download')}}
                                                                             <i class="tio-download-from-cloud"></i></a>
-                                                                    @elseif($detail->product && $order->payment_status == 'paid' && $detail->product->digital_product_type == 'ready_after_sell')
+                                                                    @elseif($detail?->product && $order->payment_status == 'paid' && $detail?->product->digital_product_type == 'ready_after_sell')
                                                                         @if($detail->digital_file_after_sell)
                                                                             <a class="btn btn-sm rounded btn--primary action-digital-product-download"
                                                                                data-link="{{ route('digital-product-download', $detail->id) }}"
@@ -302,8 +288,8 @@
                                                                                 <button type="button"
                                                                                         class="btn btn-sm rounded btn--primary action-get-refund-details"
                                                                                         data-route="{{ route('refund-details', ['id'=>$detail->id]) }}">
-                                                                                        {{translate('refund_details')}}
-                                                                                    </button>
+                                                                                    {{translate('refund_details')}}
+                                                                                </button>
                                                                             @endif
                                                                             @if( $length <= $refund_day_limit && $detail->refund_request == 0)
                                                                                 <button
@@ -327,7 +313,7 @@
                                                     </td>
                                                     <td class="text-right align-middle">
                                                         <span class="font-weight-bold amount">
-                                                            {{ webCurrencyConverter(amount: $detail->price) }}
+                                                            {{ getProductPriceByType(product: $product, type: 'discounted_unit_price', result: 'string') }}
                                                         </span>
                                                     </td>
                                                 </tr>
@@ -360,9 +346,9 @@
                                                                 @endif
                                                             </span>
                                                         @endif
-                                                        <img class="d-block get-view-by-onclick"
+                                                        <img class="d-block get-view-by-onclick aspect-1 object-cover"
                                                              data-link="{{ route('product',$product['slug']) }}"
-                                                             src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$product['thumbnail'], type: 'product') }}"
+                                                             src="{{ getStorageImages(path: $detail?->productAllStatus?->thumbnail_full_url, type: 'product') }}"
                                                              alt="{{ translate('product') }}" width="80">
                                                     </div>
 
@@ -407,12 +393,12 @@
                                         </div>
 
                                         <div class="d-flex justify-content-end flex-wrap gap-2 mt-2">
-                                            @if($detail->product && $order->payment_status == 'paid' && $detail->product->digital_product_type == 'ready_product')
+                                            @if($detail?->product && $order->payment_status == 'paid' && $detail?->product->digital_product_type == 'ready_product')
                                                 <a class="btn btn-sm rounded btn--primary action-digital-product-download"
                                                    data-link="{{ route('digital-product-download', $detail->id) }}"
                                                    href="javascript:">{{translate('download')}} <i
                                                         class="tio-download-from-cloud"></i></a>
-                                            @elseif($detail->product && $order->payment_status == 'paid' && $detail->product->digital_product_type == 'ready_after_sell')
+                                            @elseif($detail?->product && $order->payment_status == 'paid' && $detail?->product->digital_product_type == 'ready_after_sell')
                                                 @if($detail->digital_file_after_sell)
                                                     <a class="btn btn-sm rounded btn--primary action-digital-product-download"
                                                        data-link="{{ route('digital-product-download', $detail->id) }}"
@@ -450,12 +436,12 @@
                                                     @if($detail->refund_request !=0)
                                                         <button type="button" class="btn btn-sm rounded btn--primary action-get-refund-details"
                                                                 data-route="{{ route('refund-details',['id'=>$detail->id]) }}">
-                                                                {{translate('refund_details')}}
+                                                            {{translate('refund_details')}}
                                                         </button>
                                                     @endif
                                                     @if( $length <= $refund_day_limit && $detail->refund_request == 0)
                                                         <button class="btn btn-sm rounded btn--primary"
-                                                            data-toggle="modal" data-target="#refundModal{{$detail->id}}">
+                                                                data-toggle="modal" data-target="#refundModal{{$detail->id}}">
                                                             {{ translate('refund') }}
                                                         </button>
                                                     @endif
@@ -468,93 +454,37 @@
                             <hr>
                         </div>
 
-                        @php($summary = getOrderSummary(order: $order))
-                        <?php
-                        if ($order['extra_discount_type'] == 'percent') {
-                            $extra_discount = ($summary['subtotal'] / 100) * $order['extra_discount'];
-                        } else {
-                            $extra_discount = $order['extra_discount'];
-                        }
-                        ?>
+                        @php($orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(order: $order))
                         <div class="row d-flex justify-content-end mt-2">
                             <div class="col-md-8 col-lg-5">
                                 <div class="bg-white border-sm rounded">
-                                    <div class="card-body ">
+                                    <div class="card-body">
                                         <table class="calculation-table table table-borderless mb-0">
                                             <tbody class="totals">
                                             <tr>
                                                 <td>
                                                     <div class="text-start">
-                                                        <span class="product-qty ">{{translate('item')}}</span>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div class="text-end">
-                                                        <span class="fs-15 font-semi-bold">{{$order->total_qty}}</span>
-                                                    </div>
-                                                </td>
-                                            </tr>
-
-                                            <tr>
-                                                <td>
-                                                    <div class="text-start">
-                                                        <span class="product-qty">{{translate('subtotal')}}</span>
-                                                    </div>
-                                                </td>
-                                                <td>
-                                                    <div class="text-end">
-                                                        <span class="fs-15 font-semi-bold">{{ webCurrencyConverter(amount: $summary['subtotal']) }}</span>
-                                                    </div>
-                                                </td>
-                                            </tr>
-
-                                            <tr>
-                                                <td>
-                                                    <div class="text-start">
-                                                        <span class="product-qty">
-                                                            {{translate('tax_fee')}}
-                                                        </span>
+                                                        <span class="product-qty ">{{translate('Total_Item')}}</span>
                                                     </div>
                                                 </td>
                                                 <td>
                                                     <div class="text-end">
                                                         <span class="fs-15 font-semi-bold">
-                                                            {{ webCurrencyConverter(amount: $summary['total_tax']) }}
+                                                            {{ $orderTotalPriceSummary['totalItemQuantity'] }}
                                                         </span>
                                                     </div>
                                                 </td>
                                             </tr>
-                                            @if($order->order_type == 'default_type')
-                                                <tr>
-                                                    <td>
-                                                        <div class="text-start">
-                                                            <span class="product-qty">
-                                                                {{translate('shipping_Fee')}}
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td>
-                                                        <div class="text-end">
-                                                            <span class="fs-15 font-semi-bold">
-                                                                {{ webCurrencyConverter(amount: $summary['total_shipping_cost'] - ($order['is_shipping_free'] ? $order['extra_discount'] : 0)) }}
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            @endif
-
                                             <tr>
                                                 <td>
                                                     <div class="text-start">
-                                                        <span class="product-qty">
-                                                            {{translate('discount_on_product')}}
-                                                        </span>
+                                                        <span class="product-qty ">{{translate('item_price')}}</span>
                                                     </div>
                                                 </td>
                                                 <td>
                                                     <div class="text-end">
                                                         <span class="fs-15 font-semi-bold">
-                                                            - {{ webCurrencyConverter(amount: $summary['total_discount_on_product']) }}
+                                                            {{ webCurrencyConverter(amount: $orderTotalPriceSummary['itemPrice']) }}
                                                         </span>
                                                     </div>
                                                 </td>
@@ -563,15 +493,13 @@
                                             <tr>
                                                 <td>
                                                     <div class="text-start">
-                                                        <span class="product-qty">
-                                                            {{translate('coupon_discount')}}
-                                                        </span>
+                                                        <span class="product-qty ">{{translate('item_discount')}}</span>
                                                     </div>
                                                 </td>
                                                 <td>
                                                     <div class="text-end">
                                                         <span class="fs-15 font-semi-bold">
-                                                            - {{ webCurrencyConverter(amount: $order->discount_amount) }}
+                                                            {{ webCurrencyConverter(amount: $orderTotalPriceSummary['itemDiscount']) }}
                                                         </span>
                                                     </div>
                                                 </td>
@@ -589,7 +517,75 @@
                                                     <td>
                                                         <div class="text-end">
                                                             <span class="fs-15 font-semi-bold">
-                                                                - {{ webCurrencyConverter(amount: $extra_discount) }}
+                                                                - {{ webCurrencyConverter(amount:  $orderTotalPriceSummary['extraDiscount']) }}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            @endif
+
+                                            <tr>
+                                                <td>
+                                                    <div class="text-start">
+                                                        <span class="product-qty">{{translate('subtotal')}}</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="text-end">
+                                                        <span class="fs-15 font-semi-bold">
+                                                            {{ webCurrencyConverter(amount: $orderTotalPriceSummary['subTotal']) }}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td>
+                                                    <div class="text-start">
+                                                        <span class="product-qty">
+                                                            {{translate('coupon_discount')}}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="text-end">
+                                                        <span class="fs-15 font-semi-bold">
+                                                            - {{ webCurrencyConverter(amount:  $orderTotalPriceSummary['couponDiscount']) }}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td>
+                                                    <div class="text-start">
+                                                        <span class="product-qty">
+                                                            {{translate('tax_fee')}}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="text-end">
+                                                        <span class="fs-15 font-semi-bold">
+                                                            {{ webCurrencyConverter(amount:  $orderTotalPriceSummary['taxTotal']) }}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+
+                                            @if($order->order_type == 'default_type' && $order?->is_shipping_free == 0)
+                                                <tr>
+                                                    <td>
+                                                        <div class="text-start">
+                                                            <span class="product-qty">
+                                                                {{translate('shipping_Fee')}}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="text-end">
+                                                            <span class="fs-15 font-semi-bold">
+                                                                {{ webCurrencyConverter(amount:  $orderTotalPriceSummary['shippingTotal']) }}
                                                             </span>
                                                         </div>
                                                     </td>
@@ -607,18 +603,52 @@
                                                 <td>
                                                     <div class="text-end">
                                                         <span class="font-weight-bold amount">
-                                                            {{ webCurrencyConverter(amount: $order->order_amount) }}
+                                                            {{ webCurrencyConverter(amount:  $orderTotalPriceSummary['totalAmount']) }}
                                                         </span>
                                                     </div>
                                                 </td>
                                             </tr>
-
+                                            @if ($order->order_type == 'POS' || $order->order_type == 'pos')
+                                                <tr class="border-top">
+                                                    <td>
+                                                        <div class="text-start">
+                                                            <span class="font-weight-bold">
+                                                                <strong>{{translate('paid_amount')}}</strong>
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td>
+                                                        <div class="text-end">
+                                                            <span class="font-weight-bold amount">
+                                                                {{ webCurrencyConverter(amount:  $orderTotalPriceSummary['paidAmount']) }}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr class="">
+                                                <td>
+                                                    <div class="text-start">
+                                                        <span class="font-weight-bold">
+                                                            <strong>{{translate('change_amount')}}</strong>
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="text-end">
+                                                        <span class="font-weight-bold amount">
+                                                            {{ webCurrencyConverter(amount:  $orderTotalPriceSummary['changeAmount']) }}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            @endif
                                             </tbody>
                                         </table>
+
                                         @if ($order['order_status']=='pending')
                                             <button class="btn btn-soft-danger btn-soft-border w-100 btn-sm text-danger font-semi-bold text-capitalize mt-3 call-route-alert"
-                                                data-route="{{ route('order-cancel',[$order->id]) }}"
-                                                data-message="{{translate('want_to_cancel_this_order?')}}">
+                                                    data-route="{{ route('order-cancel',[$order->id]) }}"
+                                                    data-message="{{translate('want_to_cancel_this_order?')}}">
                                                 {{translate('cancel_order')}}
                                             </button>
                                         @endif
@@ -710,11 +740,11 @@
                                     @endforeach
 
                                     @if($order->payment_note)
-                                    <div class="d-flex align-items-start gap-2">
-                                        <span class="text-capitalize min-w-120">{{ translate('payment_none') }}</span>
-                                        <span>:</span>
-                                        <span class="font-weight-medium fs-12 "> {{ $order->payment_note }}  </span>
-                                    </div>
+                                        <div class="d-flex align-items-start gap-2">
+                                            <span class="text-capitalize min-w-120">{{ translate('payment_none') }}</span>
+                                            <span>:</span>
+                                            <span class="font-weight-medium fs-12 "> {{ $order->payment_note }}  </span>
+                                        </div>
                                     @endif
 
                                 </div>

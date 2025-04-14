@@ -10,7 +10,6 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
-use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
@@ -63,7 +62,7 @@ class ProductStockReportExport implements FromView, ShouldAutoSize, WithStyles,W
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => Border::BORDER_THIN,
-                        'color' => ['argb' => '000000'], // Specify the color of the border (optional)
+                        'color' => ['argb' => '000000'],
                     ],
                 ],
             ],
@@ -74,15 +73,15 @@ class ProductStockReportExport implements FromView, ShouldAutoSize, WithStyles,W
     {
         return [
             AfterSheet::class => function(AfterSheet $event) {
-                $event->sheet->getStyle('A1:E1') // Adjust the range as per your needs
+                $event->sheet->getStyle('A1:E1')
                     ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
                     ->setVertical(Alignment::VERTICAL_CENTER);
-                $event->sheet->getStyle('A3:E'.$this->data['products']->count() + 3) // Adjust the range as per your needs
+                $event->sheet->getStyle('A3:E'.$this->data['products']->count() + 3)
                     ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_CENTER)
                     ->setVertical(Alignment::VERTICAL_CENTER);
-                $event->sheet->getStyle('A2:E2') // Adjust the range as per your needs
+                $event->sheet->getStyle('A2:E2')
                     ->getAlignment()
                     ->setHorizontal(Alignment::HORIZONTAL_LEFT)
                     ->setVertical(Alignment::VERTICAL_CENTER);

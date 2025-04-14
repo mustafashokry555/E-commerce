@@ -18,6 +18,7 @@ class BannerRepository implements BannerRepositoryInterface
 
     public function add(array $data): string|object
     {
+        cacheRemoveByType(type: 'banners');
         return $this->banner->create($data);
     }
 
@@ -83,12 +84,14 @@ class BannerRepository implements BannerRepositoryInterface
 
     public function update(string $id, array $data): bool
     {
-        $this->banner->where('id', $id)->update($data);
+        cacheRemoveByType(type: 'banners');
+        $this->banner->find($id)->update($data);
         return true;
     }
 
     public function delete(array $params): bool
     {
+        cacheRemoveByType(type: 'banners');
         $this->banner->where($params)->delete();
         return true;
     }

@@ -33,12 +33,12 @@ class ChattingController extends BaseController
      * @param CustomerRepositoryInterface $customerRepo
      */
     public function __construct(
-        private readonly ChattingRepositoryInterface $chattingRepo,
-        private readonly ShopRepositoryInterface $shopRepo,
-        private readonly ChattingService $chattingService,
-        private readonly VendorRepositoryInterface $vendorRepo,
+        private readonly ChattingRepositoryInterface    $chattingRepo,
+        private readonly ShopRepositoryInterface        $shopRepo,
+        private readonly ChattingService                $chattingService,
+        private readonly VendorRepositoryInterface      $vendorRepo,
         private readonly DeliveryManRepositoryInterface $deliveryManRepo,
-        private readonly CustomerRepositoryInterface $customerRepo,
+        private readonly CustomerRepositoryInterface    $customerRepo,
     )
     {
     }
@@ -51,7 +51,7 @@ class ChattingController extends BaseController
      */
     public function index(?Request $request, string|array $type = null): View|Collection|LengthAwarePaginator|null|callable|RedirectResponse
     {
-        return $this->getListView(type:$type);
+        return $this->getListView(type: $type);
     }
 
     /**
@@ -131,7 +131,7 @@ class ChattingController extends BaseController
      * @param Request $request
      * @return JsonResponse
      */
-    public function getMessageByUser(Request $request):JsonResponse
+    public function getMessageByUser(Request $request): JsonResponse
     {
         $vendorId = auth('seller')->id();
         $data = [];
@@ -169,7 +169,7 @@ class ChattingController extends BaseController
      * @param ChattingRequest $request
      * @return JsonResponse
      */
-    public function addVendorMessage(ChattingRequest $request):JsonResponse
+    public function addVendorMessage(ChattingRequest $request): JsonResponse
     {
         $data = [];
         $vendor = $this->vendorRepo->getFirstWhere(params: ['id' => auth('seller')->id()]);
@@ -184,7 +184,7 @@ class ChattingController extends BaseController
                 )
             );
             $deliveryMan = $this->deliveryManRepo->getFirstWhere(params: ['id' => $request['delivery_man_id']]);
-            ChattingEvent::dispatch('message_from_seller', 'delivery_man', $deliveryMan, $vendor);
+            event(new ChattingEvent(key: 'message_from_seller', type: 'delivery_man', userData: $deliveryMan, messageForm: $vendor));
 
             $chattingMessages = $this->chattingRepo->getListWhereNotNull(
                 orderBy: ['created_at' => 'DESC'],
@@ -201,7 +201,7 @@ class ChattingController extends BaseController
                     vendorId: $vendor['id'])
             );
             $customer = $this->customerRepo->getFirstWhere(params: ['id' => $request['user_id']]);
-            ChattingEvent::dispatch('message_from_seller', 'customer', $customer, $vendor);
+            event(new ChattingEvent(key: 'message_from_seller', type: 'customer', userData: $customer, messageForm: $vendor));
 
             $chattingMessages = $this->chattingRepo->getListWhereNotNull(
                 orderBy: ['created_at' => 'DESC'],
@@ -220,7 +220,7 @@ class ChattingController extends BaseController
      * @param string|int|null $id
      * @return Collection
      */
-    protected function getChatList(string $tableName, string $orderBy, string|int $id = null) :Collection
+    protected function getChatList(string $tableName, string $orderBy, string|int $id = null): Collection
     {
         $vendorId = auth('seller')->id();
         $columnName = $tableName == 'users' ? 'user_id' : 'delivery_man_id';
@@ -241,12 +241,12 @@ class ChattingController extends BaseController
      */
     protected function getRenderMessagesView(object $user, object $message, string $type): array
     {
-        $userData = ['name' => $user['f_name'].' '.$user['l_name'],'phone' => $user['country_code'].$user['phone']];
+        $userData = ['name' => $user['f_name'] . ' ' . $user['l_name'], 'phone' => $user['country_code'] . $user['phone']];
 
         if ($type == 'customer') {
-            $userData['image'] = getValidImage(path: 'storage/app/public/profile/' . ($user['image']), type: 'backend-profile');
-        }else {
-            $userData['image'] = getValidImage(path: 'storage/app/public/delivery-man/' . ($user['image']), type: 'backend-profile');
+            $userData['image'] = getStorageImages(path: $user->image_full_url, type: 'backend-profile');
+        } else {
+            $userData['image'] = getStorageImages(path: $user->image_full_url, type: 'backend-profile');
         }
 
         return [
@@ -275,7 +275,7 @@ class ChattingController extends BaseController
 
         return response()->json([
             'newMessagesExist' => $chatting,
-            'message' => $chatting > 1 ? $chatting .' '.translate('New_Message') : translate('New_Message'),
+            'message' => $chatting > 1 ? $chatting . ' ' . translate('New_Message') : translate('New_Message'),
         ]);
     }
 }

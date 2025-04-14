@@ -1,13 +1,27 @@
 <?php
 
+use App\Http\Controllers\RestAPI\v1\auth\CustomerAPIAuthController;
+use App\Http\Controllers\RestAPI\v1\auth\EmailVerificationController;
+use App\Http\Controllers\RestAPI\v1\auth\ForgotPasswordController;
+use App\Http\Controllers\RestAPI\v1\auth\PassportAuthController;
+use App\Http\Controllers\RestAPI\v1\auth\PhoneVerificationController;
+use App\Http\Controllers\RestAPI\v1\auth\SocialAuthController;
+use App\Http\Controllers\RestAPI\v1\BannerController;
 use App\Http\Controllers\RestAPI\v1\BrandController;
 use App\Http\Controllers\RestAPI\v1\CartController;
 use App\Http\Controllers\RestAPI\v1\CategoryController;
+use App\Http\Controllers\RestAPI\v1\ChatController;
+use App\Http\Controllers\RestAPI\v1\ConfigController;
+use App\Http\Controllers\RestAPI\v1\CouponController;
+use App\Http\Controllers\RestAPI\v1\CustomerController;
+use App\Http\Controllers\RestAPI\v1\CustomerRestockRequestController;
 use App\Http\Controllers\RestAPI\v1\DealController;
+use App\Http\Controllers\RestAPI\v1\DealOfTheDayController;
 use App\Http\Controllers\RestAPI\v1\FlashDealController;
 use App\Http\Controllers\RestAPI\v1\OrderController;
 use App\Http\Controllers\RestAPI\v1\ProductController;
 use App\Http\Controllers\RestAPI\v1\SellerController;
+use App\Http\Controllers\RestAPI\v1\ShippingMethodController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Customer\PaymentController;
 
@@ -25,49 +39,75 @@ use App\Http\Controllers\Customer\PaymentController;
 Route::group(['namespace' => 'RestAPI\v1', 'prefix' => 'v1', 'middleware' => ['api_lang']], function () {
 
     Route::group(['prefix' => 'auth', 'namespace' => 'auth'], function () {
-        Route::post('register', 'PassportAuthController@register');
-        Route::post('login', 'PassportAuthController@login');
-        Route::get('logout', 'PassportAuthController@logout')->middleware('auth:api');
+        Route::controller(PassportAuthController::class)->group(function () {
+            Route::get('logout', 'logout')->middleware('auth:api');
+        });
 
-        Route::post('check-phone', 'PhoneVerificationController@check_phone');
-        Route::post('resend-otp-check-phone', 'PhoneVerificationController@resend_otp_check_phone');
-        Route::post('verify-phone', 'PhoneVerificationController@verify_phone');
+        Route::controller(CustomerAPIAuthController::class)->group(function () {
+            Route::post('register', 'register');
+            Route::post('login', 'login');
+            Route::post('check-email', 'checkEmail');
+            Route::post('check-phone', 'checkPhone');
+            Route::post('firebase-auth-verify', 'firebaseAuthVerify');
+            Route::post('firebase-auth-token-store', 'firebaseAuthTokenStore');
+            Route::post('verify-otp', 'verifyOTP');
+            Route::post('verify-email', 'verifyEmail');
+            Route::post('verify-phone', 'verifyPhone');
+            Route::post('registration-with-otp', 'registrationWithOTP');
+            Route::post('existing-account-check', 'existingAccountCheck');
+            Route::post('registration-with-social-media', 'registrationWithSocialMedia');
+            Route::post('forgot-password', 'passwordResetRequest');
+        });
 
-        Route::post('check-email', 'EmailVerificationController@check_email');
-        Route::post('resend-otp-check-email', 'EmailVerificationController@resend_otp_check_email');
-        Route::post('verify-email', 'EmailVerificationController@verify_email');
+        Route::group(['middleware' => 'apiGuestCheck'], function () {
+            Route::controller(CustomerAPIAuthController::class)->group(function () {
+                Route::post('verify-profile-info', 'verifyProfileInfo');
+            });
+        });
 
-        Route::post('forgot-password', 'ForgotPassword@reset_password_request');
-        Route::post('verify-otp', 'ForgotPassword@otp_verification_submit');
-        Route::put('reset-password', 'ForgotPassword@reset_password_submit');
-
-        Route::post('social-login', 'SocialAuthController@social_login');
-        Route::post('update-phone', 'SocialAuthController@update_phone');
+        Route::controller(PhoneVerificationController::class)->group(function () {
+            Route::post('resend-otp-check-phone', 'resend_otp_check_phone');
+        });
+        Route::controller(EmailVerificationController::class)->group(function () {
+            Route::post('resend-otp-check-email', 'resend_otp_check_email');
+        });
+        Route::controller(ForgotPasswordController::class)->group(function () {
+            Route::post('verify-token', 'tokenVerificationSubmit');
+            Route::put('reset-password', 'reset_password_submit');
+        });
+        Route::controller(SocialAuthController::class)->group(function () {
+            Route::post('social-login', 'social_login');
+            Route::post('update-phone', 'update_phone');
+            Route::post('social-customer-login', 'customerSocialLogin');
+            Route::post('existing-account-check', 'existingAccountCheck');
+            Route::post('registration-with-social-media', 'registrationWithSocialMedia');
+        });
     });
 
-    Route::group(['prefix' => 'config'], function () {
-        Route::get('/', 'ConfigController@configuration');
+    Route::controller(ConfigController::class)->group(function () {
+        Route::get('config', 'configuration');
     });
 
     Route::group(['prefix' => 'shipping-method', 'middleware' => 'apiGuestCheck'], function () {
-        Route::get('detail/{id}', 'ShippingMethodController@get_shipping_method_info');
-        Route::get('by-seller/{id}/{seller_is}', 'ShippingMethodController@shipping_methods_by_seller');
-        Route::post('choose-for-order', 'ShippingMethodController@choose_for_order');
-        Route::get('chosen', 'ShippingMethodController@chosen_shipping_methods');
-
-        Route::get('check-shipping-type', 'ShippingMethodController@check_shipping_type');
+        Route::controller(ShippingMethodController::class)->group(function () {
+            Route::get('detail/{id}', 'get_shipping_method_info');
+            Route::get('by-seller/{id}/{seller_is}', 'shipping_methods_by_seller');
+            Route::post('choose-for-order', 'choose_for_order');
+            Route::get('chosen', 'chosen_shipping_methods');
+            Route::get('check-shipping-type', 'check_shipping_type');
+        });
     });
 
     Route::group(['prefix' => 'cart', 'middleware' => 'apiGuestCheck'], function () {
         Route::controller(CartController::class)->group(function () {
-            Route::get('/', 'cart');
-            Route::post('add', 'add_to_cart');
+            Route::get('/', 'getCartList');
+            Route::post('add', 'addToCart');
             Route::put('update', 'update_cart');
             Route::delete('remove', 'remove_from_cart');
             Route::delete('remove-all', 'remove_all_from_cart');
             Route::post('select-cart-items', 'updateCheckedCartItems');
+            Route::post('product-restock-request', 'addProductRestockRequest');
         });
-
     });
 
     Route::group(['prefix' => 'customer/order', 'middleware' => 'apiGuestCheck'], function () {
@@ -99,7 +139,9 @@ Route::group(['namespace' => 'RestAPI\v1', 'prefix' => 'v1', 'middleware' => ['a
     });
 
     Route::group(['prefix' => 'dealsoftheday'], function () {
-        Route::get('deal-of-the-day', 'DealOfTheDayController@get_deal_of_the_day_product');
+        Route::controller(DealOfTheDayController::class)->group(function () {
+            Route::get('deal-of-the-day', 'getDealOfTheDayProduct');
+        });
     });
 
     Route::group(['prefix' => 'products'], function () {
@@ -124,9 +166,9 @@ Route::group(['namespace' => 'RestAPI\v1', 'prefix' => 'v1', 'middleware' => ['a
                 Route::get('featured', 'getFeaturedProductsList');
                 Route::get('top-rated', 'getTopRatedProducts');
                 Route::any('search', 'get_searched_products');
-                Route::post('filter', 'product_filter');
+                Route::post('filter', 'getProductsFilter');
                 Route::any('suggestion-product', 'get_suggestion_product');
-                Route::get('details/{slug}', 'get_product');
+                Route::get('details/{slug}', 'getProductDetails');
                 Route::get('related-products/{product_id}', 'get_related_products');
                 Route::get('best-sellings', 'getBestSellingProducts');
                 Route::get('home-categories', 'get_home_categories');
@@ -135,14 +177,19 @@ Route::group(['namespace' => 'RestAPI\v1', 'prefix' => 'v1', 'middleware' => ['a
                 Route::get('shop-again-product', 'get_shop_again_product')->middleware('auth:api');
                 Route::get('just-for-you', 'just_for_you');
                 Route::get('most-searching', 'getMostSearchingProductsList');
+                Route::get('digital-author-list', 'getDigitalProductsAuthorList');
+                Route::get('digital-publishing-house-list', 'getDigitalPublishingHouseList');
+                Route::get('clearance-sale', 'getClearanceSale');
             });
         });
 
         Route::group(['prefix' => 'seller'], function () {
-            Route::get('{seller_id}/products', 'SellerController@get_seller_products');
-            Route::get('{seller_id}/seller-best-selling-products', 'SellerController@get_seller_best_selling_products');
-            Route::get('{seller_id}/seller-featured-product', 'SellerController@get_sellers_featured_product');
-            Route::get('{seller_id}/seller-recommended-products', 'SellerController@get_sellers_recommended_products');
+            Route::controller(SellerController::class)->group(function () {
+                Route::get('{seller_id}/products', 'getVendorProducts');
+                Route::get('{seller_id}/seller-best-selling-products', 'get_seller_best_selling_products');
+                Route::get('{seller_id}/seller-featured-product', 'get_sellers_featured_product');
+                Route::get('{seller_id}/seller-recommended-products', 'get_sellers_recommended_products');
+            });
         });
 
         Route::group(['prefix' => 'categories'], function () {
@@ -161,15 +208,19 @@ Route::group(['namespace' => 'RestAPI\v1', 'prefix' => 'v1', 'middleware' => ['a
         });
 
         Route::group(['prefix' => 'customer'], function () {
-            Route::put('cm-firebase-token', 'CustomerController@update_cm_firebase_token');
-
-            Route::get('get-restricted-country-list', 'CustomerController@get_restricted_country_list');
-            Route::get('get-restricted-zip-list', 'CustomerController@get_restricted_zip_list');
+            Route::controller(CustomerController::class)->group(function () {
+                Route::put('cm-firebase-token', 'update_cm_firebase_token');
+                Route::get('get-restricted-country-list', 'get_restricted_country_list');
+                Route::get('get-restricted-zip-list', 'get_restricted_zip_list');
+            });
 
             Route::group(['prefix' => 'address'], function () {
-                Route::post('add', 'CustomerController@add_new_address');
-                Route::get('list', 'CustomerController@address_list');
-                Route::delete('/', 'CustomerController@delete_address');
+                Route::controller(CustomerController::class)->group(function () {
+                    Route::post('add', 'add_new_address');
+                    Route::get('list', 'address_list');
+                    Route::delete('/', 'delete_address');
+                    Route::post('update', 'update_address');
+                });
             });
 
             Route::group(['prefix' => 'order'], function () {
@@ -178,27 +229,35 @@ Route::group(['namespace' => 'RestAPI\v1', 'prefix' => 'v1', 'middleware' => ['a
                     Route::get('offline-payment-method-list', 'offline_payment_method_list');
                     Route::post('place-by-offline-payment', 'placeOrderByOfflinePayment');
                 });
-                Route::get('details', 'CustomerController@get_order_details');
+                Route::controller(CustomerController::class)->group(function () {
+                    Route::get('details', 'get_order_details');
+                    Route::get('generate-invoice', 'getOrderInvoice');
+                });
             });
         });
     });
 
     Route::group(['prefix' => 'customer', 'middleware' => 'auth:api'], function () {
-        Route::get('info', 'CustomerController@info');
-        Route::put('update-profile', 'CustomerController@update_profile');
-        Route::get('account-delete/{id}', 'CustomerController@account_delete');
+        Route::controller(CustomerController::class)->group(function () {
+            Route::get('info', 'info');
+            Route::put('update-profile', 'update_profile');
+            Route::get('account-delete/{id}', 'account_delete');
+        });
 
         Route::group(['prefix' => 'address'], function () {
-            Route::get('get/{id}', 'CustomerController@get_address');
-            Route::post('update', 'CustomerController@update_address');
+            Route::controller(CustomerController::class)->group(function () {
+                Route::get('get/{id}', 'get_address');
+            });
         });
 
         Route::group(['prefix' => 'support-ticket'], function () {
-            Route::post('create', 'CustomerController@create_support_ticket');
-            Route::get('get', 'CustomerController@get_support_tickets');
-            Route::get('conv/{ticket_id}', 'CustomerController@get_support_ticket_conv');
-            Route::post('reply/{ticket_id}', 'CustomerController@reply_support_ticket');
-            Route::get('close/{id}', 'CustomerController@support_ticket_close');
+            Route::controller(CustomerController::class)->group(function () {
+                Route::post('create', 'create_support_ticket');
+                Route::get('get', 'get_support_tickets');
+                Route::get('conv/{ticket_id}', 'get_support_ticket_conv');
+                Route::post('reply/{ticket_id}', 'reply_support_ticket');
+                Route::get('close/{id}', 'support_ticket_close');
+            });
         });
 
         Route::group(['prefix' => 'compare'], function () {
@@ -209,18 +268,32 @@ Route::group(['namespace' => 'RestAPI\v1', 'prefix' => 'v1', 'middleware' => ['a
         });
 
         Route::group(['prefix' => 'wish-list'], function () {
-            Route::get('/', 'CustomerController@wish_list');
-            Route::post('add', 'CustomerController@add_to_wishlist');
-            Route::delete('remove', 'CustomerController@remove_from_wishlist');
+            Route::controller(CustomerController::class)->group(function () {
+                Route::get('/', 'wish_list');
+                Route::post('add', 'add_to_wishlist');
+                Route::delete('remove', 'remove_from_wishlist');
+            });
+        });
+
+        Route::group(['prefix' => 'restock-requests'], function () {
+            Route::controller(CustomerRestockRequestController::class)->group(function () {
+                Route::get('list', 'restockRequestsList');
+                Route::post('delete', 'deleteRestockRequests');
+            });
         });
 
         Route::group(['prefix' => 'order'], function () {
-            Route::get('place-by-wallet', 'OrderController@place_order_by_wallet');
-            Route::get('refund', 'OrderController@refund_request');
-            Route::post('refund-store', 'OrderController@store_refund');
-            Route::get('refund-details', 'OrderController@refund_details');
-            Route::get('list', 'CustomerController@get_order_list');
-            Route::post('again', 'OrderController@order_again');
+            Route::controller(OrderController::class)->group(function () {
+                Route::get('place-by-wallet', 'placeOrderByWallet');
+                Route::get('refund', 'refund_request');
+                Route::post('refund-store', 'store_refund');
+                Route::get('refund-details', 'refund_details');
+                Route::post('again', 'order_again');
+            });
+
+            Route::controller(CustomerController::class)->group(function () {
+                Route::get('list', 'get_order_list');
+            });
 
             Route::controller(ProductController::class)->group(function () {
                 Route::post('deliveryman-reviews/submit', 'submit_deliveryman_review')->middleware('auth:api');
@@ -229,11 +302,13 @@ Route::group(['namespace' => 'RestAPI\v1', 'prefix' => 'v1', 'middleware' => ['a
 
         // Chatting
         Route::group(['prefix' => 'chat'], function () {
-            Route::get('list/{type}', 'ChatController@list');
-            Route::get('get-messages/{type}/{id}', 'ChatController@get_message');
-            Route::post('send-message/{type}', 'ChatController@send_message');
-            Route::post('seen-message/{type}', 'ChatController@seen_message');
-            Route::get('search/{type}', 'ChatController@search');
+            Route::controller(ChatController::class)->group(function () {
+                Route::get('list/{type}', 'list');
+                Route::get('get-messages/{type}/{id}', 'get_message');
+                Route::post('send-message/{type}', 'send_message');
+                Route::post('seen-message/{type}', 'seen_message');
+                Route::get('search/{type}', 'search');
+            });
         });
 
         //wallet
@@ -250,9 +325,11 @@ Route::group(['namespace' => 'RestAPI\v1', 'prefix' => 'v1', 'middleware' => ['a
 
     Route::group(['prefix' => 'customer', 'middleware' => 'apiGuestCheck'], function () {
         Route::group(['prefix' => 'order'], function () {
-            Route::get('digital-product-download/{id}', 'OrderController@digital_product_download');
-            Route::get('digital-product-download-otp-verify', 'OrderController@digital_product_download_otp_verify');
-            Route::post('digital-product-download-otp-resend', 'OrderController@digital_product_download_otp_resend');
+            Route::controller(OrderController::class)->group(function () {
+                Route::get('digital-product-download/{id}', 'digital_product_download');
+                Route::get('digital-product-download-otp-verify', 'digital_product_download_otp_verify');
+                Route::post('digital-product-download-otp-resend', 'digital_product_download_otp_resend');
+            });
         });
     });
 
@@ -265,17 +342,21 @@ Route::group(['namespace' => 'RestAPI\v1', 'prefix' => 'v1', 'middleware' => ['a
     });
 
     Route::group(['prefix' => 'order'], function () {
-        Route::get('track', 'OrderController@track_by_order_id');
-        Route::get('cancel-order', 'OrderController@order_cancel');
-        Route::post('track-order', 'OrderController@track_order');
+        Route::controller(OrderController::class)->group(function () {
+            Route::get('track', 'track_by_order_id');
+            Route::get('cancel-order', 'order_cancel');
+            Route::post('track-order', 'track_order');
+        });
     });
 
     Route::group(['prefix' => 'banners'], function () {
-        Route::get('/', 'BannerController@get_banners');
+        Route::controller(BannerController::class)->group(function () {
+            Route::get('/', 'getBannerList');
+        });
     });
 
     Route::group(['prefix' => 'seller'], function () {
-        Route::controller(SellerController::class)->group(function (){
+        Route::controller(SellerController::class)->group(function () {
             Route::get('/', 'get_seller_info');
             Route::get('list/{type}', 'getSellerList');
             Route::get('more', 'more_sellers');
@@ -285,9 +366,12 @@ Route::group(['namespace' => 'RestAPI\v1', 'prefix' => 'v1', 'middleware' => ['a
     Route::group(['prefix' => 'coupon', 'middleware' => 'auth:api'], function () {
         Route::get('apply', 'CouponController@apply');
     });
-    Route::get('coupon/list', 'CouponController@list')->middleware('auth:api');
-    Route::get('coupon/applicable-list', 'CouponController@applicable_list')->middleware('auth:api');
-    Route::get('coupons/{seller_id}/seller-wise-coupons', 'CouponController@get_seller_wise_coupon');
+
+    Route::controller(CouponController::class)->group(function () {
+        Route::get('coupon/list', 'list')->middleware('auth:api');
+        Route::get('coupon/applicable-list', 'applicable_list')->middleware('auth:api');
+        Route::get('coupons/{seller_id}/seller-wise-coupons', 'getSellerWiseCoupon');
+    });
 
     Route::get('get-guest-id', 'GeneralController@get_guest_id');
 

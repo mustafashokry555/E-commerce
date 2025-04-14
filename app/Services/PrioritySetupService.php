@@ -124,5 +124,13 @@ class PrioritySetupService
         ];
     }
 
-
+    public function updateStockClearanceProductPrioritySetupData($request): array
+    {
+        return [
+            'custom_sorting_status' => $request->get('custom_sorting_status', 0),
+            'sort_by' => $request['sort_by'] ?? null,
+            'out_of_stock_product' => $request['out_of_stock_product'] ?? null,
+            'temporary_close_sorting' => $request['temporary_close_sorting'] ?? null,
+        ];
+    }
 }

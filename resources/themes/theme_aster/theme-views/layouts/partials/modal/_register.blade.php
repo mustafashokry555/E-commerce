@@ -16,12 +16,12 @@
             <div class="modal-body px-4 px-lg-5">
                 <div class="mb-4 text-center">
                     <img width="200" alt="" class="dark-support"
-                        src="{{ getValidImage(path: 'storage/app/public/company/'.($web_config['web_logo']->value), type:'logo') }}">
+                        src="{{ getStorageImages(path: $web_config['web_logo'], type:'logo') }}">
                 </div>
                 <div class="mb-4">
                     <h2 class="mb-2">{{ translate('sign_up') }}</h2>
                     <p class="text-muted">
-                        {{ translate('login_to_your_account.') }} {{ translate('Don’t_have_account') }}?
+                        {{ translate('login_to_your_account.') }} {{ translate('Do_n’t_have_account') }}?
                         <span
                             class="text-primary fw-bold"
                             data-bs-toggle="modal"
@@ -153,12 +153,15 @@
                             <div class="d-flex gap-3 justify-content-center py-2 mt-4 mb-3">
                                 <div class="">
                                     <input type="text" class="form-control border __h-40"
+                                           id="customer-regi-recaptcha-input"
                                            name="default_recaptcha_value_customer_regi" value=""
                                            placeholder="{{ translate('Enter_captcha_value') }}" autocomplete="off">
                                 </div>
                                 <div class="input-icons rounded bg-white">
                                     <a id="re-captcha-customer-register"
-                                       class="d-flex align-items-center align-items-center">
+                                       data-session="default_recaptcha_id_customer_regi"
+                                       data-input="#customer-regi-recaptcha-input"
+                                       class="d-flex align-items-center align-items-center get-session-recaptcha-auto-fill">
                                         <img
                                             src="{{ URL('/customer/auth/code/captcha/1?captcha_session_id=default_recaptcha_id_customer_regi') }}"
                                             alt="" class="input-field rounded __h-40" id="customer-regi-recaptcha-id">
@@ -170,8 +173,7 @@
                         <div class="d-flex justify-content-center mt-4">
                             <label for="input-checked" class="d-flex gap-1 align-items-center mb-0 user-select-none">
                                 <input type="checkbox" id="input-checked" required/>
-                                {{translate('i_agree_with_the')}} <a href="{{route('terms')}}"
-                                                                     class="text-info text-capitalize">{{ translate('terms_&_conditions') }}</a>
+                                {{translate('i_agree_with_the')}} <a href="{{route('terms')}}" class="text-info text-capitalize">{{ translate('terms_&_conditions') }}</a>
                             </label>
                         </div>
                     </div>
@@ -185,18 +187,21 @@
                 @if($web_config['social_login_text'])
                     <p class="text-center text-muted">{{ translate('or_continue_with') }}</p>
                 @endif
+
                 <div class="d-flex justify-content-center gap-3 align-items-center flex-wrap pb-3">
-                    @foreach ($web_config['socials_login'] as $socialLoginService)
-                        @if (isset($socialLoginService))
-                            <a href="{{route('customer.auth.service-login', $socialLoginService['login_medium'])}}">
-                                <img
-                                    width="35"
-                                    src="{{ theme_asset('assets/img/svg/'.$socialLoginService['login_medium'].'.svg') }}"
-                                    alt=""
-                                    class="dark-support"/>
-                            </a>
-                        @endif
-                    @endforeach
+                    @if(isset($web_config['customer_login_options']['social_login']) && $web_config['customer_login_options']['social_login'])
+                        @foreach ($web_config['customer_social_login_options'] as $socialLoginServiceKey => $socialLoginService)
+                            @if ($socialLoginService && $socialLoginServiceKey != 'apple')
+                                <a href="{{ route('customer.auth.service-login', $socialLoginServiceKey) }}">
+                                    <img
+                                        width="35"
+                                        src="{{ theme_asset('assets/img/svg/'.$socialLoginServiceKey.'.svg') }}"
+                                        alt=""
+                                        class="dark-support"/>
+                                </a>
+                            @endif
+                        @endforeach
+                    @endif
                 </div>
             </div>
         </div>
@@ -257,7 +262,7 @@
                     success: function (data) {
                         if (data.errors) {
                             for (let index = 0; index < data.errors.length; index++) {
-                                toastr.error(data.errors[index], {
+                                toastr.error(data.errors[index].message, {
                                     CloseButton: true,
                                     ProgressBar: true
                                 });

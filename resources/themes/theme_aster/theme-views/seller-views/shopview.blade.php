@@ -1,28 +1,29 @@
 @php use App\Utils\Helpers; @endphp
 @extends('theme-views.layouts.app')
-@section('title',translate('shop_Page').' | '.$web_config['name']->value.' '.translate('ecommerce'))
+@section('title',translate('shop_Page').' | '.$web_config['company_name'].' '.translate('ecommerce'))
 @push('css_or_js')
-    @if($shop['id'] != 0)
-        <meta property="og:image" content="{{dynamicStorage(path: 'storage/app/public/shop')}}/{{$shop->image}}"/>
-        <meta property="og:title" content="{{ $shop->name}} "/>
-        <meta property="og:url" content="{{route('shopView',[$shop['id']])}}">
+    @if($shopInfoArray['id'] != 0)
+        <meta property="og:image" content="{{ $shopInfoArray['image_full_url']['path'] }}"/>
+        <meta property="og:title" content="{{ $shopInfoArray['name']}} "/>
+        <meta property="og:url" content="{{route('shopView',[$shopInfoArray['id']])}}">
     @else
-        <meta property="og:image" content="{{dynamicStorage(path: 'storage/app/public/company')}}/{{$web_config['fav_icon']->value}}"/>
-        <meta property="og:title" content="{{ $shop['name']}} "/>
-        <meta property="og:url" content="{{route('shopView',[$shop['id']])}}">
+        <meta property="og:image" content="{{$web_config['fav_icon']['path']}}"/>
+        <meta property="og:title" content="{{ $shopInfoArray['name']}} "/>
+        <meta property="og:url" content="{{route('shopView',[$shopInfoArray['id']])}}">
     @endif
+
+    @if($shopInfoArray['id'] != 0)
+        <meta property="twitter:card" content="{{$shopInfoArray['image_full_url']['path']}}"/>
+        <meta property="twitter:title" content="{{route('shopView',[$shopInfoArray['id']])}}"/>
+        <meta property="twitter:url" content="{{route('shopView',[$shopInfoArray['id']])}}">
+    @else
+        <meta property="twitter:card" content="{{$web_config['fav_icon']['path']}}"/>
+        <meta property="twitter:title" content="{{route('shopView',[$shopInfoArray['id']])}}"/>
+        <meta property="twitter:url" content="{{route('shopView',[$shopInfoArray['id']])}}">
+    @endif
+
     <meta property="og:description"
           content="{{ substr(strip_tags(str_replace('&nbsp;', ' ', $web_config['about']->value)),0,160) }}">
-    @if($shop['id'] != 0)
-        <meta property="twitter:card" content="{{dynamicStorage(path: 'storage/app/public/shop')}}/{{$shop->image}}"/>
-        <meta property="twitter:title" content="{{route('shopView',[$shop['id']])}}"/>
-        <meta property="twitter:url" content="{{route('shopView',[$shop['id']])}}">
-    @else
-        <meta property="twitter:card"
-              content="{{dynamicStorage(path: 'storage/app/public/company')}}/{{$web_config['fav_icon']->value}}"/>
-        <meta property="twitter:title" content="{{route('shopView',[$shop['id']])}}"/>
-        <meta property="twitter:url" content="{{route('shopView',[$shop['id']])}}">
-    @endif
     <meta property="twitter:description"
           content="{{ substr(strip_tags(str_replace('&nbsp;', ' ', $web_config['about']->value)),0,160) }}">
 @endpush
@@ -30,32 +31,32 @@
     <main class="main-content d-flex flex-column gap-3 py-3">
         <div class="container">
             <div class="rounded ov-hidden mb-3">
-                @if($shop['id'] != 0)
+                @if($shopInfoArray['id'] != 0)
                     <div class="store-banner dark-support bg-badge overflow-hidden" data-bg-img="">
                         <img class="w-100" alt=""
-                             src="{{ getValidImage(path: 'storage/app/public/shop/banner/'.$shop->banner, type:'shop-banner') }}">
+                             src="{{ getStorageImages(path: $shopInfoArray['banner_full_url'], type:'shop-banner') }}">
                     </div>
                 @else
                     @php($banner=getWebConfig(name: 'shop_banner'))
                     <div class="store-banner dark-support bg-badge overflow-hidden" data-bg-img="">
                         <img class="w-100" alt=""
-                             src="{{ getValidImage(path: 'storage/app/public/shop/'.($banner ?? ""), type: 'shop-banner') }}">
+                             src="{{ getStorageImages(path: $banner, type: 'shop-banner') }}">
                     </div>
                 @endif
                 <div class="bg-primary-light p-3">
                     <div class="d-flex gap-4 flex-wrap">
-                        @if($shop['id'] != 0)
+                        @if($shopInfoArray['id'] != 0)
                             <div class="media gap-3">
                                 <div class="avatar rounded store-avatar overflow-hidden">
                                     <div class="position-relative">
-                                        <img src="{{ getValidImage(path: 'storage/app/public/shop/'.$shop->image, type:'shop') }}"
+                                        <img src="{{ getStorageImages(path:$shopInfoArray['image_full_url'], type:'shop') }}"
                                              class="dark-support rounded img-fit" alt="">
-                                        @if($seller_temporary_close || $inhouse_temporary_close)
+                                        @if($shopInfoArray['temporary_close'])
                                             <span class="temporary-closed position-absolute">
                                                 <span class="text-center px-1">{{translate('Temporary_OFF')}}</span>
                                             </span>
-                                        @elseif(($seller_id==0 && $inHouseVacationStatus && $current_date >= $inhouse_vacation_start_date && $current_date <= $inhouse_vacation_end_date) ||
-                                            $seller_id!=0 && $seller_vacation_status && $current_date >= $seller_vacation_start_date && $current_date <= $seller_vacation_end_date)
+                                        @elseif(($seller_id==0 && $shopInfoArray['vacation_status'] && $shopInfoArray['current_date'] >= $shopInfoArray['vacation_start_date'] && $shopInfoArray['current_date'] <= $shopInfoArray['vacation_end_date']) ||
+                                            $seller_id!=0 && $shopInfoArray['vacation_status'] && $shopInfoArray['current_date'] >= $shopInfoArray['vacation_start_date'] && $shopInfoArray['current_date'] <= $shopInfoArray['vacation_end_date'])
                                             <span class="temporary-closed position-absolute">
                                                 <span class="text-center px-1">{{translate('closed_Now')}}</span>
                                             </span>
@@ -63,28 +64,28 @@
                                     </div>
                                 </div>
                                 <div class="media-body d-flex flex-column gap-2">
-                                    <h4>{{ $shop->name}}</h4>
+                                    <h4>{{ $shopInfoArray['name']}}</h4>
                                     <div class="d-flex gap-2 align-items-center">
                                         <span class="star-rating text-gold fs-12">
                                             @for ($index = 1; $index <= 5; $index++)
-                                                @if ($index <= $avg_rating)
+                                                @if ($index <= $shopInfoArray['average_rating'])
                                                     <i class="bi bi-star-fill"></i>
-                                                @elseif ($avg_rating != 0 && $index <= (int)$avg_rating + 1 && $avg_rating >= ((int)$avg_rating+.30))
+                                                @elseif ($shopInfoArray['average_rating'] != 0 && $index <= (int)$shopInfoArray['average_rating'] + 1 && $shopInfoArray['average_rating'] >= ((int)$shopInfoArray['average_rating']+.30))
                                                     <i class="bi bi-star-half"></i>
                                                 @else
                                                     <i class="bi bi-star"></i>
                                                 @endif
                                             @endfor
                                         </span>
-                                        <span class="text-muted fw-semibold">({{round($avg_rating,1)}})</span>
+                                        <span class="text-muted fw-semibold">({{round($shopInfoArray['average_rating'],1)}})</span>
                                     </div>
                                     <ul class="list-unstyled list-inline-dot fs-12">
-                                        <li>{{ $total_review}} {{translate('Reviews')}} </li>
-                                        <li>{{ $total_order}} {{translate('Orders')}} </li>
+                                        <li>{{ $shopInfoArray['total_review']}} {{translate('Reviews')}} </li>
+                                        <li>{{ $shopInfoArray['total_order']}} {{translate('Orders')}} </li>
                                         @php($minimumOrderAmount=getWebConfig(name: 'minimum_order_amount_status'))
                                         @php($minimumOrderAmountBySeller=getWebConfig(name: 'minimum_order_amount_by_seller'))
                                         @if ($minimumOrderAmount ==1 && $minimumOrderAmountBySeller ==1)
-                                            <li>{{ Helpers::currency_converter($shop->seller->minimum_order_amount)}} {{translate('minimum_order_amount')}} </li>
+                                            <li>{{ webCurrencyConverter($shopInfoArray['minimum_order_amount'])}} {{translate('minimum_order_amount')}} </li>
                                         @endif
                                     </ul>
                                 </div>
@@ -94,14 +95,14 @@
                                 <div class="avatar rounded store-avatar overflow-hidden">
                                     <div class="position-relative">
                                         <img class="dark-support rounded img-fit" alt=""
-                                            src="{{ getValidImage(path: 'storage/app/public/company/'.$web_config['fav_icon']->value, type:'shop') }}">
+                                            src="{{ getStorageImages(path: $web_config['fav_icon'], type:'shop') }}">
 
-                                        @if($seller_temporary_close || $inhouse_temporary_close)
+                                        @if($shopInfoArray['temporary_close'])
                                             <span class="temporary-closed position-absolute">
                                             <span>{{translate('Temporary_OFF')}}</span>
                                         </span>
-                                        @elseif(($seller_id==0 && $inHouseVacationStatus && $current_date >= $inhouse_vacation_start_date && $current_date <= $inhouse_vacation_end_date) ||
-                                            $seller_id!=0 && $seller_vacation_status && $current_date >= $seller_vacation_start_date && $current_date <= $seller_vacation_end_date)
+                                        @elseif(($seller_id==0 && $shopInfoArray['vacation_status'] && $shopInfoArray['current_date'] >= $shopInfoArray['vacation_start_date'] && $shopInfoArray['current_date'] <= $shopInfoArray['vacation_end_date']) ||
+                                            $seller_id!=0 && $shopInfoArray['vacation_status'] && $shopInfoArray['current_date'] >= $shopInfoArray['vacation_start_date'] && $shopInfoArray['current_date'] <= $shopInfoArray['vacation_end_date'])
                                             <span class="temporary-closed position-absolute">
                                                 <span>{{translate('closed_Now')}}</span>
                                             </span>
@@ -109,36 +110,29 @@
                                     </div>
                                 </div>
                                 <div class="media-body d-flex flex-column gap-2">
-                                    <h4>{{ $web_config['name']->value }}</h4>
+                                    <h4>{{ $web_config['company_name'] }}</h4>
                                     <div class="d-flex gap-2 align-items-center">
                                         <span class="star-rating text-gold fs-12">
                                             @for ($index = 1; $index <= 5; $index++)
-                                                @if ($index <= $avg_rating)
+                                                @if ($index <= $shopInfoArray['average_rating'])
                                                     <i class="bi bi-star-fill"></i>
-                                                @elseif ($avg_rating != 0 && $index <= (int)$avg_rating + 1 && $avg_rating >= ((int)$avg_rating+.30))
+                                                @elseif ($shopInfoArray['average_rating'] != 0 && $index <= (int)$shopInfoArray['average_rating'] + 1 && $shopInfoArray['average_rating'] >= ((int)$shopInfoArray['average_rating']+.30))
                                                     <i class="bi bi-star-half"></i>
                                                 @else
                                                     <i class="bi bi-star"></i>
                                                 @endif
                                             @endfor
                                         </span>
-                                        <span class="text-muted fw-semibold">({{round($avg_rating,1)}})</span>
+                                        <span class="text-muted fw-semibold">({{round($shopInfoArray['average_rating'], 1)}})</span>
                                     </div>
                                     <ul class="list-unstyled list-inline-dot fs-12 mb-1">
-                                        <li>{{ $total_review}} {{translate('reviews')}} </li>
-                                        <li>{{ $total_order}} {{translate('orders')}} </li>
+                                        <li>{{ $shopInfoArray['total_review']}} {{translate('reviews')}} </li>
+                                        <li>{{ $shopInfoArray['total_order']}} {{translate('orders')}} </li>
                                     </ul>
                                     @php($minimumOrderAmountStatus=getWebConfig(name: 'minimum_order_amount_status'))
                                     @php($minimumOrderAmountBySeller=getWebConfig(name: 'minimum_order_amount_by_seller'))
                                     @if ($minimumOrderAmountStatus ==1 && $minimumOrderAmountBySeller ==1)
-                                        @if($shop['id'] == 0)
-                                            @php($minimumOrderAmount=getWebConfig(name: 'minimum_order_amount'))
-                                            <span
-                                                class="text-sm-nowrap">{{ Helpers::currency_converter($minimumOrderAmount)}} {{translate('minimum_order_amount')}}</span>
-                                        @else
-                                            <span
-                                                class="text-sm-nowrap">{{ Helpers::currency_converter($shop->seller->minimum_order_amount)}} {{translate('minimum_order_amount')}}</span>
-                                        @endif
+                                        <span class="text-sm-nowrap">{{ webCurrencyConverter($shopInfoArray['minimum_order_amount'])}} {{translate('minimum_order_amount')}}</span>
                                     @endif
                                 </div>
                             </div>
@@ -168,7 +162,7 @@
                                         data-bs-target="#contact_sellerModal">
                                     <i class="bi bi-chat-square-fill text-capitalize"></i> {{translate('chat_with_vendor')}}
                                 </button>
-                                @include('theme-views.layouts.partials.modal._chat-with-seller',['shop'=>$shop, 'user_type' => ($shop['id'] == 0 ? 'admin':'seller')])
+                                @include('theme-views.layouts.partials.modal._chat-with-seller',['shop'=>$shopInfoArray, 'user_type' => ($shopInfoArray['id'] == 0 ? 'admin':'seller')])
                             @else
                                 <button class="btn btn-primary flex-lg-down-grow-1 fs-16" data-bs-toggle="modal"
                                         data-bs-target="#loginModal">
@@ -179,21 +173,19 @@
                     </div>
                 </div>
             </div>
-            @if($shop['id'] != 0 && $shop->bottom_banner)
-                <div class="">
-                    <img src="{{ getValidImage(path: 'storage/app/public/shop/banner/'.$shop->bottom_banner, type:'shop-banner') }}"
+            @if($shopInfoArray['id'] != 0 && $shopInfoArray['bottom_banner'])
+                <div>
+                    <img src="{{ getStorageImages(path: $shopInfoArray['bottom_banner_full_url'], type:'shop-banner') }}"
                          class="dark-support rounded img-fit" alt="">
                 </div>
-            @elseif($shop['id'] == 0)
-                @php($bottom_banner=getWebConfig(name: 'bottom_banner'))
-                @if($bottom_banner)
-                    <div>
-                        <img src="{{ getValidImage(path: 'storage/app/public/shop/'.$bottom_banner, type:'shop-banner') }}"
-                             class="dark-support rounded img-fit" alt="">
-                    </div>
-                @endif
+            @elseif($shopInfoArray['id'] == 0 && $shopInfoArray['bottom_banner'])
+                <div>
+                    <img src="{{ getStorageImages(path: $shopInfoArray['bottom_banner_full_url'], type:'shop-banner') }}"
+                         class="dark-support rounded img-fit" alt="">
+                </div>
             @endif
         </div>
+
         @if (count($featuredProductsList) > 0)
             <section class="bg-primary-light">
                 <div class="container">
@@ -237,7 +229,8 @@
                                 <div class="d-flex gap-3 align-items-center">
                                     <h3 class="mb-1 text-capitalize">{{translate('search_product')}}</h3>
                                     <a href="javascript:"
-                                       class="text-primary text-decoration-underline fw-semibold">{{$products->count()}} {{translate('item')}}</a>
+                                       class="text-primary text-decoration-underline fw-semibold">
+                                        {{ $products->total() }} {{ $products->total() > 1 ? translate('items') : translate('item') }}</a>
                                 </div>
                             </div>
                             <div class="">
@@ -246,9 +239,13 @@
                                         <form method="get" action="{{route('shopView',['id'=>$seller_id])}}">
                                             <div class="d-flex">
                                                 <div class="select-wrap border d-flex align-items-center">
+                                                    <input type="hidden" name="data_from" value="search">
                                                     <input type="search" class="form-control border-0 mx-w300 h-auto"
                                                            name="product_name" value="{{ request('product_name') }}"
                                                            placeholder="{{translate('search_for_items').'...'}}">
+                                                    @if(request()->has('offer_type') && request('offer_type') == 'clearance_sale')
+                                                        <input type="hidden" name="offer_type" value="clearance_sale">
+                                                    @endif
                                                 </div>
                                                 <button type="submit" class="btn btn-primary">
                                                     <i class="bi bi-search"></i>
@@ -269,31 +266,21 @@
                                                     {{translate('default')}}
                                                 </button>
                                                 <ul class="dropdown-menu dropdown-menu-end" id="sort-by-list">
-                                                    <li class="sort_by-latest selected" data-value="latest">
-                                                        <a class="d-flex" href="javascript:">
-                                                            {{translate('default')}}
-                                                        </a>
+                                                    <li class="link-hover-base product-list-filter-on-sort-by selected" data-value="latest">
+                                                        {{translate('default')}}
                                                     </li>
 
-                                                    <li class="sort_by-high-low" data-value="high-low">
-                                                        <a class="d-flex" href="javascript:">
-                                                            {{translate('High_to_Low_Price')}}
-                                                        </a>
+                                                    <li class="link-hover-base product-list-filter-on-sort-by" data-value="high-low">
+                                                        {{translate('High_to_Low_Price')}}
                                                     </li>
-                                                    <li class="sort_by-low-high" data-value="low-high">
-                                                        <a class="d-flex" href="javascript:">
-                                                            {{translate('Low_to_High_Price')}}
-                                                        </a>
+                                                    <li class="link-hover-base product-list-filter-on-sort-by" data-value="low-high">
+                                                        {{translate('Low_to_High_Price')}}
                                                     </li>
-                                                    <li class="sort_by-a-z" data-value="a-z">
-                                                        <a class="d-flex" href="javascript:">
-                                                            {{translate('A_to_Z_Order')}}
-                                                        </a>
+                                                    <li class="link-hover-base product-list-filter-on-sort-by" data-value="a-z">
+                                                        {{translate('A_to_Z_Order')}}
                                                     </li>
-                                                    <li class="sort_by-z-a" data-value="z-a">
-                                                        <a class="d-flex" href="javascript:">
-                                                            {{translate('Z_to_A_Order')}}
-                                                        </a>
+                                                    <li class="link-hover-base product-list-filter-on-sort-by" data-value="z-a">
+                                                        {{translate('Z_to_A_Order')}}
                                                     </li>
                                                 </ul>
                                             </div>
@@ -310,42 +297,37 @@
 
                                             <div class="dropdown">
                                                 <button type="button"
-                                                        class="border-0 bg-transparent dropdown-toggle p-0 custom-pe-3"
+                                                        class="border-0 bg-transparent dropdown-toggle p-0 custom-pe-3 filter-on-product-filter-button"
                                                         data-bs-toggle="dropdown" aria-expanded="false">
                                                     {{$data['data_from']=="best-selling"||$data['data_from']=="top-rated"||$data['data_from']=="featured_deal"||$data['data_from']=="latest"||$data['data_from']=="most-favorite"?
                                                     str_replace(['-', '_', '/'], ' ', translate($data['data_from'])):translate('Choose_Option')}}
                                                 </button>
                                                 <ul class="dropdown-menu dropdown-menu-end">
                                                     <li class="{{$data['data_from']=='latest'? 'selected':''}}">
-                                                        <a class="d-flex"
-                                                           href="{{route('shopView',['id'=> $data['id'],'data_from'=>'latest','page'=>1])}}">
-                                                            {{translate('Latest_Products')}}
-                                                        </a>
+                                                        <span class="filter-on-product-filter-change" data-value="latest">
+                                                            {{ translate('Latest_Products') }}
+                                                        </span>
                                                     </li>
                                                     <li class="{{$data['data_from']=='best-selling'? 'selected':''}}">
-                                                        <a class="d-flex"
-                                                           href="{{route('shopView',['id'=> $data['id'],'data_from'=>'best-selling','page'=>1])}}">
-                                                            {{translate('Best_Selling')}}
-                                                        </a>
+                                                        <span class="filter-on-product-filter-change" data-value="best-selling">
+                                                            {{ translate('Best_Selling') }}
+                                                        </span>
                                                     </li>
                                                     <li class="{{$data['data_from']=='top-rated'? 'selected':''}}">
-                                                        <a class="d-flex"
-                                                           href="{{route('shopView',['id'=> $data['id'],'data_from'=>'top-rated','page'=>1])}}">
-                                                            {{translate('Top_Rated')}}
-                                                        </a>
+                                                        <span class="filter-on-product-filter-change" data-value="top-rated">
+                                                            {{ translate('Top_Rated') }}
+                                                        </span>
                                                     </li>
                                                     <li class="{{$data['data_from']=='most-favorite'? 'selected':''}}">
-                                                        <a class="d-flex"
-                                                           href="{{route('shopView',['id'=> $data['id'],'data_from'=>'most-favorite','page'=>1])}}">
-                                                            {{translate('Most_Favorite')}}
-                                                        </a>
+                                                        <span class="filter-on-product-filter-change" data-value="most-favorite">
+                                                            {{ translate('Most_Favorite') }}
+                                                        </span>
                                                     </li>
                                                     @if($web_config['featured_deals'])
                                                         <li class="{{$data['data_from']=='featured_deal'? 'selected':''}}">
-                                                            <a class="d-flex"
-                                                               href="{{route('shopView',['id'=> $data['id'],'data_from'=>'featured_deal','page'=>1])}}">
-                                                                {{translate('Featured_Deal')}}
-                                                            </a>
+                                                            <span class="filter-on-product-filter-change" data-value="featured_deal">
+                                                                {{ translate('Featured_Deal') }}
+                                                            </span>
                                                         </li>
                                                     @endif
                                                 </ul>
@@ -367,148 +349,45 @@
                         </div>
 
                         <div class="card-body d-flex flex-column gap-4">
-                            <div>
-                                <h6 class="mb-3">{{translate('Categories')}}</h6>
-                                <div class="products_aside_categories">
-                                    <ul class="common-nav flex-column nav custom-scrollbar flex-nowrap custom_common_nav">
-                                        @foreach($categories as $category)
-                                            <li>
-                                                <div class="d-flex justify-content-between">
-                                                    <a href="{{route('shopView',['id'=> $seller_id,'category_id'=>$category['id']])}}">{{$category['name']}}</a>
-                                                    @if ($category->childes->count() > 0)
-                                                        <span>
-                                                    <i class="bi bi-chevron-right"></i>
-                                                </span>
-                                                    @endif
-                                                </div>
-                                                @if ($category->childes->count() > 0)
-                                                    <ul class="sub_menu">
-                                                        @foreach($category->childes as $child)
-                                                            <li>
-                                                                <div class="d-flex justify-content-between">
-                                                                    <a href="{{route('shopView',['id'=> $seller_id,'category_id'=>$child['id']])}}">{{$child['name']}}</a>
-                                                                    @if ($child->childes->count() > 0)
-                                                                        <span>
-                                                            <i class="bi bi-chevron-right"></i>
-                                                        </span>
-                                                                    @endif
-                                                                </div>
-
-                                                                @if ($child->childes->count() > 0)
-                                                                    <ul class="sub_menu">
-                                                                        @foreach($child->childes as $ch)
-                                                                            <li>
-                                                                                <label class="custom-checkbox">
-                                                                                    <a href="{{route('shopView',['id'=> $seller_id,'category_id'=>$ch['id']])}}">{{$ch['name']}}</a>
-                                                                                </label>
-                                                                            </li>
-                                                                        @endforeach
-                                                                    </ul>
-                                                                @endif
-                                                            </li>
-                                                        @endforeach
-                                                    </ul>
-                                                @endif
-                                            </li>
-                                        @endforeach
-                                    </ul>
-                                </div>
-                                @if (count($categories) > 10)
-                                    <div class="d-flex justify-content-center">
-                                        <button
-                                            class="btn-link text-primary btn_products_aside_categories text-capitalize">
-                                            {{translate('more_categories').' ...'}}
-                                        </button>
-                                    </div>
-                                @endif
-                            </div>
-                            @if($web_config['brand_setting'])
-                                <div>
-                                    <h6 class="mb-3">{{translate('Brands')}}</h6>
-                                    <div class="products_aside_brands">
-                                        <ul class="common-nav nav flex-column pe-2">
-                                            @foreach($brands as $brand)
-                                                <li>
-                                                    <div class="flex-between-gap-3 align-items-center">
-                                                        <label class="custom-checkbox">
-                                                            <a href="{{route('shopView',['id'=>$seller_id,'brand_id'=>$brand->id])}}">{{ $brand['name'] }}</a>
-                                                        </label>
-                                                        <span class="badge bg-badge rounded-pill text-dark">
-                                                    {{$brand->count}}
-                                                </span>
-                                                    </div>
-                                                </li>
-                                            @endforeach
-                                        </ul>
-                                    </div>
-
-                                    @if (count($brands) > 10)
-                                        <div class="d-flex justify-content-center">
-                                            <button class="btn-link text-primary btn_products_aside_brands">
-                                                {{translate('more_brands').'...'}}
-                                            </button>
-                                        </div>
-                                    @endif
-                                </div>
-                            @endif
-                            <div id="ajax-review_partials">
-                                @include('theme-views.partials._products_review_partials', ['ratings'=>$ratings])
-                            </div>
-                            <div>
-                                <h6 class="mb-3">{{translate('price')}}</h6>
-                                <div class="d-flex align-items-end gap-2">
-                                    <div class="form-group">
-                                        <label for="min_price" class="mb-1">{{translate('min')}}</label>
-                                        <input type="number" id="min_price" class="form-control form-control--sm"
-                                               placeholder="$0">
-                                    </div>
-                                    <div class="mb-2">-</div>
-                                    <div class="form-group">
-                                        <label for="max_price" class="mb-1">{{translate('max')}}</label>
-                                        <input type="number" id="max_price" class="form-control form-control--sm"
-                                               placeholder="{{'$'.translate('1000')}}">
-                                    </div>
-                                    <button class="btn btn-primary py-1 px-2 fs-13 sort-filter-by"><i
-                                            class="bi bi-chevron-right"></i></button>
-                                </div>
-
-                                <section class="range-slider">
-                                    <span class="full-range"></span>
-                                    <span class="incl-range"></span>
-                                    <input name="rangeOne" value="0" min="0" max="10000" step="1" type="range"
-                                           id="price_rangeMin">
-                                    <input name="rangeTwo" value="5000" min="0" max="10000" step="1" type="range"
-                                           id="price_rangeMax">
-                                </section>
-                            </div>
+                            @include('theme-views.seller-views.partials._shop-sidebar', ['brands' => $brands])
                         </div>
                     </div>
                     <div class="">
-                        <div
-                            class="d-flex flex-wrap flex-lg-nowrap align-items-start justify-content-between gap-3 mb-2">
-                            <div
-                                class="d-flex flex-wrap flex-md-nowrap align-items-center justify-content-between gap-2 gap-md-3 flex-grow-1">
-                                <button class="toggle-filter square-btn btn btn-outline-primary rounded d-lg-none">
-                                    <i class="bi bi-funnel"></i>
-                                </button>
+                        <div class="d-flex flex-wrap flex-lg-nowrap align-items-start justify-content-between gap-3 mb-2">
+                            <div class="d-flex flex-wrap flex-md-nowrap align-items-center justify-content-between gap-2 gap-md-3 flex-grow-1">
+                                <div class="nav nav-nowrap gap-3 gap-xl-4 {{ $stockClearanceProducts > 0 ? 'nav--tabs' : ''}}">
+                                    <a href="{{ route('shopView',['id' => $seller_id]) }}" class="text-capitalize {{ request('offer_type') != 'clearance_sale' ? 'active' : '' }}">{{ translate('all_products') }}</a>
+                                    @if($stockClearanceSetup && $stockClearanceProducts > 0)
+                                        <a href="{{ route('shopView',['id' => $seller_id, 'offer_type' => 'clearance_sale']) }}" class="text-capitalize {{ request('offer_type') == 'clearance_sale' ? 'active' : '' }}">{{ translate('clearance_sale') }}</a>
+                                    @endif
+                                </div>
 
-                                <ul class="product-view-option option-select-btn gap-3">
+                                <ul class="product-view-option option-select-btn align-items-center gap-3">
                                     <li>
                                         <label>
                                             <input type="radio" name="product_view" value="grid-view" hidden=""
                                                    {{!session()->has('product_view_style')?'checked':''}}
                                                    {{(session()->get('product_view_style') == 'grid-view'?'checked':'')}} id="grid-view">
-                                            <span class="py-2 d-flex align-items-center gap-2 text-capitalize"><i
-                                                    class="bi bi-grid-fill"></i> {{translate('grid_view')}}</span>
+                                            <span class="py-2 d-flex align-items-center gap-2 text-capitalize">
+                                                <i class="bi bi-grid-fill"></i>
+                                                <span class="d-none d-sm-inline">{{translate('grid_view')}}</span>
+                                            </span>
                                         </label>
                                     </li>
                                     <li>
                                         <label>
                                             <input type="radio" name="product_view" value="list-view" hidden=""
                                                    {{(session()->get('product_view_style') == 'list-view'?'checked':'')}} id="list-view">
-                                            <span class="py-2 d-flex align-items-center gap-2 text-capitalize"><i
-                                                    class="bi bi-list-ul"></i> {{translate('list_view')}}</span>
+                                            <span class="py-2 d-flex align-items-center gap-2 text-capitalize">
+                                                <i class="bi bi-list-ul"></i>
+                                                <span class="d-none d-sm-inline">{{translate('list_view')}}</span>
+                                            </span>
                                         </label>
+                                    </li>
+                                    <li>
+                                        <button class="toggle-filter square-btn btn btn-outline-primary rounded d-lg-none">
+                                            <i class="bi bi-funnel"></i>
+                                        </button>
                                     </li>
                                 </ul>
                             </div>
@@ -522,7 +401,7 @@
             </div>
         </section>
     </main>
-    <span id="filter-url" data-url="{{url('/')}}/shopView/{{$shop['id']}}"></span>
+    <span id="filter-url" data-url="{{url('/')}}/shopView/{{$shopInfoArray['id']}}"></span>
     <span id="product-view-style-url" data-url="{{route('product_view_style')}}"></span>
     <span id="shop-follow-url" data-url="{{route('shop-follow')}}"></span>
     <input type="hidden" value="{{$data['data_from']}}" id="data_from">
@@ -530,4 +409,24 @@
     <input type="hidden" value="{{$data['name']}}" id="data_name">
     <input type="hidden" value="{{$data['min_price']}}" id="data_min_price">
     <input type="hidden" value="{{$data['max_price']}}" id="data_max_price">
+    <span id="products-search-data-backup"
+          data-page="{{ request('page') ?? 1 }}"
+          data-url="{{ route('shopView',['id' => ($shopInfoArray['id'] != 0 ? $shopInfoArray['id'] : 0)]) }}"
+          data-brand="{{ $data['brand_id'] ?? '' }}"
+          data-category_id="{{ $data['category_id'] ?? '' }}"
+          data-name="{{ request('search') ?? request('name') }}"
+          data-from="{{ request('data_from') }}"
+          data-offer = "{{ request('offer_type') }}"
+          data-sort="{{ request('sort_by') }}"
+          data-min-price="{{ request('min_price') }}"
+          data-max-price="{{ request('max_price') }}"
+          data-publishing-house-id="{{ request('publishing_house_id') }}"
+          data-author-id="{{ request('author_id') }}"
+          data-product-type="{{ request('product_type') ?? 'all' }}"
+          data-message="{{ translate('items_found') }}"
+    ></span>
 @endsection
+
+@push('script')
+    <script src="{{ theme_asset(path: 'assets/js/product-view.js') }}"></script>
+@endpush

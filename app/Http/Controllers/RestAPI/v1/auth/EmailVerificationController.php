@@ -5,7 +5,7 @@ namespace App\Http\Controllers\RestAPI\v1\auth;
 use App\Events\EmailVerificationEvent;
 use App\Http\Controllers\Controller;
 use App\Models\PhoneOrEmailVerification;
-use App\User;
+use App\Models\User;
 use App\Utils\Helpers;
 use Carbon\Carbon;
 use Carbon\CarbonInterval;
@@ -23,7 +23,7 @@ class EmailVerificationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => Helpers::error_processor($validator)], 403);
+            return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
         }
         $user = User::where('email', $request->email)->first();
         if($user->temporary_token != $request->temporary_token) {
@@ -41,9 +41,9 @@ class EmailVerificationController extends Controller
         ]);
 
         $otp_resend_time = 0;
-        $emailServices_smtp = Helpers::get_business_settings('mail_config');
+        $emailServices_smtp = getWebConfig(name: 'mail_config');
         if ($emailServices_smtp['status'] == 0) {
-            $emailServices_smtp = Helpers::get_business_settings('mail_config_sendgrid');
+            $emailServices_smtp = getWebConfig(name: 'mail_config_sendgrid');
         }
         if ($emailServices_smtp['status'] == 1) {
             try{
@@ -59,7 +59,7 @@ class EmailVerificationController extends Controller
 
                 event(new EmailVerificationEvent(email: $user['email'],data: $data));
                 $response = translate('check_your_email');
-                $otp_resend_time = Helpers::get_business_settings('otp_resend_time') > 0 ? Helpers::get_business_settings('otp_resend_time') : 0;
+                $otp_resend_time = getWebConfig(name: 'otp_resend_time') > 0 ? getWebConfig(name: 'otp_resend_time') : 0;
             } catch (\Exception $exception) {
                 return response()->json([
                     'message' => translate('email_is_not_configured'). translate('contact_with_the_administrator')
@@ -83,10 +83,10 @@ class EmailVerificationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => Helpers::error_processor($validator)], 403);
+            return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
         }
 
-        $otp_resend_time = Helpers::get_business_settings('otp_resend_time') > 0 ? Helpers::get_business_settings('otp_resend_time') : 0;
+        $otp_resend_time = getWebConfig(name: 'otp_resend_time') > 0 ? getWebConfig(name: 'otp_resend_time') : 0;
         $user = User::where(['temporary_token' => $request->temporary_token])->first();
         $token = PhoneOrEmailVerification::where('phone_or_email',$request['email'])->latest()->first();
 
@@ -117,9 +117,9 @@ class EmailVerificationController extends Controller
             }
 
             $otp_resend_time = 0;
-            $emailServices_smtp = Helpers::get_business_settings('mail_config');
+            $emailServices_smtp = getWebConfig(name: 'mail_config');
             if ($emailServices_smtp['status'] == 0) {
-                $emailServices_smtp = Helpers::get_business_settings('mail_config_sendgrid');
+                $emailServices_smtp = getWebConfig(name: 'mail_config_sendgrid');
             }
             if ($emailServices_smtp['status'] == 1) {
                 try{
@@ -134,7 +134,7 @@ class EmailVerificationController extends Controller
 
                     event(new EmailVerificationEvent(email: $user['email'],data: $data));
                     $response = translate('check_your_email');
-                    $otp_resend_time = Helpers::get_business_settings('otp_resend_time') > 0 ? Helpers::get_business_settings('otp_resend_time') : 0;
+                    $otp_resend_time = getWebConfig(name: 'otp_resend_time') > 0 ? getWebConfig(name: 'otp_resend_time') : 0;
                 } catch (\Exception $exception) {
                     return response()->json([
                         'message' => translate('email_is_not_configured'). translate('contact_with_the_administrator')
@@ -167,11 +167,11 @@ class EmailVerificationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => Helpers::error_processor($validator)], 403);
+            return response()->json(['errors' => Helpers::validationErrorProcessor($validator)], 403);
         }
 
-        $max_otp_hit = Helpers::get_business_settings('maximum_otp_hit') ?? 5;
-        $temp_block_time = Helpers::get_business_settings('temporary_block_time') ?? 5; //minute
+        $max_otp_hit = getWebConfig(name: 'maximum_otp_hit') ?? 5;
+        $temp_block_time = getWebConfig(name: 'temporary_block_time') ?? 5; //minute
         $verify = PhoneOrEmailVerification::where(['phone_or_email' => $request['email'], 'token' => $request['token']])->first();
 
         if (isset($verify)) {

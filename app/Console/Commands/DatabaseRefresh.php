@@ -5,10 +5,9 @@ namespace App\Console\Commands;
 use App\Traits\PushNotificationTrait;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\Storage;
 use Madnest\Madzipper\Facades\Madzipper;
 
 class DatabaseRefresh extends Command
@@ -41,15 +40,21 @@ class DatabaseRefresh extends Command
     /**
      * Execute the console command.
      *
-     * @return int
+     * @return void
      */
     public function handle()
     {
         $this->demoResetNotification();
         Artisan::call('db:wipe');
+        Artisan::call('cache:clear');
+
+        Cache::put('demo_database_refresh', 1, 120);
+
         $sql_path = base_path('demo/database.sql');
         DB::unprepared(file_get_contents($sql_path));
         File::deleteDirectory('storage/app/public');
         Madzipper::make('demo/public.zip')->extractTo('storage/app');
+
+        Cache::forget('demo_database_refresh');
     }
 }

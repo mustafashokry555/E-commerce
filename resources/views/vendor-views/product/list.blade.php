@@ -121,23 +121,11 @@
                                 </form>
                             </div>
                             <div class="col-lg-8 mt-3 mt-lg-0 d-flex flex-wrap gap-3 justify-content-lg-end">
-
-                                <div>
-                                    <button type="button" class="btn btn-outline--primary" data-toggle="dropdown">
-                                        <i class="tio-download-to"></i>
-                                        {{ translate('export') }}
-                                        <i class="tio-chevron-down"></i>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-right">
-                                        <li>
-                                            <a class="dropdown-item"
-                                               href="{{ route('vendor.products.export-excel', ['type'=>$type,'brand_id'=>request('brand_id'),'category_id'=>request('category_id'),'sub_category_id'=>request('sub_category_id'),'sub_sub_category_id'=>request('sub_sub_category_id'),'searchValue'=>request('searchValue')]) }}">
-                                                <img width="14" src="{{ dynamicAsset(path: 'public/assets/back-end/img/excel.png') }}"
-                                                     alt="">
-                                                {{ translate('excel') }}
-                                            </a>
-                                        </li>
-                                    </ul>
+                                <div class="dropdown">
+                                    <a type="button" class="btn btn-outline--primary text-nowrap" href="{{ route('vendor.products.export-excel', ['type'=>$type,'brand_id'=>request('brand_id'),'category_id'=>request('category_id'),'sub_category_id'=>request('sub_category_id'),'sub_sub_category_id'=>request('sub_sub_category_id'),'searchValue'=>request('searchValue')]) }}">
+                                        <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
+                                        <span class="ps-2">{{ translate('export') }}</span>
+                                    </a>
                                 </div>
                                 @if($type != 'new-request' )
                                 <a href="{{ route('vendor.products.stock-limit-list') }}" class="btn btn-info">
@@ -176,11 +164,18 @@
                                     <td>
                                         <a href="{{ route('vendor.products.view', [$product['id']]) }}"
                                            class="media align-items-center gap-2">
-                                            <img src="{{ getValidImage(path:'storage/app/public/product/thumbnail/'.$product['thumbnail'],type:'backend-product')}}"
-                                                 class="avatar border onerror-image" alt="">
-                                            <span class="media-body title-color hover-c1">
-                                            {{ Str::limit($product['name'], 20) }}
-                                        </span>
+                                            <img src="{{ getStorageImages(path:$product->thumbnail_full_url,type:'backend-product')}}"
+                                                 class="avatar border object-fit-cover" alt="">
+                                        <div>
+                                            <div class="media-body title-color hover-c1">
+                                                {{ Str::limit($product['name'], 20) }}
+                                            </div>
+                                            @if($product?->clearanceSale)
+                                                <div class="badge badge-soft-warning user-select-none">
+                                                    {{ translate('Clearance_Sale') }}
+                                                </div>
+                                            @endif
+                                        </div>
                                         </a>
                                     </td>
                                     <td class="text-center">

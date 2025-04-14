@@ -5,6 +5,7 @@ namespace App\Utils;
 use App\Utils\Helpers;
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Support\Facades\Cache;
 
 class CategoryManager
 {
@@ -19,18 +20,20 @@ class CategoryManager
         return $x;
     }
 
-    public static function products($category_id, $request=null)
+    public static function products($category_id, $request = null, $dataLimit = null)
     {
-        $user = Helpers::get_customer($request);
-        $id = '"'.$category_id.'"';
-        $products = Product::with(['flashDealProducts.flashDeal','rating','tags', 'seller.shop'])
-            ->withCount(['reviews','wishList' => function($query) use($user){
+        $user = Helpers::getCustomerInformation($request);
+        $id = '"' . $category_id . '"';
+        $products = Product::with(['flashDealProducts.flashDeal', 'rating', 'seller.shop', 'tags', 'clearanceSale' => function ($query) {
+                return $query->active();
+            }])
+            ->withCount(['reviews', 'wishList' => function ($query) use ($user) {
                 $query->where('customer_id', $user != 'offline' ? $user->id : '0');
             }])
             ->active()
             ->where('category_ids', 'like', "%{$id}%");
 
-        $products = ProductManager::getPriorityWiseCategoryWiseProductsQuery(query: $products, dataLimit: 'all');
+        $products = ProductManager::getPriorityWiseCategoryWiseProductsQuery(query: $products, dataLimit: $dataLimit ?? 'all');
 
         $currentDate = date('Y-m-d H:i:s');
         $products?->map(function ($product) use ($currentDate) {
@@ -38,8 +41,8 @@ class CategoryManager
             $flashDealEndDate = 0;
             if (count($product->flashDealProducts) > 0) {
                 $flashDeal = null;
-                foreach($product->flashDealProducts as $flashDealData){
-                    if($flashDealData->flashDeal){
+                foreach ($product->flashDealProducts as $flashDealData) {
+                    if ($flashDealData->flashDeal) {
                         $flashDeal = $flashDealData->flashDeal;
                     }
                 }
@@ -58,10 +61,11 @@ class CategoryManager
         return $products;
     }
 
-    public static function get_category_name($id){
+    public static function get_category_name($id)
+    {
         $category = Category::find($id);
 
-        if($category){
+        if ($category) {
             return $category->name;
         }
         return '';
@@ -69,17 +73,45 @@ class CategoryManager
 
     public static function getCategoriesWithCountingAndPriorityWiseSorting($dataLimit = null)
     {
-        $categories = Category::with(['product' => function ($query) {
-                return $query->active()->withCount(['orderDetails']);
-            }])->withCount(['product' => function ($query) {
-                $query->active();
-            }])->with(['childes' => function ($query) {
-            $query->with(['childes' => function ($query) {
-                $query->withCount(['subSubCategoryProduct'])->where('position', 2);
-            }])->withCount(['subCategoryProduct'])->where('position', 1);
-        }, 'childes.childes'])->where('position', 0);
+        $cacheKey = 'cache_main_categories_list_' . (getDefaultLanguage() ?? 'en').'_'.(request('offer_type') ?? 'default');
+        $cacheKeys = Cache::get(CACHE_CONTAINER_FOR_LANGUAGE_WISE_CACHE_KEYS, []);
 
-        $categoriesProcessed = self::getPriorityWiseCategorySortQuery(query: $categories->get());
+        if (!in_array($cacheKey, $cacheKeys)) {
+            $cacheKeys[] = $cacheKey;
+            Cache::put(CACHE_CONTAINER_FOR_LANGUAGE_WISE_CACHE_KEYS, $cacheKeys, CACHE_FOR_3_HOURS);
+        }
+
+        $categories = Cache::remember($cacheKey, CACHE_FOR_3_HOURS, function () {
+            return Category::with(['product' => function ($query) {
+                return $query->active()->withCount(['orderDetails'])->with(['clearanceSale' => function ($query) {
+                    return $query->active();
+                }]);
+            }])->withCount(['product' => function ($query) {
+                $query->active()->when(request('offer_type') == 'clearance_sale', function ($query) {
+                    return $query->whereHas('clearanceSale', function ($query) {
+                        return $query->active();
+                    });
+                });
+            }])->with(['childes' => function ($query) {
+                $query->with(['childes' => function ($query) {
+                    $query->withCount(['subSubCategoryProduct' => function ($query) {
+                        $query->active()->when(request('offer_type') == 'clearance_sale', function ($query) {
+                            return $query->whereHas('clearanceSale', function ($query) {
+                                return $query->active();
+                            });
+                        });
+                    }])->where('position', 2);
+                }])->withCount(['subCategoryProduct' => function ($query) {
+                    $query->active()->when(request('offer_type') == 'clearance_sale', function ($query) {
+                        return $query->whereHas('clearanceSale', function ($query) {
+                            return $query->active();
+                        });
+                    });
+                }])->where('position', 1);
+            }, 'childes.childes'])->where('position', 0)->get();
+        });
+
+        $categoriesProcessed = self::getPriorityWiseCategorySortQuery(query: $categories);
         if ($dataLimit) {
             $categoriesProcessed = $categoriesProcessed->paginate($dataLimit);
         }

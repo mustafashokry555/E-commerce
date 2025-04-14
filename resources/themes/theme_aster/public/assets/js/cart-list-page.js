@@ -19,7 +19,7 @@ function proceedToNextAction(){
                         toastr.error(message)
                     })
                 }else{
-                    location.href = response.redirect ? response.redirect : $('#checkout_details_url').data('url');
+                    location.href = response.redirect ? response.redirect : $('#route-checkout-details').data('url');
                 }
             },
             complete: function () {

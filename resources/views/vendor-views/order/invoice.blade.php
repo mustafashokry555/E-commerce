@@ -450,7 +450,9 @@
 </head>
 
 <body>
-
+<?php
+$orderTotalPriceSummary = \App\Utils\OrderManager::getOrderTotalPriceSummary(order: $order);
+?>
 <div class="first content-position" style="width:595px;margin: 0 auto;">
     <table class="fz-10">
         <tr>
@@ -463,14 +465,19 @@
                 </div>
             </td>
             <td style="padding:0;text-align:{{$direction === "rtl" ? 'left' : 'right'}}">
-                <img width="60" height="40"
-                     src="{{getValidImage(path:'storage/app/public/company/'.($invoiceSettings?->image ?? getWebConfig(name: 'company_web_logo')),type:'backend-logo')}}"
+                @php
+                    $imagePath = isset($invoiceSettings?->image) ? imagePathProcessing(imageData:  $invoiceSettings?->image ,path:'company') : null;
+                @endphp
+                <img height="40"
+                     src="{{getStorageImages(path: (isset($imagePath['path']) ? $imagePath : getWebConfig(name: 'company_web_logo')) ,type:'backend-logo')}}"
                      alt="" style="margin-bottom:5px">
                 <div class="font-normal">
                     {{getWebConfig('shop_address')}}
                 </div>
-                @if($invoiceSettings?->business_identity)
-
+                @if(isset($invoiceSettings?->business_identity) && isset($invoiceSettings?->business_identity_value))
+                    <div>
+                        <span class="font-bold">{{ $invoiceSettings?->business_identity }}</span> : <span class="font-normal">{{ $invoiceSettings?->business_identity_value }}</span>
+                    </div>
                 @endif
                 @if($order['seller_is']!='admin' && isset($order['seller']) && $order['seller']->gst != null)
                     <div>
@@ -481,6 +488,7 @@
         </tr>
     </table>
     <br>
+
     <table class="border bs-0" style="border-radius:12px;">
         @if ($order->order_type == 'default_type')
             <tr>
@@ -498,7 +506,9 @@
                     <div class="mb-1 fz-10">
                         <span class="font-bold">{{translate('invoice_of')}}</span> <span class="font-normal">{{' ( '.$currencyCode.' )'}}</span>
                     </div>
-                    <div class="fz-17 text-primary text-right">{{ webCurrencyConverter(amount: $order->order_amount) }}</div>
+                    <div class="fz-17 text-primary text-right">
+                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['totalAmount']), currencyCode: getCurrencyCode()) }}
+                    </div>
                 </td>
             </tr>
             <tr>
@@ -620,7 +630,9 @@
                         {{translate('invoice_of')}}
                         <span>{{' ( '.$currencyCode.' )'}}</span>
                     </div>
-                    <div class="fz-17 text-primary text-right">{{ webCurrencyConverter(amount: $order->order_amount) }}</div>
+                    <div class="fz-17 text-primary text-right">
+                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['totalAmount']), currencyCode: getCurrencyCode()) }}
+                    </div>
                 </td>
             </tr>
         @endif
@@ -677,10 +689,14 @@
                                 <div class="fz-10 text-dark" style="margin:0 15px">{{$details->qty}}</div>
                             </td>
                             <td class="text-right">
-                                <div class="fz-10 text-dark">{{ webCurrencyConverter(amount: $details['price']) }}</div>
+                                <div class="fz-10 text-dark">
+                                    {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $details['price']), currencyCode: getCurrencyCode()) }}
+                                </div>
                             </td>
                             <td class="text-right">
-                                <div class="fz-10 text-dark">{{ webCurrencyConverter(amount: $itemPrice) }}</div>
+                                <div class="fz-10 text-dark">
+                                    {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $itemPrice), currencyCode: getCurrencyCode()) }}
+                                </div>
                             </td>
                         </tr>
                             <?php
@@ -697,14 +713,6 @@
         </tr>
         <tr>
             <td colspan="5" class="pt-0 pb-0">
-                <?php
-                if ($order['extra_discount_type'] == 'percent') {
-                    $extraDiscount = ($itemPrice / 100) * $order['extra_discount'];
-                } else {
-                    $extraDiscount = $order['extra_discount'];
-                }
-                ?>
-                @php($shipping=$order['shipping_cost'])
                 <table class="fz-10">
                     <tr>
                         <th class="text-left" style="width:50%">
@@ -714,46 +722,74 @@
                                 <tbody>
                                 <tr>
                                     <td class="text-left font-bold">{{ translate('total_Item_Price')}}</td>
-                                    <td class="text-right">{{ webCurrencyConverter(amount: $itemPrice) }}</td>
+                                    <td class="text-right">
+                                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['itemPrice']), currencyCode: getCurrencyCode()) }}
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td class="text-left font-bold">{{ translate('product_Discount')}}</td>
                                     <td class="text-right">
-                                        - {{ webCurrencyConverter(amount: $totalDiscountOnProduct) }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-left font-bold">{{ translate('sub_Total')}}</td>
-                                    <td class="text-right">{{ webCurrencyConverter(amount: $subTotal) }}</td>
-                                </tr>
-                                @if($order->order_type == 'default_type')
-                                    <tr>
-                                        <td class="text-left font-bold">{{ translate('shipping')}}</td>
-                                        <td class="text-right">{{webCurrencyConverter(amount: $shipping - ($order->is_shipping_free ? $order->extra_discount : 0)) }}</td>
-                                    </tr>
-                                @endif
-                                <tr>
-                                    <td class="text-left font-bold">{{ translate('coupon_Discount')}}</td>
-                                    <td class="text-right">
-                                        - {{ webCurrencyConverter(amount: $order->discount_amount) }}</td>
-                                </tr>
-                                <tr>
-                                    <td class="text-left font-bold">{{ translate('tax')}}</td>
-                                    <td class="text-right">{{ webCurrencyConverter(amount: $totalTax) }}</td>
+                                        - {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['itemDiscount']), currencyCode: getCurrencyCode()) }}
+                                    </td>
                                 </tr>
                                 @if ($order->order_type != 'default_type')
                                     <tr>
                                         <td class="text-left font-bold">{{ translate('extra_Discount')}}</td>
                                         <td class="text-right">
-                                            - {{ webCurrencyConverter(amount: $extraDiscount) }}</td>
+                                            - {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['extraDiscount']), currencyCode: getCurrencyCode()) }}
+                                        </td>
                                     </tr>
                                 @endif
+                                <tr>
+                                    <td class="text-left font-bold">{{ translate('sub_Total')}}</td>
+                                    <td class="text-right">
+                                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['subTotal']), currencyCode: getCurrencyCode()) }}
+                                    </td>
+                                </tr>
+                                @if($order->order_type == 'default_type' && $order?->is_shipping_free != 1)
+                                    <tr>
+                                        <td class="text-left font-bold">{{ translate('shipping')}}</td>
+                                        <td class="text-right">
+                                            {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['shippingTotal']), currencyCode: getCurrencyCode()) }}
+                                        </td>
+                                    </tr>
+                                @endif
+                                <tr>
+                                    <td class="text-left font-bold">{{ translate('coupon_Discount')}}</td>
+                                    <td class="text-right">
+                                        - {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['couponDiscount']), currencyCode: getCurrencyCode()) }}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-left font-bold">{{ translate('tax')}}</td>
+                                    <td class="text-right">
+                                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['taxTotal']), currencyCode: getCurrencyCode()) }}
+                                    </td>
+                                </tr>
+
                                 <tr>
                                     <td class="border-dashed-top font-weight-bold text-left fz-14 font-bold">
                                         {{ translate('total')}}</td>
                                     <td class="border-dashed-top font-weight-bold text-right fz-14">
-                                        {{ webCurrencyConverter(amount: $order->order_amount) }}
+                                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['totalAmount']), currencyCode: getCurrencyCode()) }}
                                     </td>
                                 </tr>
+                                @if ($order->order_type == 'pos' || $order->order_type == 'POS')
+                                    <tr>
+                                        <td class="border-dashed-top font-weight-bold text-left fz-14 font-bold">
+                                            {{ translate('paid_amount')}}</td>
+                                        <td class="border-dashed-top font-weight-bold text-right fz-14">
+                                            {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['paidAmount']), currencyCode: getCurrencyCode()) }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="border-dashed-top font-weight-bold text-left fz-14 font-bold">
+                                            {{ translate('change_amount')}}</td>
+                                        <td class="border-dashed-top font-weight-bold text-right fz-14">
+                                            {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $orderTotalPriceSummary['changeAmount']), currencyCode: getCurrencyCode()) }}
+                                        </td>
+                                    </tr>
+                                @endif
                                 </tbody>
                             </table>
                         </th>

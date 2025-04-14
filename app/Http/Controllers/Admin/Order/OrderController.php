@@ -84,7 +84,7 @@ class OrderController extends BaseController
         return $this->getListView(request: $request, status: $type);
     }
 
-    public function getListView(object $request, string $status): View
+    public function getListView(object $request, string $status): View|JsonResponse
     {
 
         $searchValue = $request['searchValue'];
@@ -129,6 +129,12 @@ class OrderController extends BaseController
 
         $vendorId = $request['seller_id'];
         $customerId = $request['customer_id'];
+
+        if (request()->ajax()) {
+            return response()->json([
+                'orders' => $orders
+            ]);
+        }
 
         return view(Order::LIST[VIEW], compact(
             'orders',
@@ -236,7 +242,7 @@ class OrderController extends BaseController
         return Excel::download(new OrderExport($data), 'Orders.xlsx');
     }
 
-    public function getView(string|int $id, DeliveryCountryCodeService $service, OrderService $orderService): View
+    public function getView(string|int $id, DeliveryCountryCodeService $service, OrderService $orderService): View|RedirectResponse
     {
         $countryRestrictStatus = getWebConfig(name: 'delivery_country_restriction');
         $zipRestrictStatus = getWebConfig(name: 'delivery_zip_code_area_restriction');
@@ -247,41 +253,47 @@ class OrderController extends BaseController
         $companyWebLogo = getWebConfig(name: 'company_web_logo');
         $order = $this->orderRepo->getFirstWhere(params: ['id' => $id], relations: ['details.productAllStatus', 'verificationImages', 'shipping', 'seller.shop', 'offlinePayments', 'deliveryMan']);
 
-        $physicalProduct = false;
-        if (isset($order->details)) {
-            foreach ($order->details as $product) {
-                if (isset($product->product) && $product->product->product_type == 'physical') {
-                    $physicalProduct = true;
+        if ($order) {
+            $physicalProduct = false;
+            if (isset($order->details)) {
+                foreach ($order->details as $orderDetail) {
+                    $orderDetailProduct = json_decode($orderDetail?->product_details, true);
+                    if ($orderDetailProduct && $orderDetailProduct['product_type'] == 'physical') {
+                        $physicalProduct = true;
+                    }
                 }
             }
-        }
 
-        $whereNotIn = [
-            'order_group_id' => ['def-order-group'],
-            'id' => [$order['id']],
-        ];
-        $linkedOrders = $this->orderRepo->getListWhereNotIn(filters: ['order_group_id' => $order['order_group_id']], whereNotIn: $whereNotIn, dataLimit: 'all');
-        $totalDelivered = $this->orderRepo->getListWhere(filters: ['seller_id' => $order['seller_id'], 'order_status' => 'delivered', 'order_type' => 'default_type'], dataLimit: 'all')->count();
-        $shippingMethod = getWebConfig('shipping_method');
+            $whereNotIn = [
+                'order_group_id' => ['def-order-group'],
+                'id' => [$order['id']],
+            ];
+            $linkedOrders = $this->orderRepo->getListWhereNotIn(filters: ['order_group_id' => $order['order_group_id']], whereNotIn: $whereNotIn, dataLimit: 'all');
+            $totalDelivered = $this->orderRepo->getListWhere(filters: ['seller_id' => $order['seller_id'], 'order_status' => 'delivered', 'order_type' => 'default_type'], dataLimit: 'all')->count();
+            $shippingMethod = getWebConfig('shipping_method');
 
-        $sellerId = 0;
-        if ($order['seller_is'] == 'seller' && $shippingMethod == 'sellerwise_shipping') {
-            $sellerId = $order['seller_id'];
-        }
-        $filters = [
-            'is_active' => 1,
-            'seller_id' => $sellerId,
-        ];
-        $deliveryMen = $this->deliveryManRepo->getListWhere(filters: $filters, dataLimit: 'all');
-        $isOrderOnlyDigital = $orderService->getCheckIsOrderOnlyDigital(order: $order);
-        if ($order['order_type'] == 'default_type') {
-            $orderCount = $this->orderRepo->getListWhereCount(filters: ['customer_id' => $order['customer_id']]);
-            return view(Order::VIEW[VIEW], compact('order', 'linkedOrders',
-                'deliveryMen', 'totalDelivered', 'companyName', 'companyWebLogo', 'physicalProduct',
-                'countryRestrictStatus', 'zipRestrictStatus', 'countries', 'zipCodes', 'orderCount', 'isOrderOnlyDigital'));
+            $sellerId = 0;
+            if ($order['seller_is'] == 'seller' && $shippingMethod == 'sellerwise_shipping') {
+                $sellerId = $order['seller_id'];
+            }
+            $filters = [
+                'is_active' => 1,
+                'seller_id' => $sellerId,
+            ];
+            $deliveryMen = $this->deliveryManRepo->getListWhere(filters: $filters, dataLimit: 'all');
+            $isOrderOnlyDigital = $orderService->getCheckIsOrderOnlyDigital(order: $order);
+            if ($order['order_type'] == 'default_type') {
+                $orderCount = $this->orderRepo->getListWhereCount(filters: ['customer_id' => $order['customer_id']]);
+                return view(Order::VIEW[VIEW], compact('order', 'linkedOrders',
+                    'deliveryMen', 'totalDelivered', 'companyName', 'companyWebLogo', 'physicalProduct',
+                    'countryRestrictStatus', 'zipRestrictStatus', 'countries', 'zipCodes', 'orderCount', 'isOrderOnlyDigital'));
+            } else {
+                $orderCount = $this->orderRepo->getListWhereCount(filters: ['customer_id' => $order['customer_id'], 'order_type' => 'POS']);
+                return view(Order::VIEW_POS[VIEW], compact('order', 'companyName', 'companyWebLogo', 'orderCount'));
+            }
         } else {
-            $orderCount = $this->orderRepo->getListWhereCount(filters: ['customer_id' => $order['customer_id'], 'order_type' => 'POS']);
-            return view(Order::VIEW_POS[VIEW], compact('order', 'companyName', 'companyWebLogo', 'orderCount'));
+            Toastr::error(translate('Order_not_found'));
+            return back();
         }
     }
 
@@ -307,16 +319,16 @@ class OrderController extends BaseController
         OrderStatusHistoryService     $orderStatusHistoryService,
     ): JsonResponse
     {
-        $order = $this->orderRepo->getFirstWhere(params: ['id' => $request['id']], relations: ['customer','seller.shop', 'deliveryMan']);
+        $order = $this->orderRepo->getFirstWhere(params: ['id' => $request['id']], relations: ['customer', 'seller.shop', 'deliveryMan']);
 
         if (!$order['is_guest'] && !isset($order['customer'])) {
             return response()->json(['customer_status' => 0], 200);
         }
         $this->orderRepo->updateStockOnOrderStatusChange($request['id'], $request['order_status']);
         $this->orderRepo->update(id: $request['id'], data: ['order_status' => $request['order_status']]);
-        if ($request['order_status'] == 'delivered'){
-            $this->orderRepo->update(id: $request['id'], data: ['payment_status'=>'paid']);
-            $this->orderDetailRepo->updateWhere(params: ['order_id' => $order['id']], data: ['delivery_status' => $request['order_status'],'payment_status'=>'paid']);
+        if ($request['order_status'] == 'delivered') {
+            $this->orderRepo->update(id: $request['id'], data: ['payment_status' => 'paid', 'is_pause' => 0]);
+            $this->orderDetailRepo->updateWhere(params: ['order_id' => $order['id']], data: ['delivery_status' => $request['order_status'], 'payment_status' => 'paid']);
         }
         event(new OrderStatusEvent(key: $request['order_status'], type: 'customer', order: $order));
         if ($request['order_status'] == 'canceled') {
@@ -361,8 +373,8 @@ class OrderController extends BaseController
                 $this->deliveryManWalletRepo->add(data: $deliverymanWalletData);
             } else {
                 $deliverymanWalletData = [
-                    'current_balance' => $deliverymanWallet['current_balance'] + currencyConverter($order['deliveryman_charge']) ?? 0,
-                    'cash_in_hand' => $deliverymanWallet['cash_in_hand'] + currencyConverter($cashInHand) ?? 0,
+                    'current_balance' => $deliverymanWallet['current_balance'] + $order['deliveryman_charge'] ?? 0,
+                    'cash_in_hand' => $deliverymanWallet['cash_in_hand'] + $cashInHand ?? 0,
                 ];
                 $this->deliveryManWalletRepo->updateWhere(params: ['delivery_man_id' => $order['delivery_man_id']], data: $deliverymanWalletData);
             }
@@ -447,7 +459,7 @@ class OrderController extends BaseController
         return back();
     }
 
-    public function addDeliveryMan(string|int $order_id, string|int $delivery_man_id)
+    public function addDeliveryMan(string|int $order_id, string|int $delivery_man_id): JsonResponse
     {
         if ($delivery_man_id == 0) {
             return response()->json([], 401);
@@ -463,10 +475,11 @@ class OrderController extends BaseController
         ];
         $this->orderRepo->update(id: $order_id, data: $order);
 
-        $order = $this->orderRepo->getFirstWhere(params: ['id' => $order_id], relations: ['seller.shop','deliveryMan']);
+        $order = $this->orderRepo->getFirstWhere(params: ['id' => $order_id], relations: ['seller.shop', 'deliveryMan']);
 
         event(new OrderStatusEvent(key: 'new_order_assigned_message', type: 'delivery_man', order: $order));
-        /** for seller product send notification */
+
+        /** For Seller Product Send Notification */
         if ($order['seller_is'] == 'seller') {
             event(new OrderStatusEvent(key: 'delivery_man_assign_by_admin_message', type: 'seller', order: $order));
         }
@@ -492,7 +505,7 @@ class OrderController extends BaseController
             $message = translate("deliveryman_charge_added_successfully");
         }
 
-        return response()->json(['status' => $status, 'message'=>$message], $status ? 200 : 403);
+        return response()->json(['status' => $status, 'message' => $message], $status ? 200 : 403);
     }
 
     public function getCustomers(Request $request): JsonResponse
@@ -539,15 +552,6 @@ class OrderController extends BaseController
             Toastr::error(translate('digital_file_upload_failed'));
         }
         return back();
-    }
-
-    public function getOrderData(): JsonResponse
-    {
-        $newOrder = $this->orderRepo->getListWhere(filters: ['checked' => 0], dataLimit: 'all')->count();
-        return response()->json([
-            'success' => 1,
-            'data' => ['new_order' => $newOrder]
-        ]);
     }
 
 }

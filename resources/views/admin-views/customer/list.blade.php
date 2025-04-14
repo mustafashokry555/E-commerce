@@ -9,14 +9,76 @@
             <h2 class="h1 mb-0 text-capitalize d-flex align-items-center gap-2">
                 <img width="20" src="{{dynamicAsset(path: 'public/assets/back-end/img/customer.png')}}" alt="">
                 {{translate('customer_list')}}
-                <span class="badge badge-soft-dark radius-50">{{$customers->total()}}</span>
+                <span class="badge badge-soft-dark radius-50">{{ $totalCustomers }}</span>
             </h2>
         </div>
+        <div class="card mb-4">
+            <div class="card-body">
+                <form action="{{ url()->current() }}" method="GET">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">{{ translate('Order_Date') }}</label>
+                            <div class="position-relative">
+                                <span class="tio-calendar icon-absolute-on-right"></span>
+                                <input type="text" name="order_date" class="js-daterangepicker-with-range form-control cursor-pointer" value="{{request('order_date')}}" placeholder="{{ translate('Select_Date') }}" autocomplete="off" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{translate('Customer_Joining_Date')}}</label>
+                            <div class="position-relative">
+                                <span class="tio-calendar icon-absolute-on-right cursor-pointer"></span>
+                                <input type="text" name="customer_joining_date" class="js-daterangepicker-with-range form-control cursor-pointer" value="{{request('customer_joining_date')}}" placeholder="{{ translate('Select_Date') }}" autocomplete="off" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{translate('Customer_Status')}}</label>
+                            <select class="form-control js-select2-custom set-filter" name="is_active">
+                                <option {{ !request()->has('is_active') ?'selected':''}} disabled>{{ translate('select_status') }}</option>
+                                <option {{ request()->has('is_active') && request('is_active') == '' ?'selected':''}} value="">{{ translate('All') }}</option>
+                                <option {{ request('is_active')  == '1'?'selected':''}} value="1">{{ translate('Active') }}</option>
+                                <option {{ request('is_active')  == '0'?'selected':''}} value="0">{{ translate('Inactive') }}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{translate('Sort_By') }}</label>
+                            <select class="form-control js-select2-custom" name="sort_by">
+                                <option disabled {{ is_null(request('sort_by')) ? 'selected' : '' }}>{{ translate('Select_Customer_sorting_order') }}</option>
+                                <option value="order_amount">{{ translate('Sort_By_Order_Amount') }}</option>
+                                <option value="asc" {{ request('sort_by') === 'asc' ? 'selected' : '' }}>{{translate('Sort_By_Oldest')}}</option>
+                                <option value="desc" {{ request('sort_by') === 'desc' ? 'selected' : '' }}>{{translate('Sort_By_Newest')}}</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">{{translate('Choose_First')}}</label>
+                            <input type="number" class="form-control"  min="1" value="{{ request('choose_first') }}" placeholder="{{translate('Ex')}} : {{translate('100')}}" name="choose_first">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="d-md-block">&nbsp;</label>
+                            <div class="btn--container justify-content-end">
+                                <a href="{{ route('admin.customer.list') }}"
+                                   class="btn btn-secondary px-5">
+                                    {{ translate('reset') }}
+                                </a>
+                                <button type="submit" class="btn btn--primary">{{translate('Filter')}}</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
         <div class="card">
-            <div class="px-3 py-4">
-                <div class="row gy-2 align-items-center">
-                    <div class="col-sm-8 col-md-6 col-lg-4">
+                    <div class="card-header gap-3 align-items-center">
+                        <h5 class="mb-0 mr-auto">
+                            {{translate('Customer_list')}}
+                            <span class="badge badge-soft-dark radius-50 fz-14 ml-1">{{ $customers->total() }}</span>
+                        </h5>
+
                         <form action="{{ url()->current() }}" method="GET">
+                            <input type="hidden" name="order_date" value="{{request('order_date')}}">
+                            <input type="hidden" name="customer_joining_date" value="{{request('customer_joining_date')}}">
+                            <input type="hidden" name="is_active" value="{{request('is_active')}}">
+                            <input type="hidden" name="sort_by" value="{{request('sort_by')}}">
+                            <input type="hidden" name="choose_first" value="{{request('choose_first')}}">
                             <div class="input-group input-group-merge input-group-custom">
                                 <div class="input-group-prepend">
                                     <div class="input-group-text">
@@ -24,32 +86,17 @@
                                     </div>
                                 </div>
                                 <input id="datatableSearch_" type="search" name="searchValue" class="form-control"
-                                       placeholder="{{translate('search_by_Name_or_Email_or_Phone')}}"
-                                       aria-label="Search orders" value="{{ request('searchValue') }}">
-                                <button type="submit" class="btn btn--primary">{{translate('search')}}</button>
+                                       placeholder="{{ translate('search_by_Name_or_Email_or_Phone')}}"  aria-label="Search orders" value="{{ request('searchValue') }}">
+                                <button type="submit" class="btn btn--primary">{{ translate('search')}}</button>
                             </div>
                         </form>
-                    </div>
-                    <div class="col-sm-4 col-md-6 col-lg-8 mb-2 mb-sm-0">
-                        <div class="d-flex justify-content-sm-end">
-                            <button type="button" class="btn btn-outline--primary" data-toggle="dropdown">
-                                <i class="tio-download-to"></i>
-                                {{translate('export')}}
-                                <i class="tio-chevron-down"></i>
-                            </button>
-                            <ul class="dropdown-menu dropdown-menu-right">
-                                <li>
-                                    <a class="dropdown-item"
-                                       href="{{route('admin.customer.export',['searchValue'=>request('searchValue')])}}">
-                                        <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" alt="">
-                                        {{translate('excel')}}
-                                    </a>
-                                </li>
-                            </ul>
+                        <div class="dropdown">
+                            <a type="button" class="btn btn-outline--primary text-nowrap" href="{{route('admin.customer.export', ['sort_by' => request('sort_by'), 'choose_first' => request('choose_first'),'is_active' => request('is_active'), 'order_date' => request('order_date'),'customer_joining_date' => request('customer_joining_date'),  'searchValue' => request('searchValue')])}}">
+                                <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" alt="" class="excel">
+                                <span class="ps-2">{{ translate('export') }}</span>
+                            </a>
                         </div>
                     </div>
-                </div>
-            </div>
             <div class="table-responsive datatable-custom">
                 <table
                     style="text-align: {{Session::get('direction') === "rtl" ? 'right' : 'left'}};"
@@ -73,7 +120,7 @@
                             <td>
                                 <a href="{{route('admin.customer.view',[$customer['id']])}}"
                                    class="title-color hover-c1 d-flex align-items-center gap-10">
-                                    <img src="{{getValidImage(path: 'storage/app/public/profile/'.$customer->image,type:'backend-profile')}}"
+                                    <img src="{{getStorageImages(path:$customer->image_full_url,type:'backend-profile')}}"
                                          class="avatar rounded-circle " alt="" width="40">
                                     {{Str::limit($customer['f_name']." ".$customer['l_name'],20)}}
                                 </a>
@@ -89,7 +136,7 @@
                             </td>
                             <td>
                                 <label class="btn text-info bg-soft-info font-weight-bold px-3 py-1 mb-0 fz-12">
-                                    {{$customer->orders_count}}
+                                    {{$customer?->orders?->count() ?? 0}}
                                 </label>
                             </td>
                             <td>
@@ -104,7 +151,7 @@
                                         <input type="hidden" name="id" value="{{$customer['id']}}">
                                         <label class="switcher mx-auto">
                                             <input type="checkbox" class="switcher_input toggle-switch-message"
-                                                   id="customer-status{{$customer['id']}}" name="status" value="1"
+                                                   id="customer-status{{$customer['id']}}" name="is_active" value="1"
                                                    {{ $customer['is_active'] == 1 ? 'checked':'' }}
                                                    data-modal-id = "toggle-status-modal"
                                                    data-toggle-id = "customer-status{{$customer['id']}}"
@@ -156,3 +203,10 @@
         </div>
     </div>
 @endsection
+
+@push('script')
+    <script type="text/javascript">
+        changeInputTypeForDateRangePicker($('input[name="order_date"]'));
+        changeInputTypeForDateRangePicker($('input[name="customer_joining_date"]'));
+    </script>
+@endpush

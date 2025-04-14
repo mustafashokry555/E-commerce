@@ -6,6 +6,7 @@ use App\Contracts\Repositories\BusinessSettingRepositoryInterface;
 use App\Enums\ViewPaths\Admin\PrioritySetup;
 use App\Http\Controllers\BaseController;
 use App\Services\PrioritySetupService;
+use App\Traits\CacheManagerTrait;
 use Brian2694\Toastr\Facades\Toastr;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
@@ -15,6 +16,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
 
 class PrioritySetupController extends BaseController
 {
+    use CacheManagerTrait;
+
     public function __construct(
         private readonly BusinessSettingRepositoryInterface $businessSettingRepo,
         private readonly PrioritySetupService               $prioritySetupService,
@@ -122,7 +125,8 @@ class PrioritySetupController extends BaseController
     protected function updateFeatureDealPriority($request): RedirectResponse
     {
         $this->businessSettingRepo->updateOrInsert(type: 'feature_deal_priority',
-            value: $this->prioritySetupService->updateFeatureDealPrioritySetupData(request: $request));
+            value: $this->prioritySetupService->updateFeatureDealPrioritySetupData(request: $request)
+        );
         Toastr::success(translate('feature_deal_priority_setup_updated_successfully'));
         return redirect()->back();
     }
@@ -130,7 +134,9 @@ class PrioritySetupController extends BaseController
     protected function updateFlashDealPriority($request): RedirectResponse
     {
         $this->businessSettingRepo->updateOrInsert(type: 'flash_deal_priority',
-            value: $this->prioritySetupService->updateFlashDealPrioritySetupData(request: $request));
+            value: $this->prioritySetupService->updateFlashDealPrioritySetupData(request: $request)
+        );
+        cacheRemoveByType(type: 'flash_deals');
         Toastr::success(translate('flash_deal_priority_setup_updated_successfully'));
         return redirect()->back();
     }
@@ -138,7 +144,9 @@ class PrioritySetupController extends BaseController
     protected function updateTopVendorPriority($request): RedirectResponse
     {
         $this->businessSettingRepo->updateOrInsert(type: 'top_vendor_list_priority',
-            value: $this->prioritySetupService->updateTopVendorPrioritySetupData(request: $request));
+            value: $this->prioritySetupService->updateTopVendorPrioritySetupData(request: $request)
+        );
+        cacheRemoveByType(type: 'shops');
         Toastr::success(translate('top_vendor_list_priority_setup_updated_successfully'));
         return redirect()->back();
     }
@@ -146,7 +154,9 @@ class PrioritySetupController extends BaseController
     protected function updateVendorListPriority($request): RedirectResponse
     {
         $this->businessSettingRepo->updateOrInsert(type: 'vendor_list_priority',
-            value: $this->prioritySetupService->updateVendorPrioritySetupData(request: $request));
+            value: $this->prioritySetupService->updateVendorPrioritySetupData(request: $request)
+        );
+        cacheRemoveByType(type: 'shops');
         Toastr::success(translate('vendor_list_priority_setup_updated_successfully'));
         return redirect()->back();
     }
@@ -154,7 +164,9 @@ class PrioritySetupController extends BaseController
     protected function updateBrandPriority($request): RedirectResponse
     {
         $this->businessSettingRepo->updateOrInsert(type: 'brand_list_priority',
-            value: $this->prioritySetupService->updateBrandAndCategoryPrioritySetupData(request: $request));
+            value: $this->prioritySetupService->updateBrandAndCategoryPrioritySetupData(request: $request)
+        );
+        cacheRemoveByType(type: 'brands');
         Toastr::success(translate('brand_list_priority_setup_updated_successfully'));
         return redirect()->back();
     }
@@ -162,7 +174,9 @@ class PrioritySetupController extends BaseController
     protected function updateCategoryPriority($request): RedirectResponse
     {
         $this->businessSettingRepo->updateOrInsert(type: 'category_list_priority',
-            value: $this->prioritySetupService->updateBrandAndCategoryPrioritySetupData(request: $request));
+            value: $this->prioritySetupService->updateBrandAndCategoryPrioritySetupData(request: $request)
+        );
+        cacheRemoveByType(type: 'categories');
         Toastr::success(translate('category_list_priority_setup_updated_successfully'));
         return redirect()->back();
     }

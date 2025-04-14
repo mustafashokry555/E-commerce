@@ -10,12 +10,13 @@ use Illuminate\Support\Str;
 class POSService
 {
     use CalculatorTrait;
-    public function getTotalHoldOrders():int
+
+    public function getTotalHoldOrders(): int
     {
         $totalHoldOrders = 0;
-        if (session()->has(SessionKey::CART_NAME)){
-            foreach (session(SessionKey::CART_NAME) as $item){
-                if (session()->has($item) && count(session($item)) > 1){
+        if (session()->has(SessionKey::CART_NAME)) {
+            foreach (session(SessionKey::CART_NAME) as $item) {
+                if (session()->has($item) && count(session($item)) > 1) {
                     if (isset(session($item)[0]) && is_array(session($item)[0]) && isset(session($item)[0]['customerOnHold']) && session($item)[0]['customerOnHold']) {
                         $totalHoldOrders++;
                     }
@@ -24,23 +25,23 @@ class POSService
         }
         return $totalHoldOrders;
     }
-    public function getCartNames():array
+
+    public function getCartNames(): array
     {
         $cartNames = [];
-        if (session()->has(SessionKey::CART_NAME)){
-            foreach (session(SessionKey::CART_NAME) as $item){
-                if (session()->has($item) && count(session($item)) > 1){
+        if (session()->has(SessionKey::CART_NAME)) {
+            foreach (session(SessionKey::CART_NAME) as $item) {
+                if (session()->has($item) && count(session($item)) > 1) {
                     $cartNames[] = $item;
                 }
             }
         }
-        return $cartNames ;
+        return $cartNames;
     }
 
-    public function UpdateSessionWhenCustomerChange(string $cartId):void
+    public function UpdateSessionWhenCustomerChange(string $cartId): void
     {
-        if(!in_array($cartId,session(SessionKey::CART_NAME)??[]))
-        {
+        if (!in_array($cartId, session(SessionKey::CART_NAME) ?? [])) {
             session()->push(SessionKey::CART_NAME, $cartId);
         }
         $cart = session(session(SessionKey::CURRENT_USER));
@@ -48,43 +49,44 @@ class POSService
         if (session()->has(session(SessionKey::CURRENT_USER)) && count($cart) > 0) {
             foreach ($cart as $cartItem) {
                 if (is_array($cartItem)) {
-                    $cartItem['customerId'] = Str::contains($cartId, 'walking-customer') ? '0' : explode('-',$cartId)[2];
+                    $cartItem['customerId'] = Str::contains($cartId, 'walking-customer') ? '0' : explode('-', $cartId)[2];
                 }
                 $cartKeeper[] = $cartItem;
             }
         }
-        if(session(SessionKey::CURRENT_USER) != $cartId)
-        {
+        if (session(SessionKey::CURRENT_USER) != $cartId) {
             $tempCartName = [];
-            foreach(session(SessionKey::CART_NAME) as $cartName)
-            {
-                if($cartName != session(SessionKey::CURRENT_USER))
-                {
+            foreach (session(SessionKey::CART_NAME) as $cartName) {
+                if ($cartName != session(SessionKey::CURRENT_USER)) {
                     $tempCartName[] = $cartName;
                 }
             }
-            session()->put(SessionKey::CART_NAME,$tempCartName);
+            session()->put(SessionKey::CART_NAME, $tempCartName);
         }
         session()->forget(session(SessionKey::CURRENT_USER));
-        session()->put($cartId , $cartKeeper);
-        session()->put(SessionKey::CURRENT_USER,$cartId);
+        session()->put($cartId, $cartKeeper);
+        session()->put(SessionKey::CURRENT_USER, $cartId);
     }
-    public function checkConditions(float $amount):bool
+
+    public function checkConditions(float $amount, float $paidAmount = null): bool
     {
         $condition = false;
-        $cartId =session(SessionKey::CURRENT_USER);
+        $cartId = session(SessionKey::CURRENT_USER);
         if (session()->has($cartId)) {
             if (count(session()->get($cartId)) < 1) {
                 Toastr::error(translate('cart_empty_warning'));
                 $condition = true;
             }
-        }else {
+        } else {
             Toastr::error(translate('cart_empty_warning'));
             $condition = true;
         }
-        if($amount <= 0)
-        {
+        if ($amount <= 0) {
             Toastr::error(translate('amount_cannot_be_lees_then_0'));
+            $condition = true;
+        }
+        if (!is_null($paidAmount) && $paidAmount < $amount) {
+            Toastr::error(translate('paid_amount_is_less_than_total_amount'));
             $condition = true;
         }
         return $condition;
@@ -107,7 +109,8 @@ class POSService
             'discount' => $discount,
         ];
     }
-    public function putCouponDataOnSession($cartId,$discount,$couponTitle,$couponBearer,$couponCode):void
+
+    public function putCouponDataOnSession($cartId, $discount, $couponTitle, $couponBearer, $couponCode): void
     {
         $cart = session($cartId, collect([]));
         $cart['coupon_code'] = $couponCode;
@@ -116,7 +119,8 @@ class POSService
         $cart['coupon_bearer'] = $couponBearer;
         session()->put($cartId, $cart);
     }
-    public function getVariantData(string $type,array $variation,int $quantity):array
+
+    public function getVariantData(string $type, array $variation, int $quantity): array
     {
         $variationData = [];
         foreach ($variation as $variant) {
@@ -127,13 +131,14 @@ class POSService
         }
         return $variationData;
     }
-    public function getSummaryData():array
+
+    public function getSummaryData(): array
     {
-        return  [
-            'cartName'=>session(SessionKey::CART_NAME),
-            'currentUser'=>session(SessionKey::CURRENT_USER),
-            'totalHoldOrders'=>$this->getTotalHoldOrders(),
-            'cartNames' =>$this->getCartNames(),
+        return [
+            'cartName' => session(SessionKey::CART_NAME),
+            'currentUser' => session(SessionKey::CURRENT_USER),
+            'totalHoldOrders' => $this->getTotalHoldOrders(),
+            'cartNames' => $this->getCartNames(),
         ];
     }
 }

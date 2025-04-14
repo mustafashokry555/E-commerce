@@ -29,7 +29,7 @@ class ShippingMethodController extends Controller
     public function shipping_methods_by_seller(Request $request, $id, $seller_is)
     {
         $seller_is = $seller_is == 'admin' ? 'admin' : 'seller';
-        return response()->json(Helpers::get_shipping_methods($id, $seller_is), 200);
+        return response()->json(Helpers::getShippingMethods($id, $seller_is), 200);
     }
 
     public function choose_for_order(Request $request)
@@ -42,7 +42,7 @@ class ShippingMethodController extends Controller
         ]);
 
         if ($validator->errors()->count() > 0) {
-            return response()->json(['errors' => Helpers::error_processor($validator)]);
+            return response()->json(['errors' => Helpers::validationErrorProcessor($validator)]);
         }
 
         if ($request['cart_group_id'] == 'all_cart_group') {
@@ -76,7 +76,7 @@ class ShippingMethodController extends Controller
 
         $cartShipping->map(function ($data) {
             $isCheckedItemExist = Cart::where(['cart_group_id' => $data['cart_group_id'], 'is_checked' => 1])->exists();
-            $freeDeliveryStatus = OrderManager::free_delivery_order_amount($data['cart_group_id'])['status'];
+            $freeDeliveryStatus = OrderManager::getFreeDeliveryOrderAmountArray($data['cart_group_id'])['status'];
             $data['free_delivery_status'] = $freeDeliveryStatus;
             $data['is_check_item_exist'] = $isCheckedItemExist ? 1 : 0;
             return $data;
@@ -93,7 +93,7 @@ class ShippingMethodController extends Controller
         ]);
 
         if ($validator->errors()->count() > 0) {
-            return response()->json(['errors' => Helpers::error_processor($validator)]);
+            return response()->json(['errors' => Helpers::validationErrorProcessor($validator)]);
         }
 
         if($request->seller_is == 'admin')

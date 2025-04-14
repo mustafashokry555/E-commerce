@@ -2,8 +2,11 @@
 
 namespace App\Models;
 
+use App\Traits\StorageTrait;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Class YourModel
@@ -27,6 +30,8 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Banner extends Model
 {
+    use StorageTrait;
+
     protected $casts = [
         'id' => 'integer',
         'published' => 'integer',
@@ -49,8 +54,46 @@ class Banner extends Model
         'background_color',
     ];
 
-    public function product(){
-        return $this->belongsTo(Product::class,'resource_id');
+    protected $appends = ['photo_full_url'];
+
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class, 'resource_id');
     }
 
+    public function getPhotoFullUrlAttribute(): string|null|array
+    {
+        $value = $this->photo;
+        if (count($this->storage) > 0) {
+            $storage = $this->storage->where('key', 'photo')->first();
+        }
+        return $this->storageLink('banner', $value, $storage['value'] ?? 'public');
+    }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+        static::saved(function ($model) {
+            cacheRemoveByType(type: 'banners');
+
+            $file = 'photo';
+            $storage = config('filesystems.disks.default') ?? 'public';
+            if ($model->isDirty($file)) {
+                $value = $storage;
+                DB::table('storages')->updateOrInsert([
+                    'data_type' => get_class($model),
+                    'data_id' => $model->id,
+                    'key' => $file,
+                ], [
+                    'value' => $value,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        });
+
+        static::deleted(function ($model) {
+            cacheRemoveByType(type: 'banners');
+        });
+    }
 }

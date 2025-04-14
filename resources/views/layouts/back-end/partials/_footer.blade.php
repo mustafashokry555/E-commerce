@@ -28,11 +28,13 @@
                             {{translate('home')}}
                         </a>
                     </li>
-                    <li class="list-inline-item">
-                        <label class="badge badge-soft-version text-capitalize m-0">
-                            {{translate('software_version').' '.env('SOFTWARE_VERSION') }}
-                        </label>
-                    </li>
+                    @if(SOFTWARE_VERSION)
+                        <li class="list-inline-item">
+                            <label class="badge badge-soft-version text-capitalize m-0">
+                                {{translate('software_version').' '. SOFTWARE_VERSION }}
+                            </label>
+                        </li>
+                    @endif
                 </ul>
             </div>
         </div>

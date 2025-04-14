@@ -200,7 +200,7 @@ $direction = Session::get('direction');
 
             <hr>
             <div class="mb-2" id="mail-footer">
-                {{ translate('please_contact_us_for_any_queries').','.translate('_we’re_always_happy_to_help').'.' }}
+                {{ translate('please_contact_us_for_any_queries').','.translate('_we_are_always_happy_to_help').'.' }}
             </div>
             <div>
                 {{ translate('Thanks_&_Regards') }},
@@ -213,7 +213,7 @@ $direction = Session::get('direction');
     <tr>
         <td>
             <img class="mail-img-2"
-                 src="{{ getValidImage(path: "storage/app/public/company/".$companyLogo, type:'backend-logo') }}"
+                 src="{{ getStorageImages(path: $companyLogo, type:'backend-logo') }}"
                  id="logoViewer" alt="">
             <span class="privacy">
                     <a href="{{route('privacy-policy') }}" target="_blank"

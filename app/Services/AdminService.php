@@ -19,7 +19,7 @@ class AdminService implements AdminServiceInterface
 
     public function logout(): void
     {
-        auth()->guard('web')->logout();
+        auth('admin')->logout();
         session()->invalidate();
     }
 
@@ -27,14 +27,18 @@ class AdminService implements AdminServiceInterface
     {
         if (!empty($oldImages['identify_image'])) {
             foreach (json_decode($oldImages['identify_image'], true) as $image) {
-                $this->delete('admin/' . $image);
+                $imageName = is_string($image) ? $image : $image['image_name'];
+                $this->delete('admin/' . $imageName);
             }
         }
 
         $identity_images = [];
         if (!empty($request->file('identity_image'))) {
             foreach ($request['identity_image'] as $img) {
-                $identity_images[] = $this->upload('admin/', 'webp', $img);
+                $identity_images[] = [
+                    'image_name'=>$this->upload('admin/', 'webp', $img),
+                    'storage' => getWebConfig(name: 'storage_connection_type') ?? 'public',
+                ];
             }
             $identity_images = json_encode($identity_images);
         } else {

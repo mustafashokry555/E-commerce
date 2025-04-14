@@ -44,18 +44,74 @@ $('.submit-login-form').on('click',function (){
                         CloseButton: true,
                         ProgressBar: true
                     });
-                }else if(data.status){
+                } else if(data.status){
                     $('.'+data.status+'-message').removeClass('d-none')
-                }else {
+                } else {
                     location.href = data.redirectRoute;
                     toastr.success(data.success)
                 }
-            },complete: function () {
+
+                if (data.errors) {
+                    for (
+                        let index = 0;
+                        index < data.errors.length;
+                        index++
+                    ) {
+                        toastr.error(data.errors[index].message, {
+                            CloseButton: true,
+                            ProgressBar: true,
+                        });
+                    }
+                }
+            },
+            complete: function () {
                 $('#loading').fadeOut();
             },
+            error: function (xhr) {
+                if (xhr.responseJSON) {
+                    const responseErrors = xhr.responseJSON.errors;
+                    if (Array.isArray(responseErrors)) {
+                        responseErrors.forEach(error => {
+                            toastr.error(error.message, {
+                                CloseButton: true,
+                                ProgressBar: true
+                            });
+                        });
+                    } else if (typeof responseErrors === 'object') {
+                        for (const key in responseErrors) {
+                            if (responseErrors.hasOwnProperty(key)) {
+                                toastr.error(responseErrors[key], {
+                                    CloseButton: true,
+                                    ProgressBar: true
+                                });
+                            }
+                        }
+                    } else if (xhr.responseJSON.error) {
+                        toastr.error(xhr.responseJSON.error, {
+                            CloseButton: true,
+                            ProgressBar: true
+                        });
+                    } else {
+                        toastr.error('An unexpected error occurred. Please try again.', {
+                            CloseButton: true,
+                            ProgressBar: true
+                        });
+                    }
+                } else {
+                    toastr.error('An unknown error occurred.', {
+                        CloseButton: true,
+                        ProgressBar: true
+                    });
+                }
+
+                setTimeout(() => {
+                    location.reload();
+                }, 3000)
+            }
         })
     }
 })
+
 $('.clear-alter-message').on('click',function (){
     $('.vendor-suspend').addClass('d-none')
 })
@@ -77,4 +133,51 @@ $('#copyLoginInfo').on('click', function () {
 $('.onerror-logo').on('error', function () {
     let image = $('#onerror-logo').data('onerror-logo');
     $(this).attr('src', image);
+});
+
+
+function getSessionRecaptchaCode(sessionKey, inputSelector) {
+    try {
+        let routeGetSessionRecaptchaCode = $('#route-get-session-recaptcha-code');
+        if (routeGetSessionRecaptchaCode.data('mode').toString() === 'dev') {
+            let string = '.';
+            let intervalId = setInterval(() => {
+                if (string === '......') {
+                    string = '.';
+                }
+                string = string + '.';
+                $(inputSelector).val(string);
+            }, 100);
+
+            setTimeout(() => {
+                clearInterval(intervalId);
+                $.ajaxSetup({
+                    headers: {
+                        "X-CSRF-TOKEN": $('meta[name="_token"]').attr("content"),
+                    },
+                });
+                $.ajax({
+                    type: "POST",
+                    url: $('#route-get-session-recaptcha-code').data('route'),
+                    data: {
+                        _token: $('meta[name="_token"]').attr("content"),
+                        sessionKey: sessionKey,
+                    },
+                    success: function (response) {
+                        $(inputSelector).val(response?.code);
+                    },
+                });
+            }, 1000);
+        }
+    } catch (e) {
+        console.log(e);
+    }
+}
+
+$('.get-session-recaptcha-auto-fill').each(function () {
+    getSessionRecaptchaCode($(this).data('session'), $(this).data('input'))
+});
+
+$('.get-session-recaptcha-auto-fill').on('click', function () {
+    getSessionRecaptchaCode($(this).data('session'), $(this).data('input'));
 });

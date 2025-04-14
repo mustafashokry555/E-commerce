@@ -56,9 +56,13 @@ class ShippingMethodController extends BaseController
     /**
      * @return View
      */
-    public function getShippingMethodsView():View
+    public function getShippingMethodsView(): View
     {
-        $shippingMethods = $this->shippingMethodRepo->getListWhere(orderBy: ['id' => 'desc'], filters: ['creator_type' => 'admin']);
+        $shippingMethods = $this->shippingMethodRepo->getListWhere(
+            orderBy: ['id' => 'desc'],
+            filters: ['creator_type' => 'admin'],
+            dataLimit: getWebConfig(name: 'pagination_limit')
+        );
         $allCategoryIds = $this->categoryRepo->getListWhere(filters: ['position' => 0])->pluck('id')->toArray();
         $allCategoryShippingCostArray = $this->categoryShippingCostRepo->getListWhere(
             orderBy: ['id' => 'desc'],
@@ -79,10 +83,10 @@ class ShippingMethodController extends BaseController
         );
         $allCategoryShippingCost = $this->categoryShippingCostRepo->getListWhere(
             orderBy: ['id' => 'desc'],
-            filters: ['seller_id' => 0 ],
-            relations:['category']
+            filters: ['seller_id' => 0],
+            relations: ['category']
         );
-        return view(ShippingMethod::INDEX[VIEW],compact('allCategoryShippingCost','shippingMethods','adminShipping'));
+        return view(ShippingMethod::INDEX[VIEW], compact('allCategoryShippingCost', 'shippingMethods', 'adminShipping'));
     }
 
     /**
@@ -100,10 +104,10 @@ class ShippingMethodController extends BaseController
      * @param Request $request
      * @return JsonResponse
      */
-    public function updateStatus(Request $request):JsonResponse
+    public function updateStatus(Request $request): JsonResponse
     {
-        $this->shippingMethodRepo->update(id:$request['id'],data:[ 'status' => $request['status']]);
-        return response()->json(['success' => 1,], status:200);
+        $this->shippingMethodRepo->update(id: $request['id'], data: ['status' => $request['status']]);
+        return response()->json(['success' => 1,], status: 200);
     }
 
     /**
@@ -124,7 +128,7 @@ class ShippingMethodController extends BaseController
      * @param string|int $id
      * @return RedirectResponse
      */
-    public function update(ShippingMethodRequest $request , string|int $id):RedirectResponse
+    public function update(ShippingMethodRequest $request, string|int $id): RedirectResponse
     {
         $this->shippingMethodRepo->update(id: $id, data: $this->shippingMethodService->addShippingMethodData(request: $request, addedBy: 'admin'));
         Toastr::success(translate('successfully_updated'));
@@ -135,7 +139,7 @@ class ShippingMethodController extends BaseController
      * @param Request $request
      * @return RedirectResponse
      */
-    public function delete(Request $request):RedirectResponse
+    public function delete(Request $request): RedirectResponse
     {
         $this->shippingMethodRepo->delete(params: ['id' => $request['id']]);
         return redirect()->back();
@@ -145,9 +149,9 @@ class ShippingMethodController extends BaseController
      * @param Request $request
      * @return RedirectResponse
      */
-    public function updateShippingResponsibility(Request $request):RedirectResponse
+    public function updateShippingResponsibility(Request $request): RedirectResponse
     {
-        $this->businessSettingRepo->updateOrInsert(type:'shipping_method',value: $request['shipping_method']);
+        $this->businessSettingRepo->updateOrInsert(type: 'shipping_method', value: $request['shipping_method']);
         Toastr::success(translate('successfully_updated'));
         return redirect()->back();
     }

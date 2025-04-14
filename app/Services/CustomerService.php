@@ -25,9 +25,12 @@ class CustomerService
             'password' => bcrypt($request['password'] ?? 'password')
         ];
     }
-    public function deleteImage(object $data): bool
+
+    public function deleteImage(object|null $data): bool
     {
-        if ($data['image']) {$this->delete('profile/'.$data['image']);};
+        if ($data && $data['image']) {
+            $this->delete('profile/' . $data['image']);
+        };
         return true;
     }
 }

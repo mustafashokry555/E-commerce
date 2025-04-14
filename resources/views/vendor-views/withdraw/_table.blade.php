@@ -16,7 +16,9 @@
             @foreach($withdrawRequests as $key=>$withdrawRequest)
                 <tr>
                     <td>{{$withdrawRequests->firstitem()+$key}}</td>
-                    <td>{{currencyConverter($withdrawRequest['amount'])}}</td>
+                    <td>
+                        {{ setCurrencySymbol(amount: usdToDefaultCurrency(amount: $withdrawRequest['amount']), currencyCode: getCurrencyCode(type: 'default')) }}
+                    </td>
                     <td>{{date("F jS, Y", strtotime($withdrawRequest->created_at))}}</td>
                     <td>
                         @if($withdrawRequest->approved==0)

@@ -35,9 +35,7 @@
                     <div class="card-body">
                         <form action="{{route('admin.business-settings.web-config.update-language')}}" method="post">
                             @csrf
-                            @php($language=\App\Models\BusinessSetting::where('type','pnc_language')->first())
-                            @php($language = json_decode($language->value,true) ?? [])
-
+                            @php($language= getWebConfig(name: 'pnc_language'))
                             <div class="form-group">
                                 <select name="language[]" id="language" onchange="$('#alert_box').show();"
                                         data-maximum-selection-length="3"

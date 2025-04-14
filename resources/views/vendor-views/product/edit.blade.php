@@ -50,8 +50,13 @@
                             ?>
                         <div class="{{ $language != 'en'? 'd-none':''}} form-system-language-form" id="{{ $language}}-form">
                             <div class="form-group">
-                                <label class="title-color" for="{{ $language}}_name">{{ translate('product_name') }}
-                                    ({{strtoupper($language) }})</label>
+                                <label class="title-color" for="{{ $language}}_name">
+                                    {{ translate('product_name') }}
+                                    ({{strtoupper($language) }})
+                                    @if($language == 'en')
+                                        <span class="input-required-icon">*</span>
+                                    @endif
+                                </label>
                                 <input type="text" {{ $language == 'en'? 'required':''}} name="name[]"
                                        id="{{ $language}}_name"
                                        value="{{ $translate[$language]['name']??$product['name']}}"
@@ -80,7 +85,10 @@
                     <div class="row">
                         <div class="col-md-6 col-lg-4 col-xl-3">
                             <div class="form-group">
-                                <label for="name" class="title-color">{{ translate('category') }}</label>
+                                <label for="name" class="title-color">
+                                    {{ translate('category') }}
+                                    <span class="input-required-icon">*</span>
+                                </label>
                                 <select class="js-example-basic-multiple js-states js-example-responsive form-control action-get-request-onchange"
                                         name="category_id"
                                         id="category_id"
@@ -118,9 +126,12 @@
                             </div>
                         </div>
                         @if($brandSetting)
-                            <div class="col-md-6 col-lg-4 col-xl-3">
+                            <div class="col-md-6 col-lg-4 col-xl-3 physical_product_show">
                                 <div class="form-group">
-                                    <label class="title-color">{{ translate('brand') }}</label>
+                                    <label class="title-color">
+                                        {{ translate('brand') }}
+                                        <span class="input-required-icon">*</span>
+                                    </label>
                                     <select
                                         class="js-example-basic-multiple js-states js-example-responsive form-control"
                                         name="brand_id">
@@ -136,7 +147,10 @@
                         @endif
                         <div class="col-md-6 col-lg-4 col-xl-3">
                             <div class="form-group">
-                                <label class="title-color">{{ translate('product_type') }}</label>
+                                <label class="title-color">
+                                    {{ translate('product_type') }}
+                                    <span class="input-required-icon">*</span>
+                                </label>
                                 <select name="product_type" id="product_type" class="form-control" required>
                                     <option
                                         value="physical" {{ $product['product_type'] == 'physical' ? 'selected' : ''}}>{{ translate('physical') }}</option>
@@ -147,12 +161,36 @@
                                 </select>
                             </div>
                         </div>
+
+                        <div class="col-md-6 col-lg-4 col-xl-3 digital-product-sections-show">
+                            <label class="title-color">
+                                {{ translate("Author") }}/{{ translate("Creator") }}/{{ translate("Artist") }}
+                            </label>
+                            <select class="multiple-select2 form-control" name="authors[]" multiple="multiple" id="mySelect">
+                                @foreach($digitalProductAuthors as $authors)
+                                    <option value="{{ $authors['name'] }}" {{ in_array($authors['id'], $productAuthorIds) ? 'selected' : '' }}>{{ $authors['name'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 col-lg-4 col-xl-3 digital-product-sections-show">
+                            <label class="title-color">{{ translate("Publishing_House") }}</label>
+                            <select class="multiple-select2 form-control" name="publishing_house[]" multiple="multiple">
+                                @foreach($publishingHouseList as $publishingHouse)
+                                    <option value="{{ $publishingHouse['name'] }}"
+                                        {{ in_array($publishingHouse['id'], $productPublishingHouseIds) ? 'selected' : '' }}>{{ $publishingHouse['name'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+
                         <div class="col-md-6 col-lg-4 col-xl-3" id="digital_product_type_show">
                             <div class="form-group">
                                 <label for="digital_product_type"
                                        class="title-color">{{ translate("delivery_type") }}</label>
                                 <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
-                                      title="{{ translate('for_“Ready_Product”_deliveries,_customers_can_pay_&_instantly_download_pre-uploaded_digital_products._For_“Ready_After_Sale”_deliveries,_customers_pay_first_then_vendor_uploads_the_digital_products_that_become_available_to_customers_for_download') }}">
+                                      title="{{
+                                      translate('for_Ready_Product_deliveries,_customers_can_pay_&_instantly_download_pre-uploaded_digital_products').' '.
+                                      translate('For_Ready_After_Sale_deliveries,_customers_pay_first_then_vendor_uploads_the_digital_products_that_become_available_to_customers_for_download') }}">
                                     <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}" alt="">
                                 </span>
                                 <select name="digital_product_type" id="digital_product_type" class="form-control"
@@ -168,36 +206,13 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-md-6 col-lg-4 col-xl-3" id="digital_file_ready_show">
-                            <div class="form-group">
-                                <div class="d-flex align-items-center gap-2 mb-2">
-                                    <label for="digital_file_ready"
-                                           class="title-color mb-0">{{ translate("upload_file") }}</label>
 
-                                    <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
-                                          title="{{ translate('upload_the_digital_products_from_here') }}">
-                                        <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}" alt="">
-                                    </span>
-                                </div>
-                                <div class="input-group">
-                                    <div class="custom-file">
-                                        <input type="file" class="custom-file-input" name="digital_file_ready"
-                                               id="digital_file_ready" aria-describedby="inputGroupFileAddon01">
-                                        <label class="custom-file-label"
-                                               for="digital_file_ready">{{ translate('choose_file') }}</label>
-                                    </div>
-                                </div>
-
-                                <div class="mt-2">
-                                    {{ translate('file_type') }}: {{ "jpg, jpeg, png, gif, zip, pdf" }}
-                                </div>
-                            </div>
-                        </div>
                         <div class="col-md-6 col-lg-4 col-xl-3">
                             <div class="form-group">
                                 <label class="title-color d-flex justify-content-between gap-2">
                                     <span class="d-flex align-items-center gap-2">
                                         {{ translate('product_SKU') }}
+                                        <span class="input-required-icon">*</span>
                                         <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                               title="{{ translate('create_a_unique_product_code_by_clicking_on_the_Generate_Code_button') }}">
                                             <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}" alt="">
@@ -257,9 +272,10 @@
                         <div class="col-md-6 col-lg-4 col-xl-3 d-none">
                             <div class="form-group">
                                 <div class="d-flex gap-2">
-                                    <label class="title-color">{{ translate('purchase_price') }}
-                                        ({{ getCurrencySymbol(currencyCode: getCurrencyCode()) }}
-                                        ) </label>
+                                    <label class="title-color">
+                                        {{ translate('purchase_price') }}
+                                        ({{ getCurrencySymbol(currencyCode: getCurrencyCode()) }})
+                                    </label>
 
                                     <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                           title="{{ translate('add_the_purchase_price_for_this_product') }}.">
@@ -276,12 +292,14 @@
                         <div class="col-md-6 col-lg-4 col-xl-3">
                             <div class="form-group">
                                 <div class="d-flex gap-2">
-                                    <label class="title-color">{{ translate('unit_price') }}
-                                        ({{ getCurrencySymbol(currencyCode: getCurrencyCode()) }}
-                                        )</label>
+                                    <label class="title-color">
+                                        {{ translate('unit_price') }}
+                                        ({{ getCurrencySymbol(currencyCode: getCurrencyCode()) }})
+                                        <span class="input-required-icon">*</span>
+                                    </label>
 
                                     <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
-                                          title="{{ translate('set_the_selling_price_for_each_unit_of_this_product._This_Unit_Price_section_won’t_be_applied_if_you_set_a_variation_wise_price') }}.">
+                                          title="{{ translate('set_the_selling_price_for_each_unit_of_this_product._This_Unit_Price_section_would_not_be_applied_if_you_set_a_variation_wise_price') }}.">
                                         <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}" alt="">
                                     </span>
                                 </div>
@@ -295,11 +313,13 @@
                         <div class="col-md-6 col-lg-4 col-xl-3" id="minimum_order_qty">
                             <div class="form-group">
                                 <div class="d-flex gap-2">
-                                    <label class="title-color"
-                                           for="minimum_order_qty">{{ translate('minimum_order_qty') }}</label>
+                                    <label class="title-color" for="minimum_order_qty">
+                                        {{ translate('minimum_order_qty') }}
+                                        <span class="input-required-icon">*</span>
+                                    </label>
 
                                     <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
-                                          title="{{ translate('set_the_minimum_order_quantity_that_customers_must_choose._Otherwise,_the_checkout_process_won’t_start') }}.">
+                                          title="{{ translate('set_the_minimum_order_quantity_that_customers_must_choose._Otherwise,_the_checkout_process_would_not_start') }}.">
                                         <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}" alt="">
                                     </span>
                                 </div>
@@ -312,8 +332,10 @@
                         <div class="col-md-6 col-lg-4 col-xl-3 physical_product_show" id="quantity">
                             <div class="form-group">
                                 <div class="d-flex gap-2">
-                                    <label class="title-color"
-                                           for="current_stock">{{ translate('current_stock_qty') }}</label>
+                                    <label class="title-color" for="current_stock">
+                                        {{ translate('current_stock_qty') }}
+                                        <span class="input-required-icon">*</span>
+                                    </label>
 
                                     <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                           title="{{ translate('add_the_Stock_Quantity_of_this_product_that_will_be_visible_to_customers') }}.">
@@ -328,8 +350,9 @@
                         <div class="col-md-6 col-lg-4 col-xl-3">
                             <div class="form-group">
                                 <div class="d-flex gap-2">
-                                    <label class="title-color"
-                                           for="discount_Type">{{ translate('discount_Type') }}</label>
+                                    <label class="title-color" for="discount_Type">
+                                        {{ translate('discount_Type') }}
+                                    </label>
 
                                     <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                           title="{{ translate('if_Flat,_discount_amount_will_be_set_as_fixed_amount._If_Percentage,_discount_amount_will_be_set_as_percentage.') }}">
@@ -368,7 +391,10 @@
                         <div class="col-md-6 col-lg-4 col-xl-3">
                             <div class="form-group">
                                 <div class="d-flex gap-2">
-                                    <label class="title-color" for="tax">{{ translate('tax_amount') }}(%)</label>
+                                    <label class="title-color" for="tax">
+                                        {{ translate('tax_amount') }}(%)
+                                        <span class="input-required-icon">*</span>
+                                    </label>
 
                                     <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                           title="{{ translate('set_the_Tax_Amount_in_percentage_here') }}">
@@ -385,11 +411,13 @@
                         <div class="col-md-6 col-lg-4 col-xl-3">
                             <div class="form-group">
                                 <div class="d-flex gap-2">
-                                    <label class="title-color"
-                                           for="tax_model">{{ translate('tax_calculation') }}</label>
+                                    <label class="title-color" for="tax_model">
+                                        {{ translate('tax_calculation') }}
+                                        <span class="input-required-icon">*</span>
+                                    </label>
 
                                     <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
-                                          title="{{ translate('set_the_tax_calculation_method_from_here._Select_“Include_with_product”_to_combine_product_price_and_tax_on_the_checkout._Pick_“Exclude_from_product”_to_display_product_price_and_tax_amount_separately.') }}">
+                                          title="{{ translate('set_the_tax_calculation_method_from_here.').' '.translate('select_Include_with_product_to_combine_product_price_and_tax_on_the_checkout.').' '.translate('pick_Exclude_from_product_to_display_product_price_and_tax_amount_separately.') }}">
                                         <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}" alt="">
                                     </span>
                                 </div>
@@ -404,9 +432,11 @@
                         <div class="col-md-6 col-lg-4 col-xl-3 physical_product_show" id="shipping_cost">
                             <div class="form-group">
                                 <div class="d-flex gap-2">
-                                    <label class="title-color">{{ translate('shipping_cost') }}
-                                        ({{ getCurrencySymbol(currencyCode: getCurrencyCode()) }}
-                                        )</label>
+                                    <label class="title-color">
+                                        {{ translate('shipping_cost') }}
+                                        ({{ getCurrencySymbol(currencyCode: getCurrencyCode()) }})
+                                        <span class="input-required-icon">*</span>
+                                    </label>
 
                                     <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                           title="{{ translate('set_the_shipping_cost_for_this_product_here._Shipping_cost_will_only_be_applicable_if_product-wise_shipping_is_enabled.') }}">
@@ -447,6 +477,64 @@
                     </div>
                 </div>
             </div>
+
+            <div class="card mt-3 rest-part digitalProductVariationSetupSection">
+                <div class="card-header">
+                    <div class="d-flex gap-2">
+                        <i class="tio-user-big"></i>
+                        <h4 class="mb-0">{{ translate('product_variation_setup') }}</h4>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2" id="digital-product-type-choice-section">
+                        <div class="col-sm-6 col-md-4 col-xxl-3">
+                            <div class="multi--select">
+                                <label class="title-color">{{ translate('File_Type') }}</label>
+                                <select class="js-example-basic-multiple js-select2-custom form-control" name="file-type" multiple id="digital-product-type-select">
+                                    @foreach($digitalProductFileTypes as $FileType)
+                                        @if($product->digital_product_file_types)
+                                            <option value="{{ $FileType }}" {{ in_array($FileType, $product->digital_product_file_types) ? 'selected':'' }}>
+                                                {{ translate($FileType) }}
+                                            </option>
+                                        @else
+                                            <option value="{{ $FileType }}">{{ translate($FileType) }}</option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+
+                        @if($product->digital_product_file_types && count($product->digital_product_file_types) > 0)
+                            @foreach($product->digital_product_file_types as $digitalProductFileTypes)
+                                <div class="col-sm-6 col-md-4 col-xxl-3 extension-choice-section">
+                                    <div class="form-group">
+                                        <input type="hidden" name="extensions_type[]" value="{{ $digitalProductFileTypes }}">
+                                        <label class="title-color">
+                                            {{ $digitalProductFileTypes }}
+                                        </label>
+                                        <input type="text" name="extensions[]" value="{{ $digitalProductFileTypes }}" hidden>
+                                        <div class="">
+                                            @if($product->digital_product_extensions && isset($product->digital_product_extensions[$digitalProductFileTypes]))
+                                                <input type="text" class="form-control" name="extensions_options_{{ $digitalProductFileTypes }}[]"
+                                                       placeholder="{{ translate('enter_choice_values') }}" data-role="tagsinput"
+                                                       value="@foreach($product->digital_product_extensions[$digitalProductFileTypes] as $extensions){{$extensions.','}}@endforeach"
+                                                       onchange="getUpdateDigitalVariationFunctionality()">
+                                            @else
+                                                <input type="text" class="form-control" name="extensions_options_{{ $digitalProductFileTypes }}[]"
+                                                       placeholder="{{ translate('enter_choice_values') }}" data-role="tagsinput"
+                                                       onchange="getUpdateDigitalVariationFunctionality()">
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                            @endforeach
+                        @endif
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-3 rest-part" id="digital-product-variation-section"></div>
 
             <div class="card mt-3 rest-part physical_product_show">
                 <div class="card-header">
@@ -495,12 +583,11 @@
                                     name="choice_attributes[]" id="choice_attributes" multiple="multiple">
                                     @foreach ($attributes as $key => $attribute)
                                         @if($product['attributes']!='null')
-                                            <option
-                                                    value="{{ $attribute['id'] }}" {{ in_array($attribute['id'],json_decode($product['attributes'],true))?'selected':'' }}>
-                                                {{ $attribute['name'] }}
+                                            <option value="{{ $attribute['id'] }}" {{ in_array($attribute->id,json_decode($product['attributes'], true))? 'selected':'' }}>
+                                                {{ $attribute['name']}}
                                             </option>
                                         @else
-                                            <option value="{{ $attribute['id']}}">{{ $attribute['name'] }}</option>
+                                            <option value="{{ $attribute['id']}}">{{ $attribute['name']}}</option>
                                         @endif
                                     @endforeach
                                 </select>
@@ -513,7 +600,7 @@
                             </div>
 
                             <div class="sku_combination table-responsive form-group mt-2" id="sku_combination">
-                                @include('vendor-views.product.partials._edit_sku_combinations',['combinations'=>json_decode($product['variation'],true)])
+                                @include('vendor-views.product.partials._edit-sku-combinations', ['combinations'=>json_decode($product['variation'],true)])
                             </div>
                         </div>
                     </div>
@@ -521,14 +608,16 @@
             </div>
 
             <div class="mt-3 rest-part">
-                <div class="row g-2">
-                    <div class="col-md-3">
+                <div class="product-image-wrapper">
+                    <div class="item-1">
                         <div class="card h-100">
                             <div class="card-body">
                                 <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
                                     <div>
-                                        <label for="name"
-                                               class="title-color text-capitalize font-weight-bold mb-0">{{ translate('product_thumbnail') }}</label>
+                                        <label for="name" class="title-color text-capitalize font-weight-bold mb-0">
+                                            {{ translate('product_thumbnail') }}
+                                            <span class="input-required-icon">*</span>
+                                        </label>
                                         <span
                                             class="badge badge-soft-info">{{ THEME_RATIO[theme_root_path()]['Product Image'] }}</span>
                                         <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
@@ -544,7 +633,7 @@
                                                data-imgpreview="pre_img_viewer"
                                                accept=".jpg, .webp, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
 
-                                        @if (File::exists(base_path('storage/app/public/product/thumbnail/'. $product->thumbnail)))
+                                        @if ($product->thumbnail_full_url['path'])
                                             <span class="delete_file_input btn btn-outline-danger btn-sm square-btn d-flex">
                                                 <i class="tio-delete"></i>
                                             </span>
@@ -556,7 +645,7 @@
 
                                         <div class="img_area_with_preview position-absolute z-index-2">
                                             <img id="pre_img_viewer" class="h-auto aspect-1 bg-white  " alt=""
-                                                 src="{{ getValidImage(path:'storage/app/public/product/thumbnail/'.$product->thumbnail,type:'backend-product') }}">
+                                                 src="{{ getStorageImages(path:$product->thumbnail_full_url,type:'backend-product') }}">
                                         </div>
                                         <div
                                             class="position-absolute h-100 top-0 w-100 d-flex align-content-center justify-content-center">
@@ -577,7 +666,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-9 color_image_column d-none">
+                    <div class="item-2 color_image_column d-none">
                         <div class="card h-100">
                             <div class="card-body">
                                 <div class="d-flex align-items-center gap-2 mb-2">
@@ -603,7 +692,7 @@
                         </div>
                     </div>
 
-                    <div class="additional_image_column col-md-9">
+                    <div class="additional_image_column item-2">
                         <div class="card h-100">
                             <div class="card-body">
                                 <div class="d-flex align-items-center justify-content-between gap-2 mb-2">
@@ -626,7 +715,7 @@
                                     <div class="row g-2" id="additional_Image_Section">
 
                                         @if(count($product->colors) == 0)
-                                            @foreach (json_decode($product->images) as $key => $photo)
+                                            @foreach ($product->images_full_url as $key => $photo)
                                                 @php($unique_id = rand(1111,9999))
 
                                                 <div class="col-sm-12 col-md-4" id="addition-image-section-{{$key}}">
@@ -638,7 +727,7 @@
                                                             </button>
                                                         @else
                                                         <a class="delete_file_input_css btn btn-outline-danger btn-sm square-btn"
-                                                           href="{{ route('vendor.products.delete-image',['id'=>$product['id'],'name'=>$photo]) }}">
+                                                           href="{{ route('vendor.products.delete-image',['id'=>$product['id'],'name'=>$photo['key']]) }}">
                                                             <i class="tio-delete"></i>
                                                         </a>
                                                         @endif
@@ -647,9 +736,9 @@
                                                             class="img_area_with_preview position-absolute z-index-2 border-0">
                                                             <img id="additional_Image_{{ $unique_id }}" alt=""
                                                                  class="h-auto aspect-1 bg-white  "
-                                                                 src="{{ getValidImage(path:'storage/app/public/product/'.$photo,type: 'backend-product') }}">
+                                                                 src="{{ getStorageImages(path:$photo,type: 'backend-product') }}">
                                                             @if(request('product-gallery'))
-                                                                <input type="text" name="existing_images[]" value="{{$photo}}" hidden>
+                                                                <input type="text" name="existing_images[]" value="{{$photo['key']}}" hidden>
                                                             @endif
                                                         </div>
                                                         <div
@@ -666,8 +755,8 @@
                                             @endforeach
                                         @else
                                             @if($product->color_image)
-                                                @foreach (json_decode($product->color_image) as $photo)
-                                                    @if($photo->color == null)
+                                                @foreach ($product->color_images_full_url as $photo)
+                                                    @if($photo['color'] == null)
                                                         @php($unique_id = rand(1111,9999))
                                                         <div class="col-sm-12 col-md-4"  id="addition-image-section-{{$key}}">
                                                             <div
@@ -678,7 +767,7 @@
                                                                     </button>
                                                                 @else
                                                                 <a class="delete_file_input_css btn btn-outline-danger btn-sm square-btn"
-                                                                   href="{{ route('vendor.products.delete-image',['id'=>$product['id'],'name'=>$photo->image_name,'color'=>'null']) }}">
+                                                                   href="{{ route('vendor.products.delete-image',['id'=>$product['id'],'name'=>$photo['image_name']['key'],'color'=>'null']) }}">
                                                                     <i class="tio-delete"></i>
                                                                 </a>
                                                                 @endif
@@ -687,9 +776,9 @@
                                                                     class="img_area_with_preview position-absolute z-index-2 border-0">
                                                                     <img id="additional_Image_{{ $unique_id }}" alt=""
                                                                          class="h-auto aspect-1 bg-white  "
-                                                                         src="{{ getValidImage(path: 'storage/app/public/product/'.$photo->image_name,type:'backend-product')}}">
+                                                                         src="{{ getStorageImages(path: $photo['image_name'],type:'backend-product')}}">
                                                                     @if(request('product-gallery'))
-                                                                        <input type="text" name="existing_images[]" value="{{$photo->image_name}}" hidden>
+                                                                        <input type="text" name="existing_images[]" value="{{$photo['image_name']['key']}}" hidden>
                                                                     @endif
                                                                 </div>
                                                                 <div
@@ -706,7 +795,7 @@
                                                     @endif
                                                 @endforeach
                                             @else
-                                                @foreach (json_decode($product->images) as $key => $photo)
+                                                @foreach ($product->images_full_url as $key => $photo)
                                                     @php($unique_id = rand(1111,9999))
                                                     <div class="col-sm-12 col-md-4"  id="addition-image-section-{{$key}}">
                                                         <div class="custom_upload_input custom-upload-input-file-area position-relative border-dashed-2 aspect-1">
@@ -716,7 +805,7 @@
                                                                 </button>
                                                             @else
                                                                 <a class="delete_file_input_css btn btn-outline-danger btn-sm square-btn"
-                                                                   href="{{ route('vendor.products.delete-image',['id'=>$product['id'],'name'=>$photo]) }}">
+                                                                   href="{{ route('vendor.products.delete-image',['id'=>$product['id'],'name'=>$photo['key']]) }}">
                                                                     <i class="tio-delete"></i>
                                                                 </a>
                                                             @endif
@@ -724,9 +813,9 @@
                                                                 class="img_area_with_preview position-absolute z-index-2 border-0">
                                                                 <img id="additional_Image_{{ $unique_id }}" alt=""
                                                                      class="h-auto aspect-1 bg-white  "
-                                                                     src="{{ getValidImage(path: 'storage/app/public/product/'.$photo ,type: 'backend-product') }}">
+                                                                     src="{{ getStorageImages(path:$photo ,type: 'backend-product')}}">
                                                                 @if(request('product-gallery'))
-                                                                    <input type="text" name="existing_images[]" value="{{$photo}}" hidden>
+                                                                    <input type="text" name="existing_images[]" value="{{$photo['key']}}" hidden>
                                                                 @endif
                                                             </div>
                                                             <div
@@ -776,11 +865,65 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="item-1 digital-product-sections-show">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <div class="d-flex align-items-center justify-content-between gap-2 mb-1">
+                                        <div>
+                                            <label for="name" class="title-color text-capitalize font-weight-bold mb-0">{{ translate('Product_Preview_File') }}</label>
+                                            <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
+                                                  title="{{ translate('upload_a_suitable_file_for_a_short_product_preview.') }} {{ translate('this_preview_will_be_common_for_all_variations.') }}">
+                                                <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}" alt="">
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <p class="text-muted">{{ translate('Upload_a_short_preview') }}.</p>
+                                </div>
+                                <div class="image-uploader">
+                                    <input type="file" name="preview_file" class="image-uploader__zip" id="input-file">
+                                    <div class="image-uploader__zip-preview">
+                                        <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/product-upload-icon.svg') }}" class="mx-auto" width="50" alt="">
+                                        <div class="image-uploader__title line--limit-2" data-default="{{ translate('Upload_File') }}">
+                                            @if ($product->preview_file_full_url['path'])
+                                                {{ $product->preview_file }}
+                                            @elseif(request('product-gallery') && $product?->preview_file)
+                                                {{ translate('Upload_File') }}
+                                            @else
+                                                {{ translate('Upload_File') }}
+                                            @endif
+
+                                            @if(request('product-gallery'))
+                                                <input type="hidden" name="existing_preview_file" value="{{ $product?->preview_file }}">
+                                                <input type="hidden" name="existing_preview_file_storage_type" value="{{ $product?->preview_file_storage_type }}">
+                                            @endif
+                                        </div>
+                                    </div>
+
+                                    @if ($product->preview_file_full_url['path'])
+                                        <span class="btn btn-outline-danger btn-sm square-btn collapse show zip-remove-btn delete_preview_file_input"
+                                              data-route="{{ route('vendor.products.delete-preview-file') }}">
+                                            <i class="tio-delete"></i>
+                                        </span>
+                                    @else
+                                        <span class="btn btn-outline-danger btn-sm square-btn collapse zip-remove-btn">
+                                            <i class="tio-delete"></i>
+                                        </span>
+                                    @endif
+                                </div>
+                                <p class="text-muted mt-2 fz-12">
+                                    {{ translate('Format') }} : {{ " pdf, mp4, mp3" }}
+                                    <br>
+                                    {{ translate('image_size') }} : {{ translate('max') }} {{ "10 MB" }}</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <input type="hidden" id="color_image" value="{{ $product['color_image'] }}">
-                <input type="hidden" id="images" value="{{ $product['images'] }}">
-                <input type="hidden" id="product_id" value="{{ $product['id'] }}">
+                <input type="hidden" id="color_image" value="{{ json_encode($product->color_images_full_url) }}">
+                <input type="hidden" id="images" value="{{ json_encode($product->images_full_url) }}">
+                <input type="hidden" id="product_id" name="product_id" value="{{ $product['id'] }}">
                 <input type="hidden" id="remove_url" value="{{ route('vendor.products.delete-image') }}">
             </div>
 
@@ -832,7 +975,7 @@
                                         <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}" alt="">
                                     </span>
                                 </label>
-                                <input type="text" name="meta_title" value="{{ $product['meta_title'] }}" placeholder=""
+                                <input type="text" name="meta_title" value="{{ $product?->seoInfo?->title ?? $product->meta_title }}" placeholder=""
                                        class="form-control">
                             </div>
                             <div class="form-group">
@@ -840,12 +983,12 @@
                                     {{ translate('meta_Description') }}
                                     <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                           data-placement="top"
-                                          title="{{ translate('write_a_short_description_of_the_InHouse_shops_product').' '.translate('this_description_will_be_seen_on_Search_Engine_Results_Pages_and_while_sharing_the_products_link_on_social_platforms') .' [ '. translate('character_Limit') }} : 100 ]">
+                                          title="{{ translate('write_a_short_description_of_this_shop_product').' '.translate('this_description_will_be_seen_on_Search_Engine_Results_Pages_and_while_sharing_the_products_link_on_social_platforms') .' [ '. translate('character_Limit') }} : 100 ]">
                                         <img src="{{ dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg') }}" alt="">
                                     </span>
                                 </label>
                                 <textarea rows="4" type="text" name="meta_description"
-                                          class="form-control">{{ $product['meta_description']}}</textarea>
+                                          class="form-control">{{$product?->seoInfo?->description ?? $product->meta_description}}</textarea>
                             </div>
                         </div>
 
@@ -875,19 +1018,19 @@
                                                    data-imgpreview="pre_meta_image_viewer"
                                                    accept=".jpg, .webp, .png, .jpeg, .gif, .bmp, .tif, .tiff|image/*">
 
-                                            @if (File::exists(base_path('storage/app/public/product/meta/'. $product['meta_image'])))
+                                            @if ($product?->seoInfo?->image_full_url['path'] || $product->meta_image_full_url['path'])
                                                 <span class="delete_file_input btn btn-outline-danger btn-sm square-btn d-flex">
-                                                <i class="tio-delete"></i>
-                                            </span>
+                                                    <i class="tio-delete"></i>
+                                                </span>
                                             @else
                                                 <span class="delete_file_input btn btn-outline-danger btn-sm square-btn d--none">
-                                                <i class="tio-delete"></i>
-                                            </span>
+                                                    <i class="tio-delete"></i>
+                                                </span>
                                             @endif
 
                                             <div class="img_area_with_preview position-absolute z-index-2 d-flex">
                                                 <img id="pre_meta_image_viewer" class="h-auto aspect-1 bg-white" alt=""
-                                                     src="{{ getValidImage(path:'storage/app/public/product/meta/'.$product['meta_image'],type: 'backend-banner') }}">
+                                                     src="{{ getStorageImages(path: $product?->seoInfo?->image_full_url['path'] ? $product?->seoInfo?->image_full_url : $product->meta_image_full_url,type: 'backend-banner') }}">
                                             </div>
                                             <div
                                                 class="position-absolute h-100 top-0 w-100 d-flex align-content-center justify-content-center">
@@ -905,6 +1048,8 @@
                             </div>
                         </div>
                     </div>
+
+                    @include('admin-views.product.partials._seo-update-section')
                 </div>
             </div>
 
@@ -918,14 +1063,16 @@
                 </button>
             </div>
             @if(request('product-gallery'))
-                <input hidden name="existing_thumbnail" value="{{$product->thumbnail}}">
-                <input hidden name="existing_meta_image" value="{{$product->meta_image}}">
+                <input hidden name="existing_thumbnail" value="{{$product->thumbnail_full_url['key']}}">
+                <input hidden name="existing_meta_image" value="{{$product?->seoInfo?->image_full_url['key'] ?? $product->meta_image_full_url['key']}}">
             @endif
 
         </form>
     </div>
 
     <span id="route-vendor-products-sku-combination" data-url="{{ route('vendor.products.sku-combination') }}"></span>
+    <span id="route-vendor-products-digital-variation-combination" data-url="{{ route('vendor.products.digital-variation-combination') }}"></span>
+    <span id="route-vendor-products-digital-variation-file-delete" data-url="{{ route('vendor.products.digital-variation-file-delete') }}"></span>
     <span id="image-path-of-product-upload-icon" data-path="{{ dynamicAsset(path: 'public/assets/back-end/img/icons/product-upload-icon.svg') }}"></span>
     <span id="image-path-of-product-upload-icon-two" data-path="{{ dynamicAsset(path: 'public/assets/back-end/img/400x400/img2.jpg') }}"></span>
     <span id="message-enter-choice-values" data-text="{{ translate('enter_choice_values') }}"></span>
@@ -1062,9 +1209,9 @@
                                     </div>
                                     <img class="w-100" height="auto"
                                         onerror="this.src='{{ dynamicAsset(path: 'public/assets/front-end/img/image-place-holder.png') }}'"
-                                        src="{{ dynamicStorage(path: 'storage/app/public/product') }}/`+image_name+`"
+                                        src="${image_name['path']}"
                                         alt="Product image">
-                                        <input type="text" name="color_image_`+color_value['color']+`[]" value="`+image_name+`" hidden>
+                                        <input type="text" name="color_image_`+color_value['color']+`[]" value="`+image_name['key']+`" hidden>
                                 </div>
                             </div>`;
                         $('#color_wise_existing_image').append(exist_image_html)
@@ -1079,12 +1226,12 @@
                                 <div class="position-relative p-2 border-dashed-2">
                                     <div class="upload--icon-btns d-flex gap-2 position-absolute z-index-2 p-2" >
                                         <button type="button" class="btn btn-square text-white btn-sm" style="background: #${color_value['color']}"><i class="tio-done"></i></button>
-                                        <a href="` + remove_url + `?id=` + product_id + `&name=` + image_name + `&color=` + color_value['color'] + `"
+                                        <a href="` + remove_url + `?id=` + product_id + `&name=` + image_name['key'] + `&color=` + color_value['color'] + `"
                                     class="btn btn-outline-danger btn-sm square-btn"><i class="tio-delete"></i></a>
                                     </div>
                                     <img class="w-100" height="auto"
                                         onerror="this.src='{{ dynamicAsset(path: 'public/assets/front-end/img/image-place-holder.png') }}'"
-                                        src="{{ dynamicStorage(path: 'storage/app/public/product') }}/`+image_name+`"
+                                        src="${image_name['path']}"
                                         alt="Product image">
                                 </div>
                             </div>`;

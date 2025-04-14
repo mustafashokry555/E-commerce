@@ -36,6 +36,7 @@ radioButtons.forEach(radioButton => {
 
 function checkoutFromPayment(){
     let checked_button_id = $('input[type="radio"]:checked').attr('id');
+    $(".action-checkout-function").attr('disabled', true).addClass('disabled');
     $('#' + checked_button_id + '_form').submit();
 }
 

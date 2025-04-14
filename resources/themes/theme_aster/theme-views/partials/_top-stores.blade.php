@@ -24,10 +24,7 @@
                              data-swiper-breakpoints='{"0": {"slidesPerView": "1"}, "768": {"slidesPerView": "2"}, "992": {"slidesPerView": "3"}}'>
                             <div class="swiper-wrapper">
                                 @foreach($topVendorsList as $vendorData)
-{{--                                    @if($vendorData['id'] == 11)--}}
-{{--                                        @dd($vendorData)--}}
-{{--                                    @endif--}}
-                                    @if($vendorData)
+                                    @if($vendorData && $vendorData->products_count >0)
                                         <div class="swiper-slide align-items-start bg-light rounded">
                                             <div class="bg-light position-relative rounded p-3 p-sm-4 w-100">
                                                 @if(isset($vendorData?->coupon_list) && count($vendorData?->coupon_list)>0)
@@ -40,7 +37,8 @@
                                                     </div>
                                                 @endif
                                                 <div class="{{ isset($vendorData?->seller?->coupon) && count($vendorData?->seller?->coupon)>0 ? 'mt-4' :'' }} mb-3">
-                                                    <h5 class="mb-1"><a href="{{route('shopView',['id'=>$vendorData['id']])}}">{{ $vendorData->name }}</a>
+                                                    <h5 class="mb-1">
+                                                        <a href="{{route('shopView',['id'=>$vendorData['id']])}}">{{ $vendorData->name }}</a>
                                                     </h5>
                                                     <div
                                                         class="text-muted">{{ $vendorData->products_count }} {{ translate('products') }}</div>
@@ -71,22 +69,30 @@
                                                                         <i class="bi bi-eye fs-12"></i>
                                                                     </span>
                                                                     <img width="100"
-                                                                         src="{{ getValidImage(path: 'storage/app/public/product/thumbnail/'.$product['thumbnail'], type: 'product') }}"
+                                                                         src="{{getStorageImages(path:$product['thumbnail_full_url'], type: 'product') }}"
                                                                          alt="" loading="lazy"
-                                                                         class="dark-support rounded">
+                                                                         class="dark-support rounded aspect-1 img-fit">
                                                                 </div>
                                                                 <div
                                                                     class="product__price d-flex justify-content-center flex-wrap column-gap-2">
                                                                     @if($product['discount'] > 0)
                                                                         <del
-                                                                            class="product__old-price">{{Helpers::currency_converter($product['unit_price'])}}</del>
+                                                                            class="product__old-price">{{webCurrencyConverter($product['unit_price'])}}</del>
                                                                     @endif
                                                                     <ins class="product__new-price">
-                                                                        {{Helpers::currency_converter($product['unit_price']-Helpers::get_product_discount($product,$product['unit_price']))}}
+                                                                        {{webCurrencyConverter($product['unit_price']-Helpers::getProductDiscount($product,$product['unit_price']))}}
                                                                     </ins>
                                                                 </div>
                                                             </a>
                                                         @endforeach
+                                                        <!-- Adjust extra width -->
+                                                        @if(count($vendorData->products)==1)
+                                                            <div></div>
+                                                            <div></div>
+                                                        @endif
+                                                        @if(count($vendorData->products)==2)
+                                                            <div></div>
+                                                        @endif
                                                     </div>
                                                 @endif
                                             </div>
@@ -99,10 +105,10 @@
                 </div>
             </div>
         </div>
-        @if(isset($footer_banner[1]))
+        @if(isset($bannerTypeFooterBanner[1]))
             <div class="col-12 mt-3 d-sm-none">
-                <a href="{{ $footer_banner[1]['url'] }}" class="ad-hover">
-                    <img src="{{ getValidImage(path: 'storage/app/public/banner/'.$footer_banner[1]['photo'], type:'banner') }}" loading="lazy"
+                <a href="{{ $bannerTypeFooterBanner[1]['url'] }}" class="ad-hover">
+                    <img src="{{ getStorageImages(path: $bannerTypeFooterBanner[1]['photo_full_url'], type:'banner') }}" loading="lazy"
                          class="dark-support rounded w-100" alt="">
                 </a>
             </div>

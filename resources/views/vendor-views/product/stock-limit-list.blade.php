@@ -87,9 +87,9 @@
                                     <td>
                                         <a href="{{route('vendor.products.view',[$product['id']]) }}"
                                            class="media align-items-center gap-2">
-                                            <img src="{{ getValidImage(path:'storage/app/public/product/thumbnail/'.$product['thumbnail'],type: 'backend-product')}}"
+                                            <img src="{{ getStorageImages(path:$product->thumbnail_full_url,type: 'backend-product')}}"
                                                 data-onerror="{{ dynamicAsset(path: '/public/assets/back-end/img/brand-logo.png') }}"
-                                                class="avatar border onerror-image" alt="">
+                                                class="avatar border object-fit-cover" alt="">
                                             <span class="media-body title-color hover-c1">
                                                 {{ Str::limit($product['name'], 20) }}
                                             </span>
@@ -119,7 +119,7 @@
                                             <button class="btn py-0 px-2 fz-18 action-update-product-quantity"
                                                     id="{{ $product['id'] }}"
                                                     data-url="{{ route('vendor.products.get-variations').'?id='.$product['id'] }}"
-                                                    type="button" data-toggle="modal" data-target="#update-quantity"
+                                                    type="button" data-target="#update-quantity"
                                                     title="{{ translate('update_quantity') }}"
                                             >
                                                 <i class="tio-add-circle c1"></i>
@@ -195,13 +195,13 @@
         </div>
     </div>
 
-    <div class="modal fade" id="update-quantity" tabindex="-1">
-        <div class="modal-dialog">
+    <div class="modal fade update-stock-modal" id="update-quantity" tabindex="-1">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-body">
                     <form action="{{ route('vendor.products.update-quantity') }}" method="post">
                         @csrf
-                        <div class="rest-part"></div>
+                        <div class="rest-part-content"></div>
                         <div class="d-flex justify-content-end gap-10 flex-wrap align-items-center">
                             <button type="button" class="btn btn-danger px-4" data-dismiss="modal" aria-label="Close">
                                 {{ translate('close') }}

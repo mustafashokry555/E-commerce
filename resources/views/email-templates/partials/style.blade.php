@@ -354,4 +354,17 @@
     .text-nowrap{
         white-space: nowrap;
     }
+    .width-100 {
+        width: 100%;
+    }
+    .height-50px {
+        height: 50px;
+    }
+    .width-100px {
+        width: 100px;
+    }
+    .height-auto {
+        height: auto;
+    }
+
 </style>

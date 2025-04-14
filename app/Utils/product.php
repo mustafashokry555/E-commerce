@@ -70,7 +70,7 @@ if (!function_exists('getProductDiscount')) {
 }
 
 if (!function_exists('getPriceRangeWithDiscount')) {
-    function getPriceRangeWithDiscount(array|object $product): float|string
+    function getPriceRangeWithDiscount(array|object $product, string|null $type = 'web'): float|string
     {
         $productUnitPrice = $product->unit_price;
         foreach (json_decode($product->variation) as $key => $variation) {
@@ -79,11 +79,35 @@ if (!function_exists('getPriceRangeWithDiscount')) {
             }
         }
 
-        if ($product->discount > 0) {
-            $productDiscountedPrice = webCurrencyConverter(amount: $productUnitPrice - getProductDiscount(product: $product, price: $productUnitPrice));
-            return '<span class="discounted_unit_price fs-24 font-bold">' . $productDiscountedPrice . '</span>' . '<del class="total_unit_price align-middle text-muted fs-18 font-semibold">' . webCurrencyConverter(amount: $productUnitPrice) . '</del>';
+        if ($product->digitalVariation && count($product->digitalVariation) > 0) {
+            $digitalVariations = $product->digitalVariation->toArray();
+            $productUnitPrice = $digitalVariations[0]['price'];
+        }
+
+        if ($type == 'panel') {
+            if (isset($product['clearanceSale']) && $product['clearanceSale']) {
+                $discountAmount = getProductPriceByType(product: $product, type: 'discounted_amount', result: 'value', price: $productUnitPrice, from: 'panel');
+                $productDiscountedPrice = setCurrencySymbol(amount: usdToDefaultCurrency(amount: $productUnitPrice - $discountAmount), currencyCode: getCurrencyCode());
+                return '<span class="discounted-unit-price fs-24 font-bold">' . $productDiscountedPrice . '</span>' . '<del class="product-total-unit-price align-middle text-muted fs-18 font-semibold">' . setCurrencySymbol(amount: usdToDefaultCurrency(amount: $productUnitPrice), currencyCode: getCurrencyCode()) . '</del>';
+            } elseif ($product->discount > 0) {
+                $amount = $productUnitPrice - getProductDiscount(product: $product, price: $productUnitPrice);
+                $productDiscountedPrice = setCurrencySymbol(amount: usdToDefaultCurrency(amount: $amount), currencyCode: getCurrencyCode());
+                return '<span class="discounted-unit-price fs-24 font-bold">' . $productDiscountedPrice . '</span>' . '<del class="product-total-unit-price align-middle text-muted fs-18 font-semibold">' . setCurrencySymbol(amount: usdToDefaultCurrency(amount: $productUnitPrice), currencyCode: getCurrencyCode()) . '</del>';
+            } else {
+                return '<span class="discounted-unit-price fs-24 font-bold">' . setCurrencySymbol(amount: usdToDefaultCurrency(amount: $productUnitPrice), currencyCode: getCurrencyCode()) . '</span>';
+            }
         } else {
-            return '<span class="discounted_unit_price fs-24 font-bold">' . webCurrencyConverter(amount: $productUnitPrice) . '</span>';
+            if (isset($product['clearanceSale']) && $product['clearanceSale']) {
+                $discountAmount = getProductPriceByType(product: $product, type: 'discounted_amount', result: 'value', price: $productUnitPrice);
+                $productDiscountedPrice = webCurrencyConverter(amount: $productUnitPrice - $discountAmount);
+                return '<span class="discounted-unit-price fs-24 font-bold">' . $productDiscountedPrice . '</span>' . '<del class="product-total-unit-price align-middle text-muted fs-18 font-semibold">' . webCurrencyConverter(amount: $productUnitPrice) . '</del>';
+
+            } elseif ($product->discount > 0) {
+                $productDiscountedPrice = webCurrencyConverter(amount: $productUnitPrice - getProductDiscount(product: $product, price: $productUnitPrice));
+                return '<span class="discounted-unit-price fs-24 font-bold">' . $productDiscountedPrice . '</span>' . '<del class="product-total-unit-price align-middle text-muted fs-18 font-semibold">' . webCurrencyConverter(amount: $productUnitPrice) . '</del>';
+            } else {
+                return '<span class="discounted-unit-price fs-24 font-bold">' . webCurrencyConverter(amount: $productUnitPrice) . '</span>';
+            }
         }
     }
 }
@@ -104,7 +128,7 @@ if (!function_exists('units')) {
 if (!function_exists('getVendorProductsCount')) {
     function getVendorProductsCount(string $type):int
     {
-        $products = Product::where(['added_by'=>'seller'])->get();
+        $products = \Illuminate\Support\Facades\DB::table('products')->where(['added_by'=>'seller'])->get();
         return match ($type) {
             'new-product' => $products->where('request_status', 0)->count(),
             'product-updated-request' => $products->whereNotNull('is_shipping_cost_updated')->where('is_shipping_cost_updated', 0)->count(),
@@ -116,7 +140,7 @@ if (!function_exists('getVendorProductsCount')) {
 if (!function_exists('getAdminProductsCount')) {
     function getAdminProductsCount(string $type):int
     {
-        $products = Product::where(['added_by'=>'admin'])->get();
+        $products = \Illuminate\Support\Facades\DB::table('products')->where(['added_by'=>'admin'])->get();
         return match ($type) {
             'all' => $products->count(),
             'new-product' => $products->where('request_status', 0)->count(),
@@ -124,5 +148,34 @@ if (!function_exists('getAdminProductsCount')) {
             'approved' => $products->where('request_status', 1)->count(),
             'denied' => $products->where('request_status', 2)->where('status' , 0)->count(),
         };
+    }
+}
+
+
+if (!function_exists('getRestockProductFCMTopic')) {
+    function getRestockProductFCMTopic(array|object $restockRequest): string
+    {
+        return 'restock_'.$restockRequest['id'].'_product_restock_'.$restockRequest->product_id.'_topic';
+    }
+}
+
+
+if (!function_exists('isProductInWishList')) {
+    function isProductInWishList(string|int $productId): bool
+    {
+        if (session('wish_list') && in_array($productId, session('wish_list'))) {
+            return true;
+        }
+        return false;
+    }
+}
+
+if (!function_exists('isProductInCompareList')) {
+    function isProductInCompareList(string|int $productId): bool
+    {
+        if (session('compare_list') && in_array($productId, session('compare_list'))) {
+            return true;
+        }
+        return false;
     }
 }

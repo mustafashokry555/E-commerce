@@ -2,7 +2,7 @@
     use App\Utils\Helpers;
 @endphp
 @extends('theme-views.layouts.app')
-@section('title', translate('my_Loyalty_Point').' | '.$web_config['name']->value.' '.translate('ecommerce'))
+@section('title', translate('my_Loyalty_Point').' | '.$web_config['company_name'].' '.translate('ecommerce'))
 @section('content')
     <main class="main-content d-flex flex-column gap-3 py-3 mb-5">
         <div class="container">
@@ -93,13 +93,14 @@
                             <div class="d-flex flex-column gap-2">
                                 @foreach($loyaltyPointList as $key => $item)
                                     <div class="bg-light p-3 p-sm-4 rounded d-flex justify-content-between gap-3">
-                                        <div class="">
-                                            <h4 class="mb-2">{{ $item['debit'] != 0 ? $item['debit'] : $item['credit'] }}</h4>
+                                        <div class="align-items-start d-flex flex-column">
+                                            <h4 class="mb-2 direction-ltr">
+                                                {{ $item['debit'] != 0 ? ' - '.$item['debit'] : ' + '.$item['credit'] }}
+                                            </h4>
                                             <h6 class="text-muted">{{ucwords(translate($item['transaction_type']))}}</h6>
                                         </div>
                                         <div class="text-end">
-                                            <div
-                                                class="text-muted mb-1">{{date('d M, Y H:i A',strtotime($item['created_at']))}} </div>
+                                            <div class="text-muted mb-1">{{date('d M, Y H:i A',strtotime($item['created_at']))}} </div>
                                             @if($item['debit'] != 0)
                                                 <p class="text-danger fs-12">{{translate('debit')}}</p>
                                             @else
@@ -148,7 +149,7 @@
                         </div>
                         <div class="text-center mb-2">
                             <span>
-                                {{ $loyaltyPointExchangeRate }} {{translate('point')}} = {{Helpers::currency_converter(1)}}
+                                {{ $loyaltyPointExchangeRate }} {{translate('point')}} = {{webCurrencyConverter(1)}}
                             </span>
                         </div>
                         <div class="form-row">

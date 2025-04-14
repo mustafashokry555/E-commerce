@@ -1,50 +1,55 @@
 <div class="__inline-9 rtl">
-    <div class="text-center custom-light-primary-color mt-3 p-4">
-        <div class="container p-0">
-            <div class="footer-slider owl-theme owl-carousel">
-                <div class="footer-slide-item">
-                    <div>
-                        <a href="{{route('about-us')}}">
-                            <div class="text-center">
-                                <img class="size-60" src="{{theme_asset(path: "public/assets/front-end/png/about-company.png")}}"
-                                    alt="">
-                            </div>
-                            <div class="text-center">
-                                <p class="m-0">
-                                    {{ translate('about_Company')}}
-                                </p>
-                            </div>
-                        </a>
+    <div class="text-center pb-4">
+        <div class="max-w-860px mx-auto footer-slider-container">
+            <div class="container">
+                <div class="footer-slider owl-theme owl-carousel">
+                    <div class="footer-slide-item">
+                        <div>
+                            <a href="{{route('about-us')}}">
+                                <div class="text-center text-primary">
+                                    <img class="object-contain svg" width="36" height="36" src="{{theme_asset(path: "public/assets/front-end/img/icons/about-us.svg")}}"
+                                        alt="">
+                                </div>
+                                <div class="text-center">
+                                    <p class="m-0 mt-2">
+                                        {{ translate('about_us')}}
+                                    </p>
+                                    <small class="d-none d-sm-block">{{translate('Know_about_our_company_more.')}}</small>
+                                </div>
+                            </a>
+                        </div>
                     </div>
-                </div>
-                <div class="footer-slide-item">
-                    <div>
-                        <a href="{{route('contacts')}}">
-                            <div class="text-center">
-                                <img class="size-60" src="{{theme_asset(path: "public/assets/front-end/png/contact-us.png")}}"
-                                    alt="">
-                            </div>
-                            <div class="text-center">
-                                <p class="m-0">
-                                    {{ translate('contact_Us')}}
-                                </p>
-                            </div>
-                        </a>
+                    <div class="footer-slide-item">
+                        <div>
+                            <a href="{{route('contacts')}}">
+                                <div class="text-center text-primary">
+                                    <img class="object-contain svg" width="36" height="36" src="{{ theme_asset(path: "public/assets/front-end/img/icons/contact-us.svg") }}"
+                                        alt="">
+                                </div>
+                                <div class="text-center">
+                                    <p class="m-0 mt-2">
+                                        {{ translate('contact_Us')}}
+                                    </p>
+                                    <small class="d-none d-sm-block">{{translate('We_are_Here_to_Help')}}</small>
+                                </div>
+                            </a>
+                        </div>
                     </div>
-                </div>
-                <div class="footer-slide-item">
-                    <div>
-                        <a href="{{route('helpTopic')}}">
-                            <div class="text-center">
-                                <img class="size-60" src="{{theme_asset(path: "public/assets/front-end/png/faq.png")}}"
-                                    alt="">
-                            </div>
-                            <div class="text-center">
-                                <p class="m-0">
-                                    {{ translate('FAQ')}}
-                                </p>
-                            </div>
-                        </a>
+                    <div class="footer-slide-item">
+                        <div>
+                            <a href="{{route('helpTopic')}}">
+                                <div class="text-center text-primary">
+                                    <img class="object-contain svg" width="36" height="36" src="{{theme_asset(path: "public/assets/front-end/img/icons/faq-icon.svg")}}"
+                                        alt="">
+                                </div>
+                                <div class="text-center">
+                                    <p class="m-0 mt-2">
+                                        {{ translate('FAQ')}}
+                                    </p>
+                                    <small class="d-none d-sm-block">{{translate('Get_all_Answers')}}</small>
+                                </div>
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -60,8 +65,8 @@
                     <div class="col-md-3 footer-web-logo text-center text-md-start ">
                         <a class="d-block" href="{{route('home')}}">
                             <img class="{{Session::get('direction') === "rtl" ? 'right-align' : ''}}"
-                                 src="{{ getValidImage(path: 'storage/app/public/company/'.$web_config['footer_logo']->value, type: 'logo') }}"
-                                 alt="{{ $web_config['name']->value }}"/>
+                                 src="{{ getStorageImages(path: $web_config['footer_logo'], type: 'logo') }}"
+                                 alt="{{ $web_config['company_name'] }}"/>
                         </a>
 
                         @if($web_config['ios']['status'] || $web_config['android']['status'])
@@ -138,6 +143,7 @@
                                 @php($refund_policy = getWebConfig(name: 'refund-policy'))
                                 @php($return_policy = getWebConfig(name: 'return-policy'))
                                 @php($cancellation_policy = getWebConfig(name: 'cancellation-policy'))
+                                @php($shippingPolicy = getWebConfig(name: 'shipping-policy'))
                                 @if(auth('customer')->check())
                                     <ul class="widget-list __pb-10px">
                                         <li class="widget-list-item">
@@ -176,6 +182,13 @@
                                             </li>
                                         @endif
 
+                                        @if(isset($shippingPolicy['status']) && $shippingPolicy['status'] == 1)
+                                            <li class="widget-list-item">
+                                                <a class="widget-list-link" href="{{route('shipping-policy')}}">
+                                                    {{ translate('Shipping_Policy')}}
+                                                </a>
+                                            </li>
+                                        @endif
                                     </ul>
                                 @else
                                     <ul class="widget-list __pb-10px">
@@ -213,6 +226,14 @@
                                                    href="{{route('cancellation-policy')}}">{{ translate('cancellation_policy')}}</a>
                                             </li>
                                         @endif
+
+                                        @if(isset($shippingPolicy['status']) && $shippingPolicy['status'] == 1)
+                                            <li class="widget-list-item">
+                                                <a class="widget-list-link" href="{{route('shipping-policy')}}">
+                                                    {{ translate('shipping_Policy')}}
+                                                </a>
+                                            </li>
+                                        @endif
                                     </ul>
                                 @endif
                             </div>
@@ -237,20 +258,19 @@
                         <div class="row mt-4 {{Session::get('direction') === "rtl" ? ' flex-row-reverse' : ''}}">
                             <div class="col-md-7">
                                 <div
-                                    class="row d-flex align-items-center mobile-view-center-align justify-content-center justify-content-md-start">
+                                    class="d-flex align-items-center mobile-view-center-align text-start justify-content-between">
                                     <div class="me-3">
-                                        <span
-                                            class="mb-4 font-weight-bold footer-header text-capitalize">{{ translate('start_a_conversation')}}</span>
+                                        <span class="mb-4 font-weight-bold footer-header text-capitalize">{{ translate('start_a_conversation')}}</span>
                                     </div>
                                     <div
                                         class="flex-grow-1 d-none d-md-block {{Session::get('direction') === "rtl" ? 'mr-4 mx-sm-4' : 'mx-sm-4'}}">
                                         <hr>
                                     </div>
                                 </div>
-                                <div class="row">
+                                <div class="row text-start">
                                     <div class="col-12 start_address ">
                                         <div class="">
-                                            <a class="widget-list-link" href="{{ 'tel:'.$web_config['phone']->value }}">
+                                            <a class="widget-list-link" href="{{ 'tel:'.$web_config['phone'] }}">
                                                 <span class="">
                                                     <i class="fa fa-phone  me-2 mt-2 mb-2"></i>
                                                     <span class="direction-ltr">
@@ -282,9 +302,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-5 ">
+                            <div class="col-md-5 text-start">
                                 <div
-                                    class="row pl-2 d-flex align-items-center mobile-view-center-align justify-content-center justify-content-md-start pb-0">
+                                    class="row d-flex align-items-center mobile-view-center-align justify-content-center justify-content-md-start pb-0">
                                     <div class="d-none d-md-block">
                                         <span class="mb-4 font-weight-bold footer-header">{{ translate('address')}}</span>
                                     </div>
@@ -293,9 +313,9 @@
                                         <hr class="address_under_line"/>
                                     </div>
                                 </div>
-                                <div class="pl-2">
+                                <div>
                                     <span
-                                        class="__text-14px d-flex align-items-center justify-content-center justify-content-sm-start">
+                                        class="__text-14px d-flex align-items-center">
                                         <i class="fa fa-map-marker me-2 mt-2 mb-2"></i>
                                         <span>{{ getWebConfig(name: 'shop_address')}}</span>
                                     </span>
@@ -309,12 +329,12 @@
 
         <div class="bg-white-overlay-50">
             <div class="container">
-                <div class="d-flex flex-wrap end-footer footer-end last-footer-content-align">
+                <div class="d-flex flex-wrap end-footer footer-end last-footer-content-align text-center pt-3 pb-4 py-md-0">
                     <div class="mt-3">
-                        <p class="text-align-direction __text-16px">{{ $web_config['copyright_text']->value }}</p>
+                        <p class="__text-16px">{{ $web_config['copyright_text'] }}</p>
                     </div>
                     <div
-                        class="max-sm-100 justify-content-center d-flex flex-wrap mt-md-3 mt-0 mb-md-3 text-align-direction">
+                        class="max-sm-100 justify-content-center d-flex flex-wrap mt-md-3 mt-0 mb-md-3">
                         @if($web_config['social_media'])
                             @foreach ($web_config['social_media'] as $item)
                                 <span class="social-media ">
@@ -355,7 +375,7 @@
                             @endforeach
                         @endif
                     </div>
-                    <div class="d-flex __text-14px">
+                    <div class="d-flex __text-14px justify-content-center">
                         <div class="me-3">
                             <a class="widget-list-link"
                                href="{{route('terms')}}">{{ translate('terms_&_conditions')}}</a>

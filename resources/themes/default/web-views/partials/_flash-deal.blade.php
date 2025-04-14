@@ -21,8 +21,8 @@
             ?>
 
             <div class="row g-3 mx-max-md-0">
-                <div class="col-lg-4 px-max-md-0">
-                    <div class="countdown-card bg-transparent">
+                <div class="col-lg-4 px-max-md-0 flashdeal-responsive">
+                    <a href="{{route('flash-deals',[$web_config['flash_deals']?$web_config['flash_deals']['id']:0])}}" class="countdown-card bg-transparent">
                         <div class="flash-deal-text web-text-primary">
                             <div>
                                 <span>{{$web_config['flash_deals']->title}}</span>
@@ -35,22 +35,22 @@
                                     data-countdown="{{$web_config['flash_deals']?date('m/d/Y',strtotime($web_config['flash_deals']['end_date'])):''}} 23:59:00 ">
                                     <span class="cz-countdown-days">
                                         <span class="cz-countdown-value"></span>
-                                        <span class="cz-countdown-text">{{ translate('days')}}</span>
+                                        <span class="cz-countdown-text text-nowrap">{{ translate('days')}}</span>
                                     </span>
                                     <span class="cz-countdown-value p-1">:</span>
                                     <span class="cz-countdown-hours">
                                         <span class="cz-countdown-value"></span>
-                                        <span class="cz-countdown-text">{{ translate('hrs')}}</span>
+                                        <span class="cz-countdown-text text-nowrap">{{ translate('hours')}}</span>
                                     </span>
                                     <span class="cz-countdown-value p-1">:</span>
                                     <span class="cz-countdown-minutes">
                                         <span class="cz-countdown-value"></span>
-                                        <span class="cz-countdown-text">{{ translate('min')}}</span>
+                                        <span class="cz-countdown-text text-nowrap">{{ translate('minutes')}}</span>
                                     </span>
                                     <span class="cz-countdown-value p-1">:</span>
                                     <span class="cz-countdown-seconds">
                                         <span class="cz-countdown-value"></span>
-                                        <span class="cz-countdown-text">{{ translate('sec')}}</span>
+                                        <span class="cz-countdown-text text-nowrap">{{ translate('seconds')}}</span>
                                     </span>
                                 </span>
                                 <div class="progress __progress">
@@ -58,7 +58,7 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
 
                 @php($nullFilter = 0)

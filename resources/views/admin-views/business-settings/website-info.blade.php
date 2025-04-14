@@ -32,35 +32,103 @@
         <div class="alert alert-danger d-none mb-3" role="alert">
             {{translate('changing_some_settings_will_take_time_to_show_effect_please_clear_session_or_wait_for_60_minutes_else_browse_from_incognito_mode')}}
         </div>
-        <div class="card mb-3">
+
+        <div class="card mb-2">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="tio-notifications-alert mr-1"></i>
+                    {{ translate('System_Maintenance') }}
+                </h5>
+            </div>
             <div class="card-body">
-                <form action="{{route('admin.business-settings.maintenance-mode')}}" method="post" id="maintenance-mode-form" data-from="maintenance-mode">
-                    @csrf
-                    <div class="border rounded border-color-c1 px-4 py-3 d-flex justify-content-between mb-1">
-                        <h5 class="mb-0 d-flex gap-1 c1">
-                            {{translate('maintenance_mode')}}
-                        </h5>
-                        <div class="position-relative">
-                            <label class="switcher">
-                                <input type="checkbox" class="switcher_input toggle-switch-message" id="maintenance-mode" name="value"
-                                   value="1" {{isset($businessSetting['maintenance_mode']) && $businessSetting['maintenance_mode']==1?'checked':''}}
-                                   data-modal-id="toggle-status-modal"
-                                   data-toggle-id="maintenance-mode"
-                                   data-on-image="maintenance_mode-on.png"
-                                   data-off-image="maintenance_mode-off.png"
-                                   data-on-title="{{translate('Want_to_enable_the_Maintenance_Mode')}}"
-                                   data-off-title="{{translate('Want_to_disable_the_Maintenance_Mode')}}"
-                                   data-on-message="<p>{{translate('if_enabled_all_your_apps_and_customer_website_will_be_temporarily_off')}}</p>"
-                                   data-off-message="<p>{{translate('if_disabled_all_your_apps_and_customer_website_will_be_functional')}}</p>">
+                <div class="row g-2 align-items-center">
+                    <div class="col-md-8 col-xl-9">
+                        @if($businessSetting['maintenance_mode'])
+                            <div class="d-flex flex-wrap gap-3 align-items-center">
+                                <p class="mb-0">
+                                    {{ translate('Your maintenance mode is activated ') }}
+                                    @if($selectedMaintenanceDuration['maintenance_duration'] != 'until_change')
+                                        {{ translate('from ') }}<strong>{{ $maintenanceStartDate->format('m/d/Y, h:i A') }}</strong> to <strong>{{ $maintenanceEndDate->format('m/d/Y, h:i A') }}</strong>.
+                                    @endif
+                                </p>
+                                <a class="btn btn-outline-primary btn-sm edit square-btn maintenance-mode-show" href="#"><i class="tio-edit"></i></a>
+                            </div>
+                        @else
+                            <p class="m-0">*{{ translate('By turning on maintenance mode Control your all system & function') }}</p>
+                        @endif
+
+                        @if($businessSetting['maintenance_mode'] && count($maintenanceSystemSetup) > 0)
+                            <?php
+                                $businessMode = getWebConfig(name: 'business_mode');
+                                $totalSystemInMaintenance = 0;
+                                if (array_key_exists('user_app', $maintenanceSystemSetup) && $maintenanceSystemSetup['user_app']) {
+                                    $totalSystemInMaintenance++;
+                                }
+                                if (array_key_exists('user_website', $maintenanceSystemSetup) && $maintenanceSystemSetup['user_website']) {
+                                    $totalSystemInMaintenance++;
+                                }
+                                if ($businessMode == 'multi' && array_key_exists('vendor_app', $maintenanceSystemSetup) && $maintenanceSystemSetup['vendor_app']) {
+                                    $totalSystemInMaintenance++;
+                                }
+                                if ($businessMode == 'multi' && array_key_exists('vendor_panel', $maintenanceSystemSetup) && $maintenanceSystemSetup['vendor_panel']) {
+                                    $totalSystemInMaintenance++;
+                                }
+                                if (array_key_exists('deliveryman_app', $maintenanceSystemSetup) && $maintenanceSystemSetup['deliveryman_app']) {
+                                    $totalSystemInMaintenance++;
+                                }
+                            ?>
+
+                            <div class="d-flex flex-wrap gap-3 mt-3 align-items-center">
+                                <h5 class="mb-0">
+                                    {{ translate('Selected_Systems') }}
+                                </h5>
+                                <ul class="selected-systems d-flex gap-4 flex-wrap bg-soft-dark px-5 py-1 mb-0 rounded">
+                                    @if(($businessMode == 'multi' && $totalSystemInMaintenance == 5) || ($businessMode == 'single' && $totalSystemInMaintenance == 3))
+                                        <li>{{ translate('All_Systems') }}</li>
+                                    @else
+                                        @foreach($maintenanceSystemSetup as $maintenanceSystemKey => $system)
+                                            @if($system)
+                                                <li>{{ ucwords(str_replace('_', ' ', $maintenanceSystemKey)) }}</li>
+                                            @endif
+                                        @endforeach
+                                    @endif
+                                </ul>
+                            </div>
+                        @endif
+
+                    </div>
+                    <div class="col-md-4 col-xl-3">
+                        <div class="d-flex justify-content-between align-items-center border rounded mb-2 px-3 py-2">
+                            <h5 class="mb-0 font-weight-bold">{{translate('Maintenance_Mode')}}</h5>
+
+                            <label class="switcher ml-auto mb-0">
+                                @if(!$businessSetting['maintenance_mode'])
+                                    <input type="checkbox"
+                                           id="maintenanceModeSwitch"
+                                           data-status="off"
+                                           class="switcher_input maintenance-mode-show"
+                                           data-warning="{{ translate('do_you_want_to_turn_off_the_maintenance_mode') }}?"
+                                           data-route="{{ route('admin.business-settings.maintenance-mode') }}"
+                                    >
+                                @else
+                                    <input type="checkbox"
+                                           data-status="on"
+                                           class="switcher_input"
+                                           data-warning="{{ translate('do_you_want_to_turn_off_the_maintenance_mode') }}?"
+                                           data-route="{{ route('admin.business-settings.maintenance-mode') }}"
+                                           id="maintenanceModeSwitch" checked>
+                                @endif
+
                                 <span class="switcher_control"></span>
                             </label>
                         </div>
                     </div>
-                </form>
-                <p>{{'*'.translate('by_turning_the').', "'. translate('Maintenance_Mode').'"'.translate('ON').' '.translate('all_your_apps_and_customer_website_will_be_disabled_until_you_turn_this_mode_OFF').' '.translate('only_the_Admin_Panel_&_Vendor_Panel_will_be_functional')}}
-                </p>
+                </div>
             </div>
         </div>
+
+        @include("admin-views.business-settings.partials._maintenance-mode-modal")
+
         <form action="{{ route('admin.business-settings.web-config.update') }}" method="POST"
               enctype="multipart/form-data">
             @csrf
@@ -259,33 +327,6 @@
 
                         </div>
                         <div class="col-sm-6 col-lg-4">
-                            <label class="title-color d-flex">
-                                {{translate('forgot_password_verification_by')}}
-                                <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
-                                      data-placement="right"
-                                      title="{{translate('set_how_users_of_recover_their_forgotten_password')}}">
-                                    <img width="16" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}"
-                                         alt="">
-                                </span>
-                            </label>
-                            <div class="form-control form-group d-flex gap-2">
-                                <div class="custom-control custom-radio flex-grow-1">
-                                    <input type="radio" class="custom-control-input" value="email"
-                                           name="forgot_password_verification"
-                                           id="verification_by_email" {{ $businessSetting['forgot_password_verification'] == 'email' ? 'checked':'' }}>
-                                    <label class="custom-control-label"
-                                           for="verification_by_email">{{translate('email')}}</label>
-                                </div>
-                                <div class="custom-control custom-radio flex-grow-1">
-                                    <input type="radio" class="custom-control-input" value="phone"
-                                           name="forgot_password_verification"
-                                           id="verification_by_phone" {{ $businessSetting['forgot_password_verification'] == 'phone' ? 'checked':'' }}>
-                                    <label class="custom-control-label"
-                                           for="verification_by_phone">{{translate('phone').' '.'('.translate('OTP').')'}}</label>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-sm-6 col-lg-4">
                             <label class="title-color d-flex">{{translate('business_model')}}</label>
                             <div class="form-control form-group d-flex gap-2">
                                 <div class="custom-control custom-radio flex-grow-1">
@@ -300,73 +341,6 @@
                                     <label class="custom-control-label"
                                            for="multi_vendor">{{translate('multi_vendor')}}</label>
                                 </div>
-                            </div>
-                        </div>
-                        <div class="col-sm-6 col-lg-4">
-                            <div class="form-group">
-                                <div class="d-flex justify-content-between align-items-center gap-10 form-control">
-                                    <span class="title-color text-capitalize">
-                                        {{translate('email_verification')}}
-                                        <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
-                                              data-placement="right"
-                                              title="{{translate('if_enabled_users_can_receive_verification_codes_on_their_registered_email_addresses')}}">
-                                            <img width="16"
-                                                 src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="">
-                                        </span>
-                                    </span>
-
-                                    <label class="switcher" for="email-verification">
-                                        <input type="checkbox" class="switcher_input toggle-switch-message"
-                                               name="email_verification"
-                                               id="email-verification"
-                                               value="1"
-                                               {{ $businessSetting['email_verification'] == 1 ? 'checked':'' }}
-                                               data-modal-id="toggle-modal"
-                                               data-toggle-id="email-verification"
-                                               data-on-image="email-verification-on.png"
-                                               data-off-image="email-verification-off.png"
-                                               data-on-title="{{translate('want_to_Turn_OFF_the_Email_Verification')}}"
-                                               data-off-title="{{translate('want_to_Turn_ON_the_Email_Verification')}}"
-                                               data-on-message="<p>{{translate('if_disabled_users_would_not_receive_verification_codes_on_their_registered_email_addresses')}}</p>"
-                                               data-off-message="<p>{{translate('if_enabled_users_will_receive_verification_codes_on_their_registered_email_addresses')}}</p>">
-                                        <span class="switcher_control"></span>
-                                    </label>
-                                </div>
-
-                            </div>
-                        </div>
-
-                        <div class="col-sm-6 col-lg-4">
-                            @php($phoneVerification = getWebConfig(name: 'phone_verification'))
-                            <div class="form-group">
-                                <div class="d-flex justify-content-between align-items-center gap-10 form-control">
-                                    <span class="title-color">
-                                        {{translate('OTP_Verification')}}
-                                        <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
-                                              data-placement="right"
-                                              title="{{translate('if_enabled_users_can_receive_verification_codes_via_OTP_messages_on_their_registered_phone_numbers')}}">
-                                            <img width="16"
-                                                 src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="">
-                                        </span>
-                                    </span>
-
-                                    <label class="switcher" for="otp-verification">
-                                        <input type="checkbox" class="switcher_input toggle-switch-message"
-                                               name="phone_verification"
-                                               id="otp-verification"
-                                               value="1" {{ $phoneVerification == 1 ? 'checked':'' }}
-                                               data-modal-id="toggle-modal"
-                                               data-toggle-id="otp-verification"
-                                               data-on-image="otp-verification-on.png"
-                                               data-off-image="otp-verification-off.png"
-                                               data-on-title="{{translate('want_to_Turn_OFF_the_OTP_Verification')}}"
-                                               data-off-title="{{translate('want_to_Turn_ON_the_OTP_Verification')}}"
-                                               data-on-message="<p>{{translate('if_disabled_users_would_not_receive_verification_codes_on_their_registered_phone_numbers')}}</p>"
-                                               data-off-message="<p>{{translate('if_enabled_users_will_receive_verification_codes_on_their_registered_phone_numbers')}}</p>">
-                                        <span class="switcher_control"></span>
-                                    </label>
-                                </div>
-
                             </div>
                         </div>
                         <div class="col-sm-6 col-lg-4">
@@ -560,7 +534,7 @@
                         <div class="card-body d-flex flex-column justify-content-around">
                             <div class="d-flex justify-content-center">
                                 <img height="60" id="view-website-logo" alt=""
-                                     src="{{ getValidImage(path: 'storage/app/public/company/'. $businessSetting['web_logo'] , type: 'backend-basic') }}">
+                                     src="{{ getStorageImages(path: $businessSetting['web_logo'] , type: 'backend-basic') }}">
                             </div>
                             <div class="mt-4 position-relative">
                                 <input type="file" name="company_web_logo" id="website-logo"
@@ -585,7 +559,7 @@
                         <div class="card-body d-flex flex-column justify-content-around">
                             <div class="d-flex justify-content-center">
                                 <img height="60" id="view-website-footer-logo"
-                                     src="{{ getValidImage(path: 'storage/app/public/company/'. $businessSetting['footer_logo'] , type: 'backend-basic') }}"alt="">
+                                     src="{{ getStorageImages(path: $businessSetting['footer_logo'] , type: 'backend-basic') }}"alt="">
                             </div>
                             <div class="position-relative mt-4">
                                 <input type="file" name="company_footer_logo" id="website-footer-logo"
@@ -609,7 +583,7 @@
                         <div class="card-body d-flex flex-column justify-content-around">
                             <div class="d-flex justify-content-center">
                                 <img height="60" id="view-website-fav-icon"
-                                     src="{{ getValidImage(path: 'storage/app/public/company/'. $businessSetting['fav_icon'] , type: 'backend-basic') }}" alt="">
+                                     src="{{ getStorageImages(path:$businessSetting['fav_icon'] , type: 'backend-basic') }}" alt="">
                             </div>
                             <div class="position-relative mt-4">
                                 <input type="file" name="company_fav_icon" id="website-fav-icon"
@@ -633,7 +607,7 @@
                         <div class="card-body d-flex flex-column justify-content-around">
                             <div class="d-flex justify-content-center">
                                 <img height="60" id="view-loader-icon"
-                                     src="{{ getValidImage(path: 'storage/app/public/company/'. $businessSetting['loader_gif'] , type: 'backend-basic') }}" alt="">
+                                     src="{{ getStorageImages(path: $businessSetting['loader_gif'] , type: 'backend-basic') }}" alt="">
                             </div>
                             <div class="position-relative mt-4">
                                 <input type="file" name="loader_gif" id="loader-icon"
@@ -657,7 +631,7 @@
                         <div class="card-body d-flex flex-column justify-content-around">
                             <div class="d-flex justify-content-center">
                                 <img height="60" id="view-app-logo"
-                                     src="{{ getValidImage(path: 'storage/app/public/company/'. $businessSetting['mob_logo'] , type: 'backend-basic') }}" alt="">
+                                     src="{{ getStorageImages(path: $businessSetting['mob_logo'] , type: 'backend-basic') }}" alt="">
                             </div>
                             <div class="mt-4 position-relative">
                                 <input type="file" name="company_mobile_logo" id="app-logo"
@@ -687,5 +661,6 @@
         defer>
     </script>
     @endif
-    <script src="{{dynamicAsset(path: 'public/assets/back-end/js/admin/business-setting/business-setting.js')}}"></script>
+    <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/business-setting/maintenance-mode-setting.js') }}"></script>
+    <script src="{{ dynamicAsset(path: 'public/assets/back-end/js/admin/business-setting/business-setting.js') }}"></script>
 @endpush

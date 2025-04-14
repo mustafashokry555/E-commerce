@@ -173,7 +173,7 @@ $("#order_status").on('change', function (e) {
                 },
                 success: function (data) {
                     if (data.success == 0) {
-                        toastr.success($("#message-order-status-delivered-text").data('text'));
+                        toastr.warning($("#message-order-status-delivered-text").data('text'));
                         location.reload();
                     } else {
                         if (data.payment_status == 0) {

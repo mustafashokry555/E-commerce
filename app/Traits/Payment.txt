@@ -108,6 +108,12 @@ trait Payment
             return url("payment/worldpay/pay/?payment_id={$payment->id}");
         }else if($payment->payment_method == 'sixcash'){
             return url("payment/sixcash/pay/?payment_id={$payment->id}");
+        } else if ($payment->payment_method == 'phonepe') {
+            return url("payment/phonepe/pay/?payment_id={$payment->id}");
+        } else if ($payment->payment_method == 'cashfree') {
+            return url("payment/cashfree/pay/?payment_id={$payment->id}");
+        } else if ($payment->payment_method == 'instamojo') {
+            return url("payment/instamojo/pay/?payment_id={$payment->id}");
         }
 
         return false;

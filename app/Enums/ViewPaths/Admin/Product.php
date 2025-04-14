@@ -24,10 +24,24 @@ enum Product
         VIEW => 'admin-views.product.view',
         ROUTE => 'admin.products.view'
     ];
-
     const SKU_COMBINATION = [
         URI => 'sku-combination',
-        VIEW => 'admin-views.product.partials._sku_combinations'
+        VIEW => 'admin-views.product.partials._sku-combinations'
+    ];
+
+    const SKU_EDIT_COMBINATION = [
+        URI => 'sku-combination',
+        VIEW => 'admin-views.product.partials._edit-sku-combinations'
+    ];
+
+    const DIGITAL_VARIATION_COMBINATION = [
+        URI => 'digital-variation-combination',
+        VIEW => 'admin-views.product.partials._digital-variation-combination'
+    ];
+
+    const DIGITAL_VARIATION_FILE_DELETE = [
+        URI => 'digital-variation-file-delete',
+        VIEW => ''
     ];
 
     const FEATURED_STATUS = [
@@ -64,6 +78,7 @@ enum Product
         URI => 'stock-limit-list',
         VIEW => 'admin-views.product.stock-limit-list'
     ];
+
     const STOCK_LIMIT_STATUS = [
         URI => 'stock-limit-status',
         VIEW => ''
@@ -74,6 +89,16 @@ enum Product
         VIEW => ''
     ];
 
+    const EXPORT_RESTOCK = [
+        URI => 'export-restock',
+        VIEW => ''
+    ];
+
+    const RESTOCK_DELETE = [
+        URI => 'restock-delete',
+        VIEW => ''
+    ];
+
     const DELETE_IMAGE = [
         URI => 'delete-image',
         VIEW => ''
@@ -81,7 +106,7 @@ enum Product
 
     const GET_VARIATIONS = [
         URI => 'get-variations',
-        VIEW => 'admin-views.product.partials._update_stock'
+        VIEW => 'admin-views.product.partials._update-stock'
     ];
 
     const UPDATE_QUANTITY = [
@@ -92,6 +117,11 @@ enum Product
     const BULK_IMPORT = [
         URI => 'bulk-import',
         VIEW => 'admin-views.product.bulk-import'
+    ];
+
+    const REQUEST_RESTOCK_LIST = [
+        URI => 'request-restock-list',
+        VIEW => 'admin-views.product.request-restock-list'
     ];
 
     const UPDATED_PRODUCT_LIST = [
@@ -113,13 +143,26 @@ enum Product
         URI => 'approve-status',
         VIEW => ''
     ];
+
     const SEARCH = [
         URI => 'search',
         VIEW => 'admin-views.partials._search-product'
 
     ];
+
+    const MULTIPLE_PRODUCT_DETAILS = [
+        URI => 'multiple-product-details',
+        VIEW => 'admin-views.partials._select-product'
+
+    ];
+
     const PRODUCT_GALLERY = [
         URI => 'product-gallery',
         VIEW => 'admin-views.product.product-gallery'
+    ];
+
+    const DELETE_PREVIEW_FILE = [
+        URI => 'delete-preview-file',
+        VIEW => '',
     ];
 }

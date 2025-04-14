@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -41,6 +42,7 @@ class Coupon extends Model
         'discount_type',
         'limit',
     ];
+
     protected $casts = [
         'id' => 'integer',
         'added_by' => 'string',
@@ -61,12 +63,23 @@ class Coupon extends Model
         'updated_at' => 'datetime',
     ];
 
-    public function order():HasMany
+    public function scopeActive($query)
+    {
+        $shippingMethod = getWebConfig(name: 'shipping_method');
+        $businessMode = getWebConfig(name: 'business_mode');
+
+        return $query->when($businessMode == 'single', function ($query) {
+            $query->where(['added_by' => 'admin']);
+        })
+            ->where(['status' => 1]);
+    }
+
+    public function order(): HasMany
     {
         return $this->hasMany(Order::class, 'coupon_code', 'code');
     }
 
-    public function seller():BelongsTo
+    public function seller(): BelongsTo
     {
         return $this->belongsTo(Seller::class);
     }

@@ -10,6 +10,7 @@ use Exception;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 
 class EnvironmentSettingsController extends BaseController
 {
@@ -45,6 +46,48 @@ class EnvironmentSettingsController extends BaseController
         } catch (Exception $exception) {
             Toastr::error(translate('environment_variables_updated_failed'));
         }
+        return back();
+    }
+
+    public function updateForceHttps(Request $request): RedirectResponse
+    {
+        if (env('APP_MODE') == 'demo') {
+            Toastr::info(translate('you_can_not_update_this_on_demo_mode'));
+            return back();
+        }
+
+        try {
+            $this->setEnvironmentValue(envKey: 'FORCE_HTTPS', envValue: $request['force_https'] ?? env('FORCE_HTTPS', false));
+            Toastr::success(translate('environment_variables_updated_successfully'));
+        } catch (Exception $exception) {
+            Toastr::error(translate('environment_variables_updated_failed'));
+        }
+        return back();
+    }
+
+    public function optimizeSystem(Request $request): RedirectResponse
+    {
+        if (env('APP_MODE') == 'demo') {
+            Toastr::info(translate('you_can_not_update_this_on_demo_mode'));
+            return back();
+        }
+
+        Artisan::call('optimize:clear');
+        Artisan::call('view:clear');
+        Artisan::call('cache:clear');
+        Toastr::success(translate('Cache_clear_successfully'));
+        return back();
+    }
+
+    public function installPassport(Request $request): RedirectResponse
+    {
+        if (env('APP_MODE') == 'demo') {
+            Toastr::info(translate('you_can_not_update_this_on_demo_mode'));
+            return back();
+        }
+
+        shell_exec('php ../artisan passport:install');
+        Toastr::success(translate('Passport_install_successfully'));
         return back();
     }
 }

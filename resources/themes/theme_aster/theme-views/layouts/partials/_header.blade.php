@@ -4,7 +4,7 @@
     use App\Utils\Helpers;
 @endphp
 @if (isset($web_config['announcement']) && $web_config['announcement']['status']==1)
-    <div class="offer-bar py-3 announcement-color" data-bg-img="{{theme_asset('assets/img/media/top-offer-bg.png')}}">
+    <div class="offer-bar py-2 py-sm-3 announcement-color d--none">
         <div class="d-flex gap-2 align-items-center">
             <div class="offer-bar-close">
                 <i class="bi bi-x-lg"></i>
@@ -22,9 +22,9 @@
     <div class="header-top py-2">
         <div class="container">
             <div class="d-flex align-items-center flex-wrap justify-content-between gap-2">
-                <a href="tel:+{{ $web_config['phone']->value }}" class="d-flex gap-2 align-items-center direction-ltr">
+                <a href="tel:+{{ $web_config['phone'] }}" class="d-flex gap-2 align-items-center direction-ltr">
                     <i class="bi bi-telephone text-primary"></i>
-                    {{ $web_config['phone']->value }}
+                    {{ $web_config['phone'] }}
                 </a>
 
                 <ul class="nav justify-content-center justify-content-sm-end align-items-center gap-4">
@@ -59,7 +59,7 @@
                                 aria-expanded="false"
                             >
                                 @php( $local = Helpers::default_lang())
-                                @foreach(json_decode($language['value'],true) as $data)
+                                @foreach($web_config['language'] as $data)
                                     @if($data['code']==$local)
                                         <img width="20"
                                              src="{{theme_asset('assets/img/flags')}}/{{ $data['code'].'.png' }}"
@@ -69,7 +69,7 @@
                                 @endforeach
                             </button>
                             <ul class="dropdown-menu bs-dropdown-min-width--10rem">
-                                @foreach(json_decode($language['value'],true) as $key =>$data)
+                                @foreach($web_config['language'] as $key =>$data)
                                     @if($data['status']==1)
                                         <li class="change-language" data-action="{{route('change-language')}}" data-language-code="{{$data['code']}}">
                                             <a class="d-flex gap-2 align-items-center" href="javascript:">
@@ -99,7 +99,7 @@
             <div class="d-flex align-items-center justify-content-between gap-3">
                 <a class="logo" href="{{route('home')}}">
                     <img class="dark-support svg h-45" alt="{{ translate('Logo') }}"
-                         src="{{ getValidImage(path: 'storage/app/public/company/'.($web_config['web_logo']->value), type:'logo') }}">
+                         src="{{ getStorageImages(path: $web_config['web_logo'], type:'logo') }}">
                 </a>
                 <div class="search-box position-relative">
                     <form action="{{route('products')}}" type="submit">
@@ -110,10 +110,17 @@
                                         <button type="button"
                                                 class="border-0 px-3 bg-transparent dropdown-toggle text-dark py-0 text-capitalize"
                                                 data-bs-toggle="dropdown" aria-expanded="false">
-                                            {{ translate('all_categories') }}
+                                            @if($categories && request('search_category_value') && request('search_category_value') !='all')
+                                                @foreach($categories as $category)
+                                                    @if($category->id == request('search_category_value'))
+                                                            {{ $category['name'] }}
+                                                    @endif
+                                                @endforeach
+                                            @else
+                                                {{ translate('all_categories') }}
+                                            @endif
                                         </button>
-                                        <input type="hidden" name="search_category_value" id="search_category_value"
-                                               value="all">
+                                        <input type="hidden" name="search_category_value" id="search_category_value" value="{{ request('search_category_value') ?? 'all' }}">
                                         <ul class="dropdown-menu">
                                             <li>
                                                 <a class="d-flex text-capitalize" data-value="all" href="javascript:">
@@ -136,14 +143,14 @@
 
                                 <input
                                     type="search"
-                                    class="form-control border-0 focus-input search-bar-input" name="name"
-                                    id="global-search"
+                                    class="form-control border-0 focus-input search-bar-input" name="product_name"
+                                    id="global-search" value="{{ request('product_name') }}"
                                     placeholder="{{ translate('search_for_items').'...' }}"
                                 />
                             </div>
                             <input name="data_from" value="search" hidden>
                             <input name="page" value="1" hidden>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-primary" aria-label="{{ translate('Search') }}">
                                 <i class="bi bi-search"></i>
                             </button>
                         </div>
@@ -155,7 +162,7 @@
                     @if($web_config['header_banner'])
                         <a href="{{ $web_config['header_banner']['url'] }}">
                             <img width="180" loading="lazy" class="dark-support" alt="{{ translate('image') }}"
-                                src="{{ getValidImage(path: 'storage/app/public/banner/'.($web_config['header_banner']['photo']), type:'wide-banner') }}">
+                                src="{{ getStorageImages(path: $web_config['header_banner']['photo_full_url'], type:'wide-banner') }}">
                         </a>
                     @endif
                 </div>
@@ -185,55 +192,80 @@
                         </form>
                         <ul class="main-nav nav">
                             <li>
-                                <a href="{{route('categories')}}">{{ translate('categories') }}</a>
-                                <ul class="sub_menu">
-                                    @foreach($categories as $key=>$category)
-                                        <li>
-                                            <a href="javascript:">
-                                                <span class="get-view-by-onclick"
-                                                      data-link="{{route('products',['id'=> $category['id'],'data_from'=>'category','page'=>1])}}">{{ $category['name'] }}</span>
-                                            </a>
-                                            @if ($category->childes->count() > 0)
-                                                <ul class="sub_menu">
-                                                    @foreach($category['childes'] as $subCategory)
-                                                        <li>
-                                                            <a href="javascript:">
-                                                                <span class="get-view-by-onclick" data-link="{{route('products',['id'=> $subCategory['id'],'data_from'=>'category','page'=>1])}}">{{$subCategory['name']}}</span>
-                                                            </a>
-                                                            @if($subCategory->childes->count()>0)
-                                                                <ul class="sub_menu">
-                                                                    @foreach($subCategory['childes'] as $subSubCategory)
-                                                                        <li>
-                                                                            <a href="{{route('products',['id'=> $subSubCategory['id'],'data_from'=>'category','page'=>1])}}">
-                                                                                {{$subSubCategory['name']}}
-                                                                            </a>
-                                                                        </li>
-                                                                    @endforeach
-                                                                </ul>
-                                                            @endif
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            @endif
-                                        </li>
-                                    @endforeach
-                                </ul>
-                            </li>
-                            <li>
                                 <a href="{{route('home')}}">{{ translate('home') }}</a>
                             </li>
-                            @if($web_config['featured_deals']->count()>0 || $web_config['flash_deals'])
+                            <li>
+                                <a href="{{route('categories')}}">{{ translate('categories') }}</a>
+                                <ul class="sub_menu">
+                                    @php($categoryIndex=0)
+                                    @foreach($categories as $category)
+                                        @php($categoryIndex++)
+                                        @if($categoryIndex < 10)
+                                            <li>
+                                                <a href="javascript:">
+                                                    <span class="get-view-by-onclick"
+                                                        data-link="{{route('products',['category_id'=> $category['id'],'data_from'=>'category','page'=>1])}}">{{ $category['name'] }}</span>
+                                                </a>
+                                                @if ($category->childes->count() > 0)
+                                                    <ul class="sub_menu">
+                                                        @foreach($category['childes'] as $subCategory)
+                                                            <li>
+                                                                <a href="javascript:">
+                                                                    <span class="get-view-by-onclick" data-link="{{route('products',['category_id'=> $subCategory['id'],'data_from'=>'category','page'=>1])}}">{{$subCategory['name']}}</span>
+                                                                </a>
+                                                                @if($subCategory->childes->count()>0)
+                                                                    <ul class="sub_menu">
+                                                                        @foreach($subCategory['childes'] as $subSubCategory)
+                                                                            <li>
+                                                                                <a href="{{route('products',['category_id'=> $subSubCategory['id'],'data_from'=>'category','page'=>1])}}">
+                                                                                    {{$subSubCategory['name']}}
+                                                                                </a>
+                                                                            </li>
+                                                                        @endforeach
+                                                                    </ul>
+                                                                @endif
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                @endif
+                                            </li>
+                                        @endif
+                                    @endforeach
+                                    <li>
+                                        <a href="{{route('products', ['data_from'=>'latest'])}}" class="btn-link text-primary">
+                                            {{ translate('view_all') }}
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                            @if($web_config['featured_deals']->count() > 0 || ($web_config['flash_deals'] && count($web_config['flash_deals_products']) > 0) || $web_config['discount_product'] > 0 || $web_config['clearance_sale_product_count'] > 0)
                                 <li>
-                                    <a href="javascript:">{{ translate('offers')}}</a>
+                                    <a href="javascript:">{{ translate('offers') }}</a>
                                     <ul class="sub_menu">
                                         @if($web_config['featured_deals']->count()>0)
                                             <li>
                                                 <a href="{{route('products',['data_from'=>'featured_deal'])}}">{{ translate('featured_Deal') }}</a>
                                             </li>
                                         @endif
-                                        @if($web_config['flash_deals'])
+                                        @if($web_config['flash_deals'] && count($web_config['flash_deals_products']) > 0)
                                             <li>
                                                 <a href="{{route('flash-deals',[ $web_config['flash_deals']['id'] ?? 0])}}">{{ translate('flash_deal') }}</a>
+                                            </li>
+                                        @endif
+                                        @if ($web_config['discount_product'] > 0)
+                                            <li>
+                                                <a class="d-flex gap-2 align-items-center" href="{{ route('products',['data_from'=>'discounted','page'=>1]) }}">
+                                                    <span>{{ translate('discounted_products') }}</span>
+                                                    <span><i class="bi bi-patch-check-fill text-warning"></i></span>
+                                                </a>
+                                            </li>
+                                        @endif
+                                        @if($web_config['clearance_sale_product_count'] > 0)
+                                            <li>
+                                                <a class="gap-2 align-items-center" href="{{ route('products', ['offer_type' => 'clearance_sale', 'page' => 1]) }}">
+                                                    <span>{{ translate('clearance_sale') }}</span>
+                                                    <span><i class="bi bi-patch-check-fill text-warning"></i></span>
+                                                </a>
                                             </li>
                                         @endif
                                     </ul>
@@ -245,7 +277,7 @@
                                     <ul class="sub_menu">
                                         <li>
                                             <a href="{{ route('shopView',['id'=>0]) }}">
-                                                {{ Str::limit($web_config['name']->value, 14) }}
+                                                {{ Str::limit($web_config['company_name'], 14) }}
                                             </a>
                                         </li>
                                         @foreach($web_config['shops'] as $shop)
@@ -253,6 +285,11 @@
                                                 <a href="{{route('shopView',['id'=>$shop['seller_id']])}}">{{Str::limit($shop->name, 14)}}</a>
                                             </li>
                                         @endforeach
+                                        <li>
+                                            <a href="{{route('vendors')}}" class="btn-link text-primary">
+                                                {{ translate('view_all') }}
+                                            </a>
+                                        </li>
                                     </ul>
                                 </li>
                             @endif
@@ -260,20 +297,36 @@
                                 <li>
                                     <a href="javascript:">{{ translate('brands') }}</a>
                                     <ul class="sub_menu">
+                                        @php($brandIndex=0)
                                         @foreach($brands as $brand)
-                                            <li>
-                                                <a href="{{ route('products',['id'=> $brand['id'],'data_from'=>'brand','page'=>1]) }}">{{ $brand->name }}</a>
-                                            </li>
+                                            @php($brandIndex++)
+                                            @if($brandIndex < 10)
+                                                <li>
+                                                    <a href="{{ route('products',['brand_id'=> $brand['id'],'data_from'=>'brand','page'=>1]) }}">{{ $brand->name }}</a>
+                                                </li>
+                                            @endif
                                         @endforeach
+                                        <li>
+                                            <a href="{{route('brands')}}" class="btn-link text-primary">
+                                                {{ translate('view_all') }}
+                                            </a>
+                                        </li>
                                     </ul>
                                 </li>
                             @endif
-                            @if ($web_config['discount_product']>0)
+
+                            @if ($web_config['digital_product_setting'] && count($web_config['publishing_houses']) == 1)
                                 <li>
                                     <a class="d-flex gap-2 align-items-center text-capitalize"
-                                       href="{{route('products',['data_from'=>'discounted','page'=>1])}}">
-                                        {{ translate('discounted_products')}}
-                                        <i class="bi bi-patch-check-fill text-warning"></i>
+                                       href="{{ route('products',['publishing_house_id' => 0, 'product_type' => 'digital', 'page'=>1]) }}">
+                                        {{ translate('Publication_House')}}
+                                    </a>
+                                </li>
+                            @elseif ($web_config['digital_product_setting'] && count($web_config['publishing_houses']) > 1)
+                                <li>
+                                    <a class="d-flex gap-2 align-items-center text-capitalize"
+                                       href="{{ route('products', ['product_type' => 'digital', 'page'=>1]) }}">
+                                        {{ translate('Publication_House')}}
                                     </a>
                                 </li>
                             @endif
@@ -309,12 +362,13 @@
                     </div>
                 @else
                     <div class="d-flex justify-content-center mb-5 pb-5 mt-auto px-4">
-                        <a href="" data-bs-toggle="modal" data-bs-target="#loginModal" class="btn btn-primary w-100">
+                        <a href="" data-bs-toggle="modal" data-bs-target="#loginModal" class="btn btn-primary w-100" aria-label="{{ translate('login').'/'.translate('register')}}">
                             {{ translate('login').'/'.translate('register')}}
                         </a>
                     </div>
                 @endif
             </aside>
+            <div class="aside-overlay"></div>
 
             <div class="d-flex justify-content-between gap-3 align-items-center position-relative">
                 <div class="d-flex align-items-center gap-3">
@@ -331,21 +385,21 @@
                             @foreach($categories as $key=>$category)
                                 @if($key<8)
                                     <li class="{{ $category->childes->count() > 0 ? 'menu-item-has-children':'' }}">
-                                        <a href="{{route('products',['id'=> $category['id'],'data_from'=>'category','page'=>1])}}">
+                                        <a href="{{route('products',['category_id'=> $category['id'],'data_from'=>'category','page'=>1])}}">
                                             {{$category['name']}}
                                         </a>
                                         @if ($category->childes->count() > 0)
                                             <ul class="sub-menu">
                                                 @foreach($category['childes'] as $subCategory)
                                                     <li class="{{ $subCategory->childes->count()>0 ? 'menu-item-has-children':'' }}">
-                                                        <a href="{{route('products',['id'=> $subCategory['id'],'data_from'=>'category','page'=>1])}}">
+                                                        <a href="{{route('products',['category_id'=> $subCategory['id'],'data_from'=>'category','page'=>1])}}">
                                                             {{$subCategory['name']}}
                                                         </a>
                                                         @if($subCategory->childes->count()>0)
                                                             <ul class="sub-menu">
                                                                 @foreach($subCategory['childes'] as $subSubCategory)
                                                                     <li>
-                                                                        <a href="{{route('products',['id'=> $subSubCategory['id'],'data_from'=>'category','page'=>1])}}">
+                                                                        <a href="{{route('products',['category_id'=> $subSubCategory['id'],'data_from'=>'category','page'=>1])}}">
                                                                             {{$subSubCategory['name']}}
                                                                         </a>
                                                                     </li>
@@ -370,16 +424,16 @@
                         <div class="d-xl-none">
                             <a class="logo" href="{{route('home')}}">
                                 <img class="dark-support mobile-logo-cs" alt="{{ translate('logo') }}"
-                                     src="{{ getValidImage(path: 'storage/app/public/company/'.($web_config['mob_logo']->value), type:'logo') }}">
+                                     src="{{ getStorageImages(path: $web_config['mob_logo'], type:'logo') }}">
                             </a>
                         </div>
                         <ul class="nav main-menu align-items-center d-none d-xl-flex flex-nowrap">
                             <li class="{{request()->is('/')?'active':''}}">
                                 <a href="{{route('home')}}">{{ translate('home')}}</a>
                             </li>
-                            @if($web_config['featured_deals']->count()>0 || $web_config['flash_deals'])
+                            @if($web_config['featured_deals']->count() > 0 || ($web_config['flash_deals'] && count($web_config['flash_deals_products']) > 0) || $web_config['discount_product'] > 0)
                                 <li>
-                                    <a class="cursor-pointer">{{ translate('offers')}}</a>
+                                    <span class="cursor-pointer no-follow-link" ref="nofollow">{{ translate('offers')}}</span>
                                     <ul class="sub-menu">
                                         @if($web_config['featured_deals']->count()>0)
                                             <li>
@@ -388,10 +442,27 @@
                                             </li>
                                         @endif
 
-                                        @if($web_config['flash_deals'])
+                                        @if($web_config['flash_deals'] && count($web_config['flash_deals_products']) > 0)
                                             <li>
                                                 <a class="text-capitalize"
                                                    href="{{route('flash-deals',[$web_config['flash_deals']['id']??0])}}">{{ translate('flash_deal') }}</a>
+                                            </li>
+                                        @endif
+                                        @if ($web_config['discount_product'] > 0)
+                                            <li>
+                                                <a class="gap-2 align-items-center text-capitalize" href="{{ route('products',['data_from'=>'discounted','page'=>1]) }}">
+                                                    <span>{{ translate('discounted_products') }}</span>
+                                                    <span><i class="bi bi-patch-check-fill text-warning"></i></span>
+                                                </a>
+                                            </li>
+                                        @endif
+
+                                        @if($web_config['clearance_sale_product_count'] > 0)
+                                            <li>
+                                                <a class="gap-2 align-items-center" href="{{ route('products',['offer_type'=>'clearance_sale','page'=>1]) }}">
+                                                    <span>{{ translate('clearance_sale') }}</span>
+                                                    <span><i class="bi bi-patch-check-fill text-warning"></i></span>
+                                                </a>
                                             </li>
                                         @endif
                                     </ul>
@@ -399,7 +470,7 @@
                             @endif
                             @if($web_config['business_mode'] == 'multi')
                                 <li>
-                                    <a class="cursor-pointer">{{ translate('stores') }}</a>
+                                    <span class="cursor-pointer no-follow-link" ref="nofollow">{{ translate('stores') }}</span>
                                     <div
                                         class="sub-menu megamenu p-3 bs-dropdown-min-width--max-content">
                                         <div class="d-flex gap-5">
@@ -409,25 +480,25 @@
                                                        class="media gap-3 align-items-center border-bottom">
                                                         <div class="avatar rounded size-2-5rem">
                                                             <img loading="lazy" alt="{{ translate('image') }}"
-                                                                 src="{{ getValidImage(path: 'storage/app/public/company/'.$web_config['fav_icon']->value, type:'shop') }}"
+                                                                 src="{{ getStorageImages(path: $web_config['fav_icon'], type:'shop') }}"
                                                                  class="img-fit rounded dark-support overflow-hidden">
                                                         </div>
                                                         <div class="media-body text-truncate width--7rem"
-                                                             title="{{translate('morning_mart')}}">
-                                                            {{Str::limit($web_config['name']->value, 14)}}
+                                                             title="{{ $web_config['company_name'] }}">
+                                                            {{ Str::limit($web_config['company_name'], 14) }}
                                                         </div>
                                                     </a>
 
                                                     @foreach($web_config['shops'] as $shop)
-                                                        <a href="{{route('shopView',['id'=>$shop['id']])}}"
+                                                        <a href="{{route('shopView',['id' => $shop['id']])}}"
                                                            class="media gap-3 align-items-center border-bottom">
                                                             <div class="avatar rounded size-2-5rem">
                                                                 <img loading="lazy" alt="{{ translate('image') }}"
-                                                                    src="{{ getValidImage(path: 'storage/app/public/shop/'.($shop->image), type: 'shop') }}"
+                                                                    src="{{ getStorageImages(path: $shop->image_full_url, type: 'shop') }}"
                                                                     class="img-fit rounded dark-support overflow-hidden">
                                                             </div>
                                                             <div class="media-body text-truncate width--7rem"
-                                                                 title="{{translate('morning_mart')}}">
+                                                                 title="{{ $shop->name }}">
                                                                 {{Str::limit($shop->name, 14)}}
                                                             </div>
                                                         </a>
@@ -444,7 +515,7 @@
                                                 <a href="javascript:">
                                                     <img
                                                         width="277"
-                                                        src="{{theme_asset('assets/img/media/super-market.png')}}"
+                                                        src="{{theme_asset('assets/img/media/super-market.webp')}}"
                                                         class="dark-support"
                                                         alt="{{translate('image')}}"
                                                     />
@@ -457,23 +528,26 @@
 
                             @if($web_config['brand_setting'])
                                 <li>
-                                    <a class="cursor-pointer">{{ translate('brands') }}</a>
+                                    <span class="cursor-pointer no-follow-link" ref="nofollow">{{ translate('brands') }}</span>
                                     <div class="sub-menu megamenu p-3 bs-dropdown-min-width--max-content">
                                         <div class="d-flex gap-4">
                                             <div class="column-2">
+                                                @php($brandSecondIndex=0)
                                                 @foreach($brands as $brand)
-                                                    <a href="{{ route('products',['id'=> $brand['id'],'data_from'=>'brand','page'=>1]) }}"
-                                                       class="media gap-3 align-items-center border-bottom">
-                                                        <div class="avatar rounded-circle size-1-25rem">
-                                                            <img class="img-fit rounded-circle dark-support"
-                                                                src="{{ getValidImage(path: 'storage/app/public/brand/'.($brand->image), type: 'brand') }}"
-                                                                loading="lazy" alt="{{ translate('image') }}"/>
-                                                        </div>
-                                                        <div class="media-body text-truncate width--7rem"
-                                                             title="{{translate('bata')}}">
-                                                            {{ $brand->name }}
-                                                        </div>
-                                                    </a>
+                                                    @php($brandSecondIndex++)
+                                                    @if($brandSecondIndex < 10)
+                                                        <a href="{{ route('products',['brand_id'=> $brand['id'],'data_from'=>'brand','page'=>1]) }}"
+                                                           class="media gap-3 align-items-center border-bottom">
+                                                            <div class="avatar rounded-circle size-1-25rem">
+                                                                <img class="img-fit rounded-circle dark-support"
+                                                                    src="{{ getStorageImages(path: $brand->image_full_url, type: 'brand') }}"
+                                                                    loading="lazy" alt="{{ $brand->image_alt_text }}"/>
+                                                            </div>
+                                                            <div class="media-body text-truncate width--7rem">
+                                                                {{ $brand->name }}
+                                                            </div>
+                                                        </a>
+                                                    @endif
                                                 @endforeach
                                                 <div class="d-flex">
                                                     <a href="{{route('brands')}}"
@@ -485,36 +559,71 @@
                                     </div>
                                 </li>
                             @endif
-                            @if ($web_config['discount_product']>0)
-                                <li class="">
-                                    <a class="d-flex gap-2 align-items-center discount-product-menu {{request()->is('/')?'active':''}}"
-                                       href="{{route('products',['data_from'=>'discounted','page'=>1])}}">
-                                        {{ translate('discounted_products') }}
-                                        <i class="bi bi-patch-check-fill text-warning"></i></a>
+
+                            @if ($web_config['digital_product_setting'] && count($web_config['publishing_houses']) == 1)
+                                <li>
+                                    <a href="{{ route('products',['publishing_house_id' => 0, 'product_type' => 'digital', 'page'=>1]) }}">
+                                        {{ translate('Publication_House') }}
+                                    </a>
                                 </li>
+                            @elseif ($web_config['digital_product_setting'] && count($web_config['publishing_houses']) > 1)
+                            <li>
+                                <a class="cursor-pointer" href="{{ route('products', ['product_type' => 'digital', 'page'=>1]) }}">
+                                    {{ translate('Publication_House') }}
+                                </a>
+                                <div class="sub-menu megamenu p-3 bs-dropdown-min-width--max-content">
+                                    <div class="d-flex gap-4">
+                                        <div class="column-2">
+                                            @php($publishingHousesIndex=0)
+                                            @foreach($web_config['publishing_houses'] as $publishingHouseItem)
+                                                @if($publishingHousesIndex < 10 && $publishingHouseItem['name'] != 'Unknown')
+                                                    @php($publishingHousesIndex++)
+                                                    <a href="{{ route('products',['publishing_house_id'=> $publishingHouseItem['id'], 'product_type' => 'digital', 'page'=>1]) }}"
+                                                       class="media gap-3 align-items-center border-bottom">
+                                                        <div class="media-body text-truncate width--7rem">
+                                                            {{ $publishingHouseItem['name'] }}
+                                                        </div>
+                                                    </a>
+                                                @endif
+                                            @endforeach
+                                            <div class="d-flex">
+                                                <a href="{{ route('products', ['product_type' => 'digital', 'page' => 1]) }}"
+                                                   class="fw-bold text-primary d-flex justify-content-center">
+                                                    {{ translate('view_all').'...' }}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
                             @endif
+
                         </ul>
                     </div>
                 </div>
                 <ul class="list-unstyled list-separator mb-0 pe-2">
                     @if(auth('customer')->check())
                         <li class="login-register d-flex align-items-center gap-4">
+                            <div class="menu-btn d-xl-none search">
+                                <i class="bi bi-search fs-18"></i>
+                            </div>
                             <div class="profile-dropdown">
                                 <button
                                     type="button"
-                                    class="border-0 bg-transparent d-flex gap-2 align-items-center dropdown-toggle text-dark p-0 user"
+                                    class="border-0 bg-transparent d-flex gap-2 align-items-center text-dark p-0 user"
                                     data-bs-toggle="dropdown"
                                     aria-expanded="false"
                                 >
-                                    <span class="avatar overflow-hidden header-avatar rounded-circle size-1-5rem">
-                                      <img loading="lazy" class="img-fit" alt="{{ translate('image') }}"
-                                          src="{{ getValidImage(path: 'storage/app/public/profile/'.(auth('customer')->user()->image), type:'avatar') }}">
+                                    <span class="avatar overflow-hidden header-avatar rounded-circle size-1-5rem border border-primary p-2px">
+                                        @php($profileImg = getCustomerFromQuery() ? getCustomerFromQuery()->image_full_url : '')
+                                        <img loading="lazy" class="img-fit rounded-circle" alt="{{ translate('image') }}"
+                                          src="{{ getStorageImages(path: $profileImg, type:'avatar') }}">
                                     </span>
                                 </button>
-                                <ul class="dropdown-menu bs-dropdown-min-width--10rem">
-                                    <li><a href="{{route('account-oder')}}">{{ translate('my_order') }}</a></li>
-                                    <li><a href="{{route('user-profile')}}">{{ translate('my_profile') }}</a></li>
-                                    <li><a href="{{route('customer.auth.logout')}}">{{ translate('logout') }}</a></li>
+                                <ul class="dropdown-menu bs-dropdown-min-width--10rem header-dropdown">
+                                    <li><a href="{{route('account-oder')}}">{{ translate('My_Order') }}</a></li>
+                                    <li><a href="{{route('user-profile')}}">{{ translate('My_Profile') }}</a></li>
+                                    <li><a href="{{route('customer.auth.logout')}}">{{ translate('Logout') }}</a></li>
                                 </ul>
                             </div>
                             <div class="menu-btn d-xl-none">
@@ -522,7 +631,10 @@
                             </div>
                         </li>
                     @else
-                        <li class="login-register d-flex gap-4">
+                        <li class="login-register d-flex align-items-center gap-4">
+                            <div class="menu-btn d-xl-none search">
+                                <i class="bi bi-search fs-18"></i>
+                            </div>
                             <button
                                 class="media gap-2 align-items-center text-uppercase fs-12 bg-transparent border-0 p-0"
                                 data-bs-toggle="modal"

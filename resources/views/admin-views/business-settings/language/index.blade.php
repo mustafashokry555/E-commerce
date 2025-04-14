@@ -24,9 +24,9 @@
                     <div class="px-3 py-4">
                         <div class="row justify-content-between align-items-center flex-grow-1">
                             <div class="col-sm-4 col-md-6 col-lg-8 mb-2 mb-sm-0">
-                                <span class="title-color text-capitalize font-weight-bold">
+                                <span class="title-color text-capitalize font-weight-bold float-start">
                                     {{translate('language_table')}}
-                                    <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="right" title="{{translate('after_adding_a_new_language,_you_need_to_translate_the_key_contents_for_users_to_experience_this_feature').' . '.translate('to_translate_a_language_click_the_action_button_from_the_language_table_&_click_translate').'.'.translate('then_change_the_key_language_value_manually_or_click_the_‘Auto_Translate’_button').'.'.translate('Finally,_click_‘Update’_to_save_the_changes').'.'}}">
+                                    <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="right" title="{{ translate('after_adding_a_new_language_you_need_to_translate_the_key_contents_for_users_to_experience_this_feature.') }} {{ translate('to_translate_a_language_click_the_action_button_from_the_language_table_&_click_translate.') }} {{ translate('then_change_the_key_language_value_manually_or_click_the_Auto_Translate_button.') }} {{ translate('Finally,_click_Update_to_save_the_changes.') }}">
                                         <img width="16" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="">
                                     </span>
                                 </span>
@@ -58,8 +58,7 @@
                             </tr>
                             </thead>
                             <tbody>
-                            @php($language=BusinessSetting::where('type','language')->first())
-                            @foreach(json_decode($language['value'],true) as $key =>$data)
+                            @foreach(getWebConfig(name: 'language') as $key =>$data)
                                 <tr>
                                     <td>{{$key++}}</td>
                                     <td>{{$data['id']}}</td>
@@ -127,12 +126,12 @@
                                         <div class="dropdown">
                                             <button class="btn btn-seconary btn-sm dropdown-toggle"
                                                     type="button"
-                                                    id="dropdownMenuButton" data-toggle="dropdown"
+                                                    data-toggle="dropdown"
                                                     aria-haspopup="true"
                                                     aria-expanded="false">
                                                 <i class="tio-settings"></i>
                                             </button>
-                                            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                            <div class="dropdown-menu">
                                                 @if($data['code']!='en')
                                                     <a class="dropdown-item" data-toggle="modal"
                                                        data-target="#lang-modal-update-{{$data['code']}}">{{translate('update')}}</a>
@@ -220,7 +219,7 @@
             </div>
         </div>
 
-        @foreach(json_decode($language['value'],true) as $key =>$data)
+        @foreach(getWebConfig(name: 'language') as $key =>$data)
             <div class="modal fade" id="lang-modal-update-{{$data['code']}}" tabindex="-1" role="dialog"
                  aria-hidden="true">
                 <div class="modal-dialog" role="document">

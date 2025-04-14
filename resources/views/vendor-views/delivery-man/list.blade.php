@@ -32,21 +32,11 @@
                     </div>
 
                     <div class="d-flex justify-content-end gap-2">
-                        <div class="dropdown text-nowrap">
-                            <button type="button" class="btn btn-outline--primary" data-toggle="dropdown">
-                                <i class="tio-download-to"></i>
-                                {{translate('export')}}
-                                <i class="tio-chevron-down"></i>
-                            </button>
-
-                            <ul class="dropdown-menu dropdown-menu-right">
-                                <li>
-                                    <a type="submit" class="dropdown-item d-flex align-items-center gap-2 " href="{{route('vendor.delivery-man.export',['search' => request('search')])}}">
-                                        <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" alt="">
-                                        {{translate('excel')}}
-                                    </a>
-                                </li>
-                            </ul>
+                        <div class="dropdown">
+                            <a type="button" class="btn btn-outline--primary text-nowrap" href="{{route('vendor.delivery-man.export',['search' => request('search')])}}">
+                                <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
+                                <span class="ps-2">{{ translate('export') }}</span>
+                            </a>
                         </div>
                         <a href="{{route('vendor.delivery-man.index')}}" class="btn btn--primary text-nowrap">
                             <i class="tio-add"></i>
@@ -75,7 +65,7 @@
                             <td>
                                 <div class="media align-items-center gap-10">
                                     <img class="avatar avatar-lg rounded-circle" alt=""
-                                            src="{{getValidImage('storage/app/public/delivery-man/'.$deliveryMan['image'],type:'backend-profile')}}">
+                                            src="{{getStorageImages($deliveryMan->image_full_url,type:'backend-profile')}}">
                                     <div class="media-body">
                                         <a title="Earning Statement"
                                            class="title-color hover-c1"

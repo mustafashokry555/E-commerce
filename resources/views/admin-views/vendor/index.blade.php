@@ -32,21 +32,11 @@
                                 </form>
                             </div>
                             <div class="d-flex justify-content-end gap-2">
-                                <div class="dropdown text-nowrap">
-                                    <button type="button" class="btn btn-outline--primary" data-toggle="dropdown">
-                                        <i class="tio-download-to"></i>
-                                        {{translate('export')}}
-                                        <i class="tio-chevron-down"></i>
-                                    </button>
-
-                                    <ul class="dropdown-menu dropdown-menu-right">
-                                        <li>
-                                            <a type="submit" class="dropdown-item d-flex align-items-center gap-2 " href="{{route('admin.vendors.export',['searchValue' => request('searchValue')])}}">
-                                                <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" alt="">
-                                                {{translate('excel')}}
-                                            </a>
-                                        </li>
-                                    </ul>
+                                <div class="dropdown">
+                                    <a type="button" class="btn btn-outline--primary text-nowrap btn-block" href="{{route('admin.vendors.export',['searchValue' => request('searchValue')])}}">
+                                        <img width="14" src="{{dynamicAsset(path: 'public/assets/back-end/img/excel.png')}}" class="excel" alt="">
+                                        <span class="ps-2">{{ translate('export') }}</span>
+                                    </a>
                                 </div>
                                 <a href="{{route('admin.vendors.add')}}" type="button" class="btn btn--primary text-nowrap">
                                     <i class="tio-add"></i>
@@ -78,7 +68,7 @@
                                     <td>
                                         <div class="d-flex align-items-center gap-10 w-max-content">
                                             <img width="50"
-                                            class="avatar rounded-circle" src="{{ getValidImage(path: 'storage/app/public/shop/'.($seller->shop?$seller->shop->image:''), type: 'backend-basic') }}"
+                                            class="avatar rounded-circle object-fit-cover" src="{{ getStorageImages(path: $seller?->shop?->image_full_url, type: 'backend-basic') }}"
                                                 alt="">
                                             <div>
                                                 <a class="title-color" href="{{ route('admin.vendors.view', ['id' => $seller->id]) }}">{{ $seller->shop ? Str::limit($seller->shop->name, 20) : translate('shop_not_found')}}</a>
@@ -110,15 +100,15 @@
                                         {!! $seller->status=='approved'?'<label class="badge badge-success">'.translate('active').'</label>':'<label class="badge badge-danger">'.translate('inactive').'</label>' !!}
                                     </td>
                                     <td class="text-center">
-                                        <a href="{{route('admin.vendors.product-list',[$seller['id']])}}"
+                                        <a href="{{ route('admin.vendors.view', ['id'=>$seller['id'], 'tab'=>'product']) }}"
                                            class="btn text--primary bg-soft--primary font-weight-bold px-3 py-1 mb-0 fz-12">
                                             {{$seller->product->count()}}
                                         </a>
                                     </td>
                                     <td class="text-center">
-                                        <a href="{{route('admin.vendors.order-list',[$seller['id']])}}"
+                                        <a href="{{ route('admin.vendors.view',['id'=>$seller['id'], 'tab'=>'order']) }}"
                                             class="btn text-info bg-soft-info font-weight-bold px-3 py-1 fz-12 mb-0">
-                                            {{$seller->orders->where('seller_is','seller')->where('order_type','default_type')->count()}}
+                                            {{ $seller->orders->where('seller_is', 'seller')->where('order_type', 'default_type')->count() }}
                                         </a>
                                     </td>
                                     <td>

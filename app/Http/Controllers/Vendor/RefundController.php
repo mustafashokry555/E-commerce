@@ -161,7 +161,7 @@ class RefundController extends BaseController
                     ]
             );
             $order = $this->orderRepo->getFirstWhere(params: ['id'=>$refund['order_id']]);
-            RefundEvent::dispatch($request['refund_status'], $order);
+            event(new RefundEvent(status: $request['refund_status'], order: $order, refund: $refund, orderDetails: $orderDetails));
             return response()->json(['message'=>translate('refund_status_updated') . '!!']);
         }else {
             return response()->json(['message'=>translate('refunded_status_can_not_be_changed') . '!!']);

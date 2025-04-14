@@ -21,4 +21,9 @@ enum Dashboard
         URI => 'order-status',
         VIEW => ''
     ];
+
+    const REAL_TIME_ACTIVITIES = [
+        URI => 'real-time-activities',
+        VIEW => ''
+    ];
 }

@@ -32,7 +32,7 @@
                         <div class="modal-body px-4 px-sm-5 pt-0 text-center">
                             <div class="row g-2 g-sm-3 mt-lg-0">
                                 <div class="col-12">
-                                    <div class="swiper mySwiper pb-3">
+                                    <div class="swiper instruction-carousel pb-3">
                                         <div class="swiper-wrapper">
                                             <div class="swiper-slide mb-2">
                                                 <img
@@ -58,7 +58,7 @@
                                                         loading="lazy"
                                                         alt="" class="dark-support rounded mb-4">
                                                     <p>
-                                                        {{ translate('now_you’ll_be_successfully_able_to_use_the_theme_for_your').' '.(getWebConfig('company_name') ??'').' '. translate('website') }}
+                                                        {{ translate('now_you_will_be_successfully_able_to_use_the_theme_for_your').' '.(getWebConfig('company_name') ??'').' '. translate('website') }}
                                                     </p>
                                                     <p>
                                                         {{ translate('N:B you_can_upload_only').' '.(getWebConfig('company_name')??'').' '.translate('theme_templates') }}
@@ -69,7 +69,7 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="swiper-pagination"></div>
+                                        <div class="my-2 instruction-pagination-custom"></div>
                                     </div>
                                 </div>
                             </div>
@@ -187,7 +187,7 @@
                             <div class="modal-body px-5 px-sm-5 pt-0 text-center">
                                 <div class="row g-2 g-sm-3 mt-lg-0">
                                     <div class="col-12">
-                                        <div class="swiper mySwiper pb-3">
+                                        <div class="swiper instruction-carousel pb-3">
                                             <div class="swiper-wrapper">
                                                 <div class="swiper-slide">
 
@@ -232,7 +232,7 @@
                                                              alt="">
                                                     </div>
                                                 </div>
-                                                <div class="swiper-pagination"></div>
+                                                <div class="instruction-pagination-custom my-2"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -243,11 +243,12 @@
                 </div>
                 <div class="row g-1 g-sm-2">
                     @foreach($themes as $key => $theme)
-                        <div class="col-sm-6 col-xxl-4">
+                        @if(isset($theme['software_id']))
+                            <div class="col-sm-6 col-xxl-4">
                             <div class="card theme-card h-100 {{ theme_root_path() == $key ? 'theme-active':'' }}">
                                 <div class="card-header">
                                     <h3 class="card-title">
-                                        {{ ucwords(str_replace('_', ' ', $key=='default' ? 'default_theme' : $theme['name'])) }}
+                                        {{ ucwords(str_replace('_', ' ', $key =='default' ? 'default_theme' : $theme['name'] ?? '')) }}
                                     </h3>
 
                                     <div class="d-flex gap-2 gap-sm-3 align-items-center">
@@ -354,18 +355,19 @@
 
                                         <?php
                                             if (DOMAIN_POINTED_DIRECTORY == 'public') {
-                                                $themeImage = dynamicAsset(path: 'public/themes/'.$key.'/public/addon/'.$theme['image']);
+                                                $themeImage = dynamicAsset(path: 'public/themes/'.$key.'/public/addon/'.($theme['image'] ?? ''));
                                             }else{
-                                                $themeImage = dynamicAsset(path: 'resources/themes/'.$key.'/public/addon/'.$theme['image']);
+                                                $themeImage = dynamicAsset(path: 'resources/themes/'.$key.'/public/addon/'.$theme['image'] ?? '');
                                             }
                                         ?>
 
                                         <img class="img-fit radius-10" alt=""
-                                             src="{{ getValidImage(path: 'resources/themes/'.$key.'/public/addon/'.$theme['image'], type: 'backend-basic', source: $themeImage) }}">
+                                             src="{{ getStorageImages(path: null, type: 'backend-basic', source: $themeImage) }}">
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        @endif
                     @endforeach
                     <div class="modal fade" id="InformationThemeModal" tabindex="-1" data-backdrop="static"
                          data-keyboard="false"

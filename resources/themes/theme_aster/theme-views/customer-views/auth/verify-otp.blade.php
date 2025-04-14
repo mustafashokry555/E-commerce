@@ -1,6 +1,6 @@
 @extends('theme-views.layouts.app')
 
-@section('title', translate('OTP_verification').' | '.$web_config['name']->value.' '.translate('ecommerce'))
+@section('title', translate('OTP_verification').' | '.$web_config['company_name'].' '.translate('ecommerce'))
 
 @section('content')
 <main class="main-content d-flex flex-column gap-3 py-3 mb-30">
@@ -9,7 +9,7 @@
             <div class="row align-items-center pb-5">
                 <div class="col-lg-6 mb-5 mb-lg-0">
                     <h2 class="text-center mb-2">{{ translate('OTP_verification') }}</h2>
-                    <p class="text-center mb-5 text-muted">{{ translate('please_Verify_that_it’s_you') }}.</p>
+                    <p class="text-center mb-5 text-muted">{{ translate('please_Verify_that_its_you') }}.</p>
                     <div class="d-flex justify-content-center">
                         <img width="283" class="dark-support" src="{{theme_asset('assets/img/otp-found.png')}}"
                              alt="{{translate('image')}}">
@@ -33,6 +33,10 @@
                           id="customer-verify">
                         @csrf
                         <div class="d-flex gap-2 gap-sm-3 align-items-end justify-content-center">
+                            <input class="otp-field" type="text" name="opt-field[]" maxlength="1"
+                                   autocomplete="off">
+                            <input class="otp-field" type="text" name="opt-field[]" maxlength="1"
+                                   autocomplete="off">
                             <input class="otp-field" type="text" name="opt-field[]" maxlength="1"
                                    autocomplete="off">
                             <input class="otp-field" type="text" name="opt-field[]" maxlength="1"

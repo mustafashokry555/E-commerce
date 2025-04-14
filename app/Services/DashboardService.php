@@ -3,12 +3,17 @@
 namespace App\Services;
 
 use Carbon\Carbon;
+use Doctrine\DBAL\Exception\DatabaseDoesNotExist;
 
 class DashboardService
 {
-    public function getDateTypeData(string $dateType):array
+    public function getDateTypeData(string $dateType): array
     {
-        $from = null; $to = null; $type = null; $range = null;$keyRange = null;
+        $from = null;
+        $to = null;
+        $type = null;
+        $range = null;
+        $keyRange = null;
         if ($dateType == 'yearEarn') {
             $from = Carbon::now()->startOfYear()->format('Y-m-d');
             $to = Carbon::now()->endOfYear()->format('Y-m-d');
@@ -25,28 +30,50 @@ class DashboardService
         } elseif ($dateType == 'WeekEarn') {
             $from = Carbon::now()->startOfWeek(Carbon::SUNDAY)->format('Y-m-d');
             $to = Carbon::now()->endOfWeek(Carbon::SATURDAY)->format('Y-m-d');
-            $range = ['Sunday','Monday','Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            $range = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             $type = 'day_of_week';
             $keyRange = $range;
         }
         return [
-            'from' =>$from,
-            'to' =>$to,
-            'range' =>$range,
+            'from' => $from,
+            'to' => $to,
+            'range' => $range,
             'type' => $type,
             'keyRange' => $keyRange
         ];
     }
-    public function getDateWiseAmount(array $range,string $type,object|array $amountArray):array
+
+    public function getDateWiseAmount(array $range, string $type, object|array $amountArray): array
     {
         $dateWiseAmount = [];
-        foreach ($range as $value){
+        foreach ($range as $value) {
+            $dateWiseAmount[$value] = usdToDefaultCurrency(amount: 0);
+        }
+        foreach ($range as $value) {
             if (count($amountArray) > 0) {
                 $amountArray->map(function ($amount) use ($type, $range, &$dateWiseAmount, $value) {
-                    $dateWiseAmount[$value] = usdToDefaultCurrency($amount[$type] == $value ? $amount['sums'] : 0);
+                    if ($amount[$type] == $value) {
+                        $dateWiseAmount[$value] = usdToDefaultCurrency(amount: $amount['sums']);
+                    }
                 });
-            }else{
-                $dateWiseAmount[$value] = 0;
+            }
+        }
+        return $dateWiseAmount;
+    }
+
+    public function getDateWiseAmountInUSD(array $range, string $type, object|array $amountArray): array
+    {
+        $dateWiseAmount = [];
+        foreach ($range as $value) {
+            $dateWiseAmount[$value] = 0;
+        }
+        foreach ($range as $value) {
+            if (count($amountArray) > 0) {
+                $amountArray->map(function ($amount) use ($type, $range, &$dateWiseAmount, $value) {
+                    if ($amount[$type] == $value) {
+                        $dateWiseAmount[$value] = $amount['sums'];
+                    }
+                });
             }
         }
         return $dateWiseAmount;

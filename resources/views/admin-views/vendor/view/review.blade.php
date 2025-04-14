@@ -60,6 +60,10 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link"
+                           href="{{ route('admin.vendors.view',['id'=>$seller['id'], 'tab'=>'clearance_sale']) }}">{{translate('clearance_sale_products')}}</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link"
                            href="{{ route('admin.vendors.view',['id'=>$seller->id, 'tab'=>'setting']) }}">{{translate('setting')}}</a>
                     </li>
                     <li class="nav-item">
@@ -139,12 +143,12 @@
                                             <p class="text-wrap mb-1">
                                                 {{$review->comment ?? translate("no_Comment_Found")}}
                                             </p>
-                                            @if($review->attachment)
-                                                @foreach (json_decode($review->attachment) as $img)
-                                                    <a href="{{dynamicStorage(path: 'storage/app/public/review')}}/{{$img}}"
+                                            @if(count($review->attachment_full_url)>0)
+                                                @foreach ($review->attachment_full_url as $img)
+                                                    <a href="{{ getStorageImages(path:$img, type: 'backend-basic') }}"
                                                         data-lightbox="mygallery">
                                                         <img class="p-1" width="60" height="60"
-                                                             src="{{ getValidImage(path: 'storage/app/public/review/'.$img, type: 'backend-basic') }}"
+                                                             src="{{ getStorageImages(path:$img, type: 'backend-basic') }}"
                                                                 alt="" >
                                                     </a>
                                                 @endforeach

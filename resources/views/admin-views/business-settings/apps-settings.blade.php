@@ -45,7 +45,7 @@
                                         <label class="title-color mb-0 text-capitalize">{{translate('minimum_customer_app_version')}}</label>
                                         <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                               data-placement="right"
-                                              title="{{translate('define_the_minimum_Android_app_version_for_best_user_experience').'.'.translate('if_a_user_still_don’t_have_it,_they’ll_be_requested_a_force_app_update_when_they_opens_the_app').'.'}}">
+                                              title="{{translate('define_the_minimum_Android_app_version_for_best_user_experience').'.'.translate('if_a_user_still_do_not_have_it,_they_will_be_requested_a_force_app_update_when_they_opens_the_app').'.'}}">
                                             <img width="16"
                                                  src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="">
                                         </span>
@@ -80,7 +80,7 @@
                                     <div class="d-flex align-items-center gap-2 mb-2">
                                         <label class="title-color mb-0 text-capitalize">{{translate('minimum_customer_app_version')}}</label>
                                         <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="right"
-                                              title="{{translate('define_the_minimum_iOS_app_version_for_best_user_experience').'.'. translate('if_a_user_still_don’t _have_it,_they’ll_be_requested_a_force_app_update_when_they_opens_the_app').'.' }}">
+                                              title="{{translate('define_the_minimum_iOS_app_version_for_best_user_experience').'.'. translate('if_a_user_still_do_not_have_it,_they_will_be_requested_a_force_app_update_when_they_opens_the_app').'.' }}">
                                             <img width="16" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="">
                                         </span>
                                     </div>
@@ -138,7 +138,7 @@
                                         <label class="title-color mb-0">{{translate('minimum_Vendor_app_version')}}</label>
                                         <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                               data-placement="right"
-                                              title="{{translate('define_the_minimum_Android_app_version_for_best_user_experience').'.'.translate('if_a_user_still_don’t_have_it,_they’ll_be_requested_a_force_app_update_when_they_opens_the_app').'.'}}">
+                                              title="{{translate('define_the_minimum_Android_app_version_for_best_user_experience').'.'.translate('if_a_user_still_do_not_have_it,_they_will_be_requested_a_force_app_update_when_they_opens_the_app').'.'}}">
                                             <img width="16"
                                                  src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="">
                                         </span>
@@ -177,7 +177,7 @@
                                         <label class="title-color mb-0">{{translate('minimum_Vendor_app_version')}}</label>
                                         <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                               data-placement="right"
-                                              title="{{translate('define_the_minimum_iOS_app_version_for_best_user_experience').'.'. translate('if_a_user_still_don’t _have_it,_they’ll_be_requested_a_force_app_update_when_they_opens_the_app').'.' }}">
+                                              title="{{translate('define_the_minimum_iOS_app_version_for_best_user_experience').'.'. translate('if_a_user_still_do_not_have_it,_they_will_be_requested_a_force_app_update_when_they_opens_the_app').'.' }}">
                                             <img width="16"
                                                  src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="">
                                         </span>
@@ -235,7 +235,7 @@
                                         <label class="title-color mb-0">{{translate('minimum_Deliveryman_App_Version')}}</label>
                                         <span class="input-label-secondary cursor-pointer" data-toggle="tooltip"
                                               data-placement="right"
-                                              title="{{translate('define_the_minimum_Android_app_version_for_best_user_experience').'.'.translate('if_a_user_still_don’t_have_it,_they’ll_be_requested_a_force_app_update_when_they_opens_the_app').'.'}}">
+                                              title="{{translate('define_the_minimum_Android_app_version_for_best_user_experience').'.'.translate('if_a_user_still_do_not_have_it,_they_will_be_requested_a_force_app_update_when_they_opens_the_app').'.'}}">
                                             <img width="16"
                                                  src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="">
                                         </span>
@@ -271,7 +271,7 @@
                                     <div class="d-flex align-items-center gap-2 mb-2">
                                         <label class="title-color mb-0 text-capitalize">{{translate('minimum_deliveryman_app_version')}}</label>
                                         <span class="input-label-secondary cursor-pointer" data-toggle="tooltip" data-placement="right"
-                                                  title="{{translate('define_the_minimum_iOS_app_version_for_best_user_experience').'.'. translate('if_a_user_still_don’t _have_it,_they’ll_be_requested_a_force_app_update_when_they_opens_the_app').'.'}}">
+                                                  title="{{translate('define_the_minimum_iOS_app_version_for_best_user_experience').'.'. translate('if_a_user_still_do_not_have_it,_they_will_be_requested_a_force_app_update_when_they_opens_the_app').'.'}}">
                                             <img width="16" src="{{dynamicAsset(path: 'public/assets/back-end/img/info-circle.svg')}}" alt="">
                                         </span>
                                     </div>
@@ -316,7 +316,7 @@
                                 class="tio-clear"></i></button>
                 </div>
                 <div class="modal-body px-4 px-sm-5 pt-0">
-                    <div class="swiper mySwiper pb-3">
+                    <div class="swiper instruction-carousel pb-3">
                         <div class="swiper-wrapper">
                             <div class="swiper-slide">
                                 <div class="d-flex flex-column align-items-center gap-2">
@@ -339,11 +339,13 @@
                                     <ul class="d-flex flex-column px-4 gap-2 mb-4">
                                         <li>{{ translate('the_app_download_link_is_the_URL_that_allows_users_to_update_the_app_by_clicking_the_Update_App_button_within_the_app_itself') }} </li>
                                     </ul>
+                                    <button class="btn btn-primary px-10 mt-3 text-capitalize"
+                                            data-dismiss="modal">{{ translate('got_it') }}</button>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="swiper-pagination mb-4"></div>
+                    <div class="instruction-pagination-custom my-2"></div>
                 </div>
             </div>
         </div>

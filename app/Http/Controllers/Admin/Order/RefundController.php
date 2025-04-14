@@ -142,7 +142,7 @@ class RefundController extends BaseController
             $this->refundRequestRepo->update(id: $request['id'], data: $dataArray['refund']);
             $this->refundStatusRepos->add(data: $dataArray['refundStatus']);
 
-            RefundEvent::dispatch($request['refund_status'], $order);
+            event(new RefundEvent(status: $request['refund_status'], order: $order, refund: $refund, orderDetails: $orderDetails));
             return response()->json(['message'=>translate('refund_status_updated').'.']);
 
         } else {

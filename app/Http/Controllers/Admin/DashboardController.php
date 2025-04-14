@@ -6,10 +6,10 @@ use App\Contracts\Repositories\AdminWalletRepositoryInterface;
 use App\Contracts\Repositories\BrandRepositoryInterface;
 use App\Contracts\Repositories\CustomerRepositoryInterface;
 use App\Contracts\Repositories\DeliveryManRepositoryInterface;
-use App\Contracts\Repositories\OrderDetailRepositoryInterface;
 use App\Contracts\Repositories\OrderRepositoryInterface;
 use App\Contracts\Repositories\OrderTransactionRepositoryInterface;
 use App\Contracts\Repositories\ProductRepositoryInterface;
+use App\Contracts\Repositories\RestockProductRepositoryInterface;
 use App\Contracts\Repositories\VendorRepositoryInterface;
 use App\Contracts\Repositories\VendorWalletRepositoryInterface;
 use App\Enums\ViewPaths\Admin\Dashboard;
@@ -22,7 +22,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
-use function Laravel\Prompts\alert;
 
 class DashboardController extends BaseController
 {
@@ -33,12 +32,11 @@ class DashboardController extends BaseController
         private readonly ProductRepositoryInterface          $productRepo,
         private readonly DeliveryManRepositoryInterface      $deliveryManRepo,
         private readonly OrderRepositoryInterface            $orderRepo,
-        private readonly OrderDetailRepositoryInterface      $orderDetailRepo,
         private readonly BrandRepositoryInterface            $brandRepo,
         private readonly VendorRepositoryInterface           $vendorRepo,
         private readonly VendorWalletRepositoryInterface     $vendorWalletRepo,
-        private readonly DashboardService     $dashboardService,
-
+        private readonly RestockProductRepositoryInterface   $restockProductRepo,
+        private readonly DashboardService                    $dashboardService,
     )
     {
     }
@@ -68,12 +66,12 @@ class DashboardController extends BaseController
 
         $from = now()->startOfYear()->format('Y-m-d');
         $to = now()->endOfYear()->format('Y-m-d');
-        $range = range(1,12);
+        $range = range(1, 12);
         $label = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-        $inHouseOrderEarningArray = $this->getOrderStatisticsData(from:$from ,to: $to,range: $range,type:'month',userType:'admin');
-        $vendorOrderEarningArray = $this->getOrderStatisticsData(from: $from, to: $to, range: $range,type:'month',userType:'seller');
-        $inHouseEarning = $this->getEarning(from: $from, to: $to, range: $range, type: 'month',userType: 'admin');
-        $vendorEarning = $this->getEarning(from: $from, to: $to, range: $range, type: 'month',userType: 'seller');
+        $inHouseOrderEarningArray = $this->getOrderStatisticsData(from: $from, to: $to, range: $range, type: 'month', userType: 'admin');
+        $vendorOrderEarningArray = $this->getOrderStatisticsData(from: $from, to: $to, range: $range, type: 'month', userType: 'seller');
+        $inHouseEarning = $this->getEarning(from: $from, to: $to, range: $range, type: 'month', userType: 'admin');
+        $vendorEarning = $this->getEarning(from: $from, to: $to, range: $range, type: 'month', userType: 'seller');
         $commissionEarn = $this->getAdminCommission(from: $from, to: $to, range: $range, type: 'month');
         $dateType = 'yearEarn';
         $data += [
@@ -90,7 +88,7 @@ class DashboardController extends BaseController
             'delivery_charge_earned' => $admin_wallet['delivery_charge_earned'] ?? 0,
             'pending_amount' => $admin_wallet['pending_amount'] ?? 0,
             'total_tax_collected' => $admin_wallet['total_tax_collected'] ?? 0,
-            'getTotalCustomerCount' => $this->customerRepo->getList()->count(),
+            'getTotalCustomerCount' => $this->customerRepo->getList(dataLimit: 'all')->count(),
             'getTotalVendorCount' => $this->vendorRepo->getListWhere(dataLimit: 'all')->count(),
             'getTotalDeliveryManCount' => $this->deliveryManRepo->getListWhere(filters:['seller_id' => 0],dataLimit: 'all')->count(),
         ];
@@ -200,18 +198,19 @@ class DashboardController extends BaseController
         return $orderEarningArray;
     }
 
-    protected function getEarning(string|Carbon $from, string|Carbon $to, array $range, string $type,$userType):array
+    protected function getEarning(string|Carbon $from, string|Carbon $to, array $range, string $type, $userType): array
     {
         $earning = $this->orderTransactionRepo->getListWhereBetween(
-            filters:  [
-                'seller_is'=>$userType,
-                'status'=>'disburse'
+            filters: [
+                'seller_is' => $userType,
+                'status' => 'disburse',
             ],
-            selectColumn:  'seller_amount',
+            selectColumn: 'seller_amount',
             whereBetween: 'created_at',
+            groupBy: $type,
             whereBetweenFilters: [$from, $to],
         );
-        return $this->dashboardService->getDateWiseAmount(range: $range,type: $type,amountArray: $earning);
+        return $this->dashboardService->getDateWiseAmount(range: $range, type: $type, amountArray: $earning);
     }
 
     /**
@@ -221,17 +220,50 @@ class DashboardController extends BaseController
      * @param string $type
      * @return array
      */
-    protected function getAdminCommission(string|Carbon $from, string|Carbon $to, array $range, string $type ):array
+    protected function getAdminCommission(string|Carbon $from, string|Carbon $to, array $range, string $type): array
     {
         $commissionGiven = $this->orderTransactionRepo->getListWhereBetween(
-            filters:  [
-                'seller_is'=>'seller',
-                'status'=>'disburse'
+            filters: [
+                'seller_is' => 'seller',
+                'status' => 'disburse',
             ],
-            selectColumn:  'admin_commission',
+            selectColumn: 'admin_commission',
             whereBetween: 'created_at',
+            groupBy: $type,
             whereBetweenFilters: [$from, $to],
         );
-        return $this->dashboardService->getDateWiseAmount(range: $range,type: $type,amountArray: $commissionGiven);
+        return $this->dashboardService->getDateWiseAmount(range: $range, type: $type, amountArray: $commissionGiven);
+    }
+
+    public function getRealTimeActivities(): JsonResponse
+    {
+        $newOrder = $this->orderRepo->getListWhere(filters: ['checked' => 0], dataLimit: 'all')->count();
+        $restockProductList = $this->restockProductRepo->getListWhere(filters: ['added_by' => 'in_house'], dataLimit: 'all')->groupBy('product_id');
+        $restockProduct = [];
+        if (count($restockProductList) == 1) {
+            $products = $this->restockProductRepo->getListWhere(orderBy: ['updated_at' => 'desc'], filters: ['added_by' => 'in_house'], relations: ['product'], dataLimit: 'all');
+            $firstProduct = $products->first();
+            $count = $products?->sum('restock_product_customers_count') ?? 0;
+            $restockProduct = [
+                'title' => $firstProduct?->product?->name ?? '',
+                'body' => $count < 100 ? translate('This_product_has').' '. $count .' '.translate('restock_request') : translate('This_product_has').' 99+ '.translate('restock_request'),
+                'image' => getStorageImages(path: $firstProduct?->product?->thumbnail_full_url ?? '', type: 'product'),
+                'route' => route('admin.products.request-restock-list')
+            ];
+        } elseif (count($restockProductList) > 1) {
+            $restockProduct = [
+                'title' => translate('Restock_Request'),
+                'body' => count($restockProductList) < 100 ? (count($restockProductList).' '.translate('products_have_restock_request')) : ('99 +'.' '.translate('more_products_have_restock_request')),
+                'image' => dynamicAsset(path: 'public/assets/back-end/img/icons/restock-request-icon.svg'),
+                'route' => route('admin.products.request-restock-list')
+            ];
+        }
+
+        return response()->json([
+            'success' => 1,
+            'new_order_count' => $newOrder,
+            'restockProductCount' => $restockProductList->count(),
+            'restockProduct' => $restockProduct
+        ]);
     }
 }

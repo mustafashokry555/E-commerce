@@ -99,7 +99,7 @@
                         <div class="refund-details">
                             <div class="img">
                                 <div class="onerror-image border rounded">
-                                    <img src="{{getValidImage(path:  'storage/app/public/product/thumbnail/'.($refund->product ? $refund->product->thumbnail:''),type: 'backend-product')}}" alt="">
+                                    <img src="{{getStorageImages(path:$refund?->product?->thumbnail_full_url,type: 'backend-product')}}" alt="">
                                 </div>
                             </div>
                             <div class="--content flex-grow-1">
@@ -210,10 +210,10 @@
                             </p>
                             @if ($refund->images)
                                 <div class="gallery grid-gallery">
-                                    @foreach (json_decode($refund->images) as $key => $photo)
-                                        <a href="{{getValidImage(path: 'storage/app/public/refund/'.$photo,type:'backend-basic')}}"
+                                    @foreach ($refund->images_full_url as $key => $photo)
+                                        <a href="{{getStorageImages(path:$photo,type:'backend-basic')}}"
                                            data-lightbox="mygallery">
-                                            <img src="{{getValidImage(path: 'storage/app/public/refund/'.$photo,type:'backend-basic')}}" width="50" alt="">
+                                            <img src="{{getStorageImages(path:$photo,type:'backend-basic')}}" width="50" alt="">
                                         </a>
                                     @endforeach
                                 </div>
@@ -324,7 +324,7 @@
                                 <div class="text-center">
                                     <img class="mb-3" src="{{dynamicAsset(path: 'public/assets/back-end/img/refund-reject.png')}}" alt="{{translate('refund_reject')}}">
                                     <h4 class="mb-4 mx-auto max-w-283">
-                                        {{translate('you_can_reject_that_refund_request_two_times').','.translate('then_you_can’t_change_this_status').'.'}}
+                                        {{translate('you_can_reject_that_refund_request_two_times').', '.translate('then_you_can_not_change_this_status').'.'}}
                                     </h4>
                                 </div>
                                 <textarea class="form-control text-area-max-min" placeholder="{{translate('please_write_the_reject_reason').'...'}}" name="rejected_note" rows="3"></textarea>
@@ -350,13 +350,13 @@
                                 <div class="text-center">
                                     <img class="mb-3" src="{{dynamicAsset(path: 'public/assets/back-end/img/refund-approve.png')}}" alt="{{translate('refund_approve')}}">
                                     <h4 class="mb-4 mx-auto max-w-283">
-                                        {{translate('you_can_approve_that_refund_request_two_times').','.translate('then_you_can’t_change_this_status').'.'}}
+                                        {{translate('you_can_approve_that_refund_request_two_times').', '.translate('then_you_can_not_change_this_status').'.'}}
                                     </h4>
                                 </div>
                                 <textarea class="form-control text-area-max-min" placeholder="{{translate('please_write_the_approve_reason').'...'}}" name="approved_note" rows="3"></textarea>
                                 <div class="d-flex flex-wrap justify-content-end gap-3 mt-3">
                                     <button type="button" class="btn btn-secondary px-3" data-dismiss="modal">{{ translate('close') }}</button>
-                                    <button type="button" class="btn btn--primary form-submit" data-form-id="submit-approve-form" data-message="{{translate('want_to_approv_this_refund_request').'?'}}" data-redirect-route="{{route('vendor.refund.index',['status'=>$refund['status']])}}">{{ translate('submit') }}</button>
+                                    <button type="button" class="btn btn--primary form-submit" data-form-id="submit-approve-form" data-message="{{translate('want_to_approve_this_refund_request').'?'}}" data-redirect-route="{{route('vendor.refund.index',['status'=>$refund['status']])}}">{{ translate('submit') }}</button>
                                 </div>
                             </div>
                         </form>

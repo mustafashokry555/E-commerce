@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ViewPaths\Admin\ClearanceSale;
 use App\Utils\Helpers;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;

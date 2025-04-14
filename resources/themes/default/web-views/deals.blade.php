@@ -3,13 +3,13 @@
 @section('title', translate('flash_Deal_Products'))
 
 @push('css_or_js')
-    <meta property="og:image" content="{{dynamicStorage(path: 'storage/app/public/company')}}/{{$web_config['web_logo']->value}}"/>
-    <meta property="og:title" content="Deals of {{$web_config['name']->value}} "/>
+    <meta property="og:image" content="{{$web_config['web_logo']['path']}}"/>
+    <meta property="og:title" content="Deals of {{$web_config['company_name']}} "/>
     <meta property="og:url" content="{{env('APP_URL')}}">
     <meta property="og:description" content="{{ substr(strip_tags(str_replace('&nbsp;', ' ', $web_config['about']->value)),0,160) }}">
 
-    <meta property="twitter:card" content="{{dynamicStorage(path: 'storage/app/public/company')}}/{{$web_config['web_logo']->value}}"/>
-    <meta property="twitter:title" content="Deals of {{$web_config['name']->value}}"/>
+    <meta property="twitter:card" content="{{$web_config['web_logo']['path']}}"/>
+    <meta property="twitter:title" content="Deals of {{$web_config['company_name']}}"/>
     <meta property="twitter:url" content="{{env('APP_URL')}}">
     <meta property="twitter:description"
           content="{{ substr(strip_tags(str_replace('&nbsp;', ' ', $web_config['about']->value)),0,160) }}">
@@ -42,15 +42,17 @@
 
 @section('content')
     @php($decimal_point_settings = getWebConfig(name: 'decimal_point_settings'))
+    @php($deal_banner = getStorageImages(path: $deal['banner_full_url'],type: 'banner' ,source: theme_asset(path: 'public/assets/front-end/img/flash-deals.png')))
     <div class="__inline-59 pt-md-3">
-        @if(file_exists('storage/app/public/deal/'.$deal['banner']))
-            @php($deal_banner = dynamicStorage(path: 'storage/app/public/deal/'.$deal['banner']))
-        @else
-            @php($deal_banner = theme_asset(path: 'public/assets/front-end/img/flash-deals.png'))
-        @endif
         <div class="container md-4 mt-3 rtl text-align-direction">
             <div class="__flash-deals-bg rounded" style="background: url({{$deal_banner}}) no-repeat center center / cover">
                 <div class="row g-3 justify-content-end align-items-center">
+                    <div class="col-lg-8 col-md-6 text-primary d-none d-md-block text-center {{Session::get('direction') === "rtl" ? 'text-md-right' : 'text-md-left'}}">
+                        <div class="flash_deal_title text-primary">
+                            {{$web_config['flash_deals']->title}}
+                        </div>
+                        <span class="fs-14 font-weight-normal">{{translate('hurry_Up')}} ! {{translate('the_offer_is_limited')}}. {{translate('grab_while_it_lasts')}}</span>
+                    </div>
                     <div class="col-lg-4 col-md-6">
                         <div class="countdown-card bg-transparent">
                             <div class="text-center text-white">
@@ -59,22 +61,22 @@
                                        data-countdown="{{$web_config['flash_deals']?date('m/d/Y',strtotime($web_config['flash_deals']['end_date'])):''}} 23:59:00">
                                      <span class="cz-countdown-days">
                                          <span class="cz-countdown-value"></span>
-                                         <span class="cz-countdown-text">{{ translate('days')}}</span>
+                                         <span class="cz-countdown-text text-nowrap">{{ translate('days')}}</span>
                                      </span>
                                      <span class="cz-countdown-value p-1">:</span>
                                      <span class="cz-countdown-hours">
                                          <span class="cz-countdown-value"></span>
-                                         <span class="cz-countdown-text">{{ translate('hrs')}}</span>
+                                         <span class="cz-countdown-text text-nowrap">{{ translate('hours')}}</span>
                                      </span>
                                      <span class="cz-countdown-value p-1">:</span>
                                      <span class="cz-countdown-minutes">
                                          <span class="cz-countdown-value"></span>
-                                         <span class="cz-countdown-text">{{ translate('min')}}</span>
+                                         <span class="cz-countdown-text text-nowrap">{{ translate('minutes')}}</span>
                                      </span>
                                      <span class="cz-countdown-value p-1">:</span>
                                      <span class="cz-countdown-seconds">
                                          <span class="cz-countdown-value"></span>
-                                         <span class="cz-countdown-text">{{ translate('sec')}}</span>
+                                         <span class="cz-countdown-text text-nowrap">{{ translate('seconds')}}</span>
                                      </span>
                                  </span>
 
@@ -102,7 +104,7 @@
 
         <div class="container pb-5 mb-2 mb-md-4 mt-3 rtl text-align-direction">
             <div class="row">
-                <div class="col-lg-4 col-md-6 my-2 text-center {{Session::get('direction') === "rtl" ? 'text-sm-right' : 'text-sm-left'}}">
+                <div class="col-lg-4 col-md-6 text-primary my-2 d-md-none text-center {{Session::get('direction') === "rtl" ? 'text-md-right' : 'text-md-left'}}">
                     <div class="flash_deal_title">
                         {{$web_config['flash_deals']->title}}
                     </div>

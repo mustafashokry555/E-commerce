@@ -81,28 +81,29 @@ class DeliverymanWithdrawController extends Controller
     }
 
 
-    public function updateStatus(DeliveryManWithdrawRequest $request , string|int $withdrawId, DeliveryManWithdrawService $deliveryManWithdrawService):JsonResponse
+    public function updateStatus(DeliveryManWithdrawRequest $request, string|int $withdrawId, DeliveryManWithdrawService $deliveryManWithdrawService): JsonResponse
     {
-        $withdraw = $this->withdrawRequestRepo->getFirstWhere(params: ['id'=>$withdrawId], relations: ['deliveryMan']);
-        if(!$withdraw){
-            return response()->json(['error'=>translate('Invalid_withdraw')]);
+        $withdraw = $this->withdrawRequestRepo->getFirstWhere(params: ['id' => $withdrawId], relations: ['deliveryMan']);
+        if (!$withdraw) {
+            return response()->json(['error' => translate('Invalid_withdraw')]);
         }
-        $wallet = $this->deliveryManWalletRepo->getFirstWhere(params:['delivery_man_id'=>$withdraw['delivery_man_id']]);
+        $wallet = $this->deliveryManWalletRepo->getFirstWhere(params: ['delivery_man_id' => $withdraw['delivery_man_id']]);
         $formatData = $deliveryManWithdrawService->getUpdateData(request: $request, wallet: $wallet, withdraw: $withdraw);
         $walletData = $formatData['wallet'];
         $withdrawData = $formatData['withdraw'];
 
         $this->deliveryManWalletRepo->update(id: $wallet->id, data: $walletData);
         $this->withdrawRequestRepo->update(id: $withdrawId, data: $withdrawData);
-        if(!empty($withdraw->deliveryMan?->fcm_token)) {
+        if (!empty($withdraw->deliveryMan?->fcm_token)) {
             WithdrawStatusUpdateEvent::dispatch('withdraw_request_status_message', 'delivery_man', $withdraw->deliveryMan?->app_language ?? getDefaultLanguage(), $request['approved'], $withdraw->deliveryMan?->fcm_token);
         }
         if ($request['approved'] == 1) {
-            return response()->json(['message'=>translate('Delivery_man_payment_has_been_approved_successfully')]);
-        }else{
-            return response()->json(['message'=>translate('Delivery_man_payment_request_has_been_Denied_successfully')]);
+            return response()->json(['message' => translate('Delivery_man_payment_has_been_approved_successfully')]);
+        } else {
+            return response()->json(['message' => translate('Delivery_man_payment_request_has_been_Denied_successfully')]);
         }
     }
+
     public function exportList(Request $request): BinaryFileResponse
     {
         $withdrawRequests = $this->withdrawRequestRepo->getListWhere(

@@ -8,6 +8,7 @@ use App\Http\Middleware\APIGuestMiddleware;
 use App\Http\Middleware\APILocalizationMiddleware;
 use App\Http\Middleware\CustomerIsActiveCheck;
 use App\Http\Middleware\CustomerMiddleware;
+use App\Http\Middleware\DatabaseRefreshMiddleware;
 use App\Http\Middleware\DeliveryManAuth;
 use App\Http\Middleware\GuestMiddleware;
 use App\Http\Middleware\InstallationMiddleware;
@@ -32,6 +33,7 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+        DatabaseRefreshMiddleware::class
     ];
 
     /**

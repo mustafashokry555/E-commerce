@@ -10,12 +10,15 @@ use App\Events\DeliverymanPasswordResetEvent;
 use App\Events\DigitalProductDownloadEvent;
 use App\Events\DigitalProductOtpVerificationEvent;
 use App\Events\EmailVerificationEvent;
+use App\Events\MaintenanceModeNotificationEvent;
 use App\Events\OrderPlacedEvent;
 use App\Events\PasswordResetEvent;
 use App\Events\ChattingEvent;
 use App\Events\OrderStatusEvent;
 use App\Events\ProductRequestStatusUpdateEvent;
 use App\Events\RefundEvent;
+use App\Events\RequestProductRestockEvent;
+use App\Events\RestockProductNotificationEvent;
 use App\Events\VendorRegistrationEvent;
 use App\Events\WithdrawStatusUpdateEvent;
 use App\Listeners\AddFundToWalletListener;
@@ -26,12 +29,15 @@ use App\Listeners\DeliverymanPasswordResetListener;
 use App\Listeners\DigitalProductDownloadListener;
 use App\Listeners\DigitalProductOtpVerificationListener;
 use App\Listeners\EmailVerificationListener;
+use App\Listeners\MaintenanceModeNotificationListener;
 use App\Listeners\OrderPlacedListener;
 use App\Listeners\PasswordResetListener;
 use App\Listeners\ChattingListener;
 use App\Listeners\OrderStatusListener;
 use App\Listeners\ProductRequestStatusUpdateListener;
 use App\Listeners\RefundListener;
+use App\Listeners\RequestProductRestockListener;
+use App\Listeners\RestockProductNotificationListener;
 use App\Listeners\VendorRegistrationListener;
 use App\Listeners\WithdrawStatusUpdateListener;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -91,6 +97,15 @@ class EventServiceProvider extends ServiceProvider
         ],
         DigitalProductDownloadEvent::class => [
             DigitalProductDownloadListener::class,
+        ],
+        MaintenanceModeNotificationEvent::class => [
+            MaintenanceModeNotificationListener::class,
+        ],
+        RequestProductRestockEvent::class => [
+            RequestProductRestockListener::class,
+        ],
+        RestockProductNotificationEvent::class => [
+            RestockProductNotificationListener::class,
         ],
     ];
 
