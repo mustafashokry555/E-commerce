@@ -9001,4 +9001,18 @@ return [
 	"                            l" => " l",
 	"_we_are_always_happy_to_help" => " we are always happy to help",
 	"N:B you_can_upload_only_6Valley’s_theme_templates" => "N:B you can upload only 6Valley’s theme templates",
+	"The_theme_upload_is_required." => "The theme upload is required.",
+	"The_theme_must_be_a_ZIP_file." => "The theme must be a ZIP file.",
+	"invalid_theme" => "Invalid theme",
+	"the_file_is_required" => "The file is required",
+	"the_file_must_be_a_zip_file" => "The file must be a zip file",
+	"invalid_file!" => "Invalid file!",
+	"riad_uddin" => "Riad uddin",
+	"after_adding_a_new_language_you_need_to_translate_the_key_contents_for_users_to_experience_this_feature." => "After adding a new language you need to translate the key contents for users to experience this feature.",
+	"to_translate_a_language_click_the_action_button_from_the_language_table_&_click_translate." => "To translate a language click the action button from the language table & click translate.",
+	"then_change_the_key_language_value_manually_or_click_the_Auto_Translate_button." => "Then change the key language value manually or click the Auto Translate button.",
+	"Finally,_click_Update_to_save_the_changes." => "Finally  click Update to save the changes.",
+    "Welcome_to_our_online_store" => "Welcome to our online store!",
+    "Login or Register" => "Login or Register",
+
 ];
