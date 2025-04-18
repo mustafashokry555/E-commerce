@@ -9014,5 +9014,6 @@ return [
 	"Finally,_click_Update_to_save_the_changes." => "Finally  click Update to save the changes.",
     "Welcome_to_our_online_store" => "Welcome to our online store!",
     "Login or Register" => "Login or Register",
+    'Instagram Feed' => 'Instagram Feed',
 
 ];

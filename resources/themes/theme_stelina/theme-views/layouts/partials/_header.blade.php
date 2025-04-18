@@ -131,12 +131,12 @@
                                         <li class="active">
                                             <a data-toggle="tab"
                                                 aria-expanded="true"
-                                                href="#header-tab-login">Login</a>
+                                                href="#header-tab-login">{{ translate('Login') }}</a>
                                         </li>
                                         <li>
                                             <a data-toggle="tab"
                                                 aria-expanded="true"
-                                                href="#header-tab-rigister">Register</a>
+                                                href="#header-tab-rigister">{{ translate('Register') }}</a>
                                         </li>
                                     </ul>
                                     <div class="tab-container">
@@ -147,7 +147,7 @@
                                                 <p
                                                     class="form-row form-row-wide">
                                                     <input type="email"
-                                                        placeholder="Email"
+                                                        placeholder="{{ translate('Email') }}"
                                                         class="input-text">
                                                 </p>
                                                 <p
@@ -155,7 +155,7 @@
                                                     <input
                                                         type="password"
                                                         class="input-text"
-                                                        placeholder="Password">
+                                                        placeholder="{{ translate(key: 'Password') }}">
                                                 </p>
                                                 <p class="form-row">
                                                     <label
@@ -164,18 +164,16 @@
                                                             type="checkbox"
                                                             class="input-checkbox">
                                                         <span>
-                                                            Remember me
+                                                            {{ translate('remember_me') }}
                                                         </span>
                                                     </label>
                                                     <input type="submit"
                                                         class="button"
-                                                        value="Login">
+                                                        value="{{ translate('Login') }}">
                                                 </p>
                                                 <p
                                                     class="lost_password">
-                                                    <a href="#">Lost
-                                                        your
-                                                        password?</a>
+                                                    <a href="#">{{ translate('forget_password') }}</a>
                                                 </p>
                                             </form>
                                         </div>
@@ -186,7 +184,7 @@
                                                 <p
                                                     class="form-row form-row-wide">
                                                     <input type="email"
-                                                        placeholder="Email"
+                                                        placeholder="{{ translate('Email') }}"
                                                         class="input-text">
                                                 </p>
                                                 <p
@@ -194,12 +192,12 @@
                                                     <input
                                                         type="password"
                                                         class="input-text"
-                                                        placeholder="Password">
+                                                        placeholder="{{ translate('Password') }}">
                                                 </p>
                                                 <p class="form-row">
                                                     <input type="submit"
                                                         class="button"
-                                                        value="Register">
+                                                        value="{{ translate('Register') }}">
                                                 </p>
                                             </form>
                                         </div>
@@ -229,7 +227,7 @@
                             <span></span>
                             <span></span>
                         </span>
-                        <span class="text">All Categories</span>
+                        <span class="text">{{ translate('All Categories') }}</span>
                     </div>
                     <div class="block-content verticalmenu-content">
                         <ul
@@ -306,7 +304,7 @@
                                 class="menu-item  menu-item-has-children">
                                 <a href="index.html"
                                     class="stelina-menu-item-title"
-                                    title="Home">Home</a>
+                                    title="Home">{{ translate('Home') }}</a>
                                 <span class="toggle-submenu"></span>
                                 <ul class="submenu">
                                     <li class="menu-item">

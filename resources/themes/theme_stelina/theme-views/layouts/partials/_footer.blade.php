@@ -6,41 +6,40 @@
                     class="box-footer col-xs-12 col-sm-4 col-md-4 col-lg-4 hidden-sm hidden-md hidden-lg">
                     <div class="stelina-newsletter style1">
                         <div class="newsletter-head">
-                            <h3 class="title">Newsletter</h3>
+                            <h3 class="title">{{ translate('newsletter')}}</h3>
                         </div>
                         <div class="newsletter-form-wrap">
                             <div class="list">
-                                Sign up for our free video course and
-                                <br /> urban garden inspiration
+                                {{ translate('subscribe_to_our_new_channel_to_get_latest_updates')}}
                             </div>
                             <input type="email"
                                 class="input-text email email-newsletter"
-                                placeholder="Your email letter">
+                                placeholder="{{ translate('your_Email_Address')}}">
                             <button
-                                class="button btn-submit submit-newsletter">SUBSCRIBE</button>
+                                class="button btn-submit submit-newsletter">{{ translate('subscribe')}}</button>
                         </div>
                     </div>
                 </div>
                 <div
                     class="box-footer col-xs-12 col-sm-4 col-md-4 col-lg-4">
                     <div class="stelina-custommenu default">
-                        <h2 class="widgettitle">Quick Menu</h2>
+                        <h2 class="widgettitle">{{ translate('special')}}</h2>
                         <ul class="menu">
                             <li class="menu-item">
-                                <a href="#">New arrivals</a>
+                                <a href="#">{{ translate('latest_products')}}</a>
                             </li>
                             <li class="menu-item">
-                                <a href="#">Life style</a>
+                                <a href="#">{{ translate('top_rated_product')}}</a>
                             </li>
                             <li class="menu-item">
-                                <a href="#">Accents</a>
+                                <a href="#">{{ translate('best_selling_product')}}</a>
                             </li>
                             <li class="menu-item">
-                                <a href="#">Tables</a>
+                                <a href="#">{{ translate('featured_products')}}</a>
                             </li>
-                            <li class="menu-item">
-                                <a href="#">Dining</a>
-                            </li>
+                            {{-- <li class="menu-item">
+                                <a href="#">{{ translate('flash_deal')}}</a>
+                            </li> --}}
                         </ul>
                     </div>
                 </div>
@@ -48,40 +47,39 @@
                     class="box-footer col-xs-12 col-sm-4 col-md-4 col-lg-4 hidden-xs">
                     <div class="stelina-newsletter style1">
                         <div class="newsletter-head">
-                            <h3 class="title">Newsletter</h3>
+                            <h3 class="title">{{ translate('newsletter')}}</h3>
                         </div>
                         <div class="newsletter-form-wrap">
                             <div class="list">
-                                Sign up for our free video course and
-                                <br /> urban garden inspiration
+                                {{ translate('subscribe_to_our_new_channel_to_get_latest_updates')}}
                             </div>
                             <input type="email"
                                 class="input-text email email-newsletter"
-                                placeholder="Your email letter">
+                                placeholder="{{ translate('your_Email_Address')}}">
                             <button
-                                class="button btn-submit submit-newsletter">SUBSCRIBE</button>
+                                class="button btn-submit submit-newsletter">{{ translate('subscribe')}}</button>
                         </div>
                     </div>
                 </div>
                 <div
                     class="box-footer col-xs-12 col-sm-4 col-md-4 col-lg-4">
                     <div class="stelina-custommenu default">
-                        <h2 class="widgettitle">Information</h2>
+                        <h2 class="widgettitle">{{ translate('account_&_shipping_info')}}</h2>
                         <ul class="menu">
                             <li class="menu-item">
-                                <a href="#">FAQs</a>
+                                <a href="#">{{ translate('profile_info')}}</a>
                             </li>
                             <li class="menu-item">
-                                <a href="#">Track Order</a>
+                                <a href="#">{{ translate('Shipping_Policy')}}</a>
                             </li>
                             <li class="menu-item">
-                                <a href="#">Delivery</a>
+                                <a href="#">{{ translate('track_order')}}</a>
                             </li>
                             <li class="menu-item">
-                                <a href="#">Contact Us</a>
+                                <a href="#">{{ translate('return_policy')}}</a>
                             </li>
                             <li class="menu-item">
-                                <a href="#">Return</a>
+                                <a href="#">{{ translate('cancellation_policy')}}</a>
                             </li>
                         </ul>
                     </div>
@@ -116,9 +114,10 @@
                             </ul>
                         </div>
                         <div class="coppyright">
-                            Copyright © 2020
+                            {{ $web_config['copyright_text'] }}
+                            {{-- Copyright © 2020
                             <a href="#">Stelina</a>
-                            . All rights reserved
+                            . All rights reserved --}}
                         </div>
                     </div>
                 </div>

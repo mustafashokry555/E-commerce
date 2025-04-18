@@ -160,15 +160,15 @@
                         <ul class="tab-link">
                             <li class="active">
                                 <a data-toggle="tab" aria-expanded="true"
-                                    href="#bestseller">Bestseller</a>
+                                    href="#bestseller">{{ translate('Best_Selling') }}</a>
                             </li>
                             <li class>
                                 <a data-toggle="tab" aria-expanded="true"
-                                    href="#new_arrivals">New Arrivals </a>
+                                    href="#new_arrivals">{{ translate('New Arrivals') }}</a>
                             </li>
                             <li class>
                                 <a data-toggle="tab" aria-expanded="true"
-                                    href="#top-rated">Top Rated</a>
+                                    href="#top-rated">{{ translate('Top_Rated') }}</a>
                             </li>
                         </ul>
                     </div>
@@ -2052,7 +2052,7 @@
             <div class="product-in-stock-wrapp">
                 <div class="container">
                     <h3 class="custommenu-title-blog white">
-                        Featured Products
+                        {{ translate('featured_Products') }}
                     </h3>
                     <div class="stelina-product style3">
                         <ul
@@ -2578,7 +2578,7 @@
             <div class="stelina-blog-wraap">
                 <div class="container">
                     <h3 class="custommenu-title-blog">
-                        Our Latest News
+                        {{ translate('NEWS LETTER') }}
                     </h3>
                     <div class="stelina-blog default" dir="ltr">
                         <div class="owl-slick equal-container nav-center"
@@ -2903,7 +2903,7 @@
         <div>
             <h3 class="custommenu-title-blog">
                 <i class="flaticon-instagram" aria-hidden="true"></i>
-                Instagram Feed
+                {{ translate('Instagram Feed') }}
             </h3>
             <div class="stelina-instagram">
                 <div class="instagram owl-slick equal-container"
