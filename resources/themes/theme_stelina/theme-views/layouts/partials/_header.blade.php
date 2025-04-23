@@ -229,66 +229,22 @@
                     <div class="block-content verticalmenu-content">
                         <ul
                             class="stelina-nav-vertical vertical-menu stelina-clone-mobile-menu">
-                            <li class="menu-item">
-                                <a href="#"
-                                    class="stelina-menu-item-title"
-                                    title="New Arrivals">New
-                                    Arrivals</a>
-                            </li>
-                            <li class="menu-item">
-                                <a title="Hot Sale" href="#"
-                                    class="stelina-menu-item-title">Hot
-                                    Sale</a>
-                            </li>
-                            <li
-                                class="menu-item menu-item-has-children">
-                                <a title="Accessories" href="#"
-                                    class="stelina-menu-item-title">Accessories</a>
-                                <span class="toggle-submenu"></span>
-                                <ul role="menu" class=" submenu">
+                            {{-- <li class="menu-item">
+                                    <a class="d-flex" data-value="{{ $category->id }}"
+                                        href="javascript:">
+                                        {{ translate('all_categories') }}
+                                    </a>
+                            </li> --}}
+                            @if ($categories)
+                                @foreach ($categories as $category)
                                     <li class="menu-item">
-                                        <a title="Living" href="#"
-                                            class="stelina-item-title">Living</a>
+                                            <a class="d-flex" data-value="{{ $category->id }}"
+                                                href="{{ route('products', ['category_id' => $category->id, 'data_from' => 'category', 'page' => 1]) }}">
+                                                {{ $category['name'] }}
+                                            </a>
                                     </li>
-                                    <li class="menu-item">
-                                        <a title="Accents" href="#"
-                                            class="stelina-item-title">Accents</a>
-                                    </li>
-                                    <li class="menu-item">
-                                        <a title="New Arrivals" href="#"
-                                            class="stelina-item-title">New
-                                            Arrivals</a>
-                                    </li>
-                                    <li class="menu-item">
-                                        <a title="Accessories" href="#"
-                                            class="stelina-item-title">Accessories</a>
-                                    </li>
-                                    <li class="menu-item">
-                                        <a title="Bedroom" href="#"
-                                            class="stelina-item-title">Bedroom</a>
-                                    </li>
-                                </ul>
-                            </li>
-                            <li class="menu-item">
-                                <a title="Accents" href="#"
-                                    class="stelina-menu-item-title">Accents</a>
-                            </li>
-                            <li class="menu-item">
-                                <a title="Tables" href="#"
-                                    class="stelina-menu-item-title">Tables</a>
-                            </li>
-                            <li class="menu-item">
-                                <a title="Dining" href="#"
-                                    class="stelina-menu-item-title">Dining</a>
-                            </li>
-                            <li class="menu-item">
-                                <a title="Lighting" href="#"
-                                    class="stelina-menu-item-title">Lighting</a>
-                            </li>
-                            <li class="menu-item">
-                                <a title="Office" href="#"
-                                    class="stelina-menu-item-title">Office</a>
-                            </li>
+                                @endforeach
+                            @endif
                         </ul>
                     </div>
                 </div>
@@ -297,48 +253,31 @@
                         <ul
                             class="stelina-clone-mobile-menu stelina-nav main-menu "
                             id="menu-main-menu">
-                            <li
-                                class="menu-item  menu-item-has-children">
-                                <a href="index.html"
+                            <li>
+                                <a href="{{ route('home') }}"
                                     class="stelina-menu-item-title"
-                                    title="Home">{{ translate('Home') }}</a>
-                                <span class="toggle-submenu"></span>
-                                <ul class="submenu">
-                                    <li class="menu-item">
-                                        <a href="index.html">Home 01</a>
-                                    </li>
-                                    <li class="menu-item">
-                                        <a href="home2.html">Home 02</a>
-                                    </li>
-                                    <li class="menu-item">
-                                        <a href="home3.html">Home 03</a>
-                                    </li>
-                                </ul>
+                                    title="Home">
+                                    {{ translate('Home') }}
+                                </a>
                             </li>
                             <li
                                 class="menu-item menu-item-has-children">
                                 <a href="gridproducts.html"
                                     class="stelina-menu-item-title"
-                                    title="Shop">Shop</a>
+                                    title="Shop">{{ translate('stores') }}</a>
                                 <span class="toggle-submenu"></span>
                                 <ul class="submenu">
+                                    @foreach ($web_config['shops']->take(5) as $shop)
+                                        <li class="menu-item">
+                                            <a href="{{ route('shopView', ['id' => $shop['id']]) }}">
+                                                {{ Str::limit($shop->name, 14) }}
+                                            </a>
+                                        </li>
+                                    @endforeach
                                     <li class="menu-item">
-                                        <a href="gridproducts.html">Grid
-                                            Fullwidth</a>
-                                    </li>
-                                    <li class="menu-item">
-                                        <a
-                                            href="gridproducts_leftsidebar.html">Grid
-                                            Left sidebar</a>
-                                    </li>
-                                    <li class="menu-item">
-                                        <a
-                                            href="gridproducts_bannerslider.html">Grid
-                                            Bannerslider</a>
-                                    </li>
-                                    <li class="menu-item">
-                                        <a
-                                            href="listproducts.html">List</a>
+                                        <a  href="{{ route('vendors') }}" class="fw-bold text-primary d-flex justify-content-center">
+                                            {{ translate('view_all') . '...' }}
+                                        </a>
                                     </li>
                                 </ul>
                             </li>
@@ -346,146 +285,23 @@
                                 class="menu-item  menu-item-has-children item-megamenu">
                                 <a href="#"
                                     class="stelina-menu-item-title"
-                                    title="Pages">Pages</a>
-                                <span class="toggle-submenu"></span>
-                                <div
-                                    class="submenu mega-menu menu-page">
-                                    <div class="row">
-                                        <div
-                                            class="col-xs-12 col-sm-12 col-md-12 col-lg-3 menu-page-item">
-                                            <div
-                                                class="stelina-custommenu default">
-                                                <h2
-                                                    class="widgettitle">Shop
-                                                    Pages</h2>
-                                                <ul class="menu">
-                                                    <li
-                                                        class="menu-item">
-                                                        <a
-                                                            href="shoppingcart.html">Shopping
-                                                            Cart</a>
-                                                    </li>
-                                                    <li
-                                                        class="menu-item">
-                                                        <a
-                                                            href="checkout.html">Checkout</a>
-                                                    </li>
-                                                    <li
-                                                        class="menu-item">
-                                                        <a
-                                                            href="contact.html">Contact
-                                                            us</a>
-                                                    </li>
-                                                    <li
-                                                        class="menu-item">
-                                                        <a
-                                                            href="404page.html">404</a>
-                                                    </li>
-                                                    <li
-                                                        class="menu-item">
-                                                        <a
-                                                            href="login.html">Login/Register</a>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <div
-                                            class="col-xs-12 col-sm-12 col-md-12 col-lg-3 menu-page-item">
-                                            <div
-                                                class="stelina-custommenu default">
-                                                <h2
-                                                    class="widgettitle">Product</h2>
-                                                <ul class="menu">
-                                                    <li
-                                                        class="menu-item">
-                                                        <a
-                                                            href="productdetails-fullwidth.html">Product
-                                                            Fullwidth</a>
-                                                    </li>
-                                                    <li
-                                                        class="menu-item">
-                                                        <a
-                                                            href="productdetails-leftsidebar.html">Product
-                                                            left
-                                                            sidebar</a>
-                                                    </li>
-                                                    <li
-                                                        class="menu-item">
-                                                        <a
-                                                            href="productdetails-rightsidebar.html">Product
-                                                            right
-                                                            sidebar</a>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <div
-                                            class="col-xs-12 col-sm-12 col-md-12 col-lg-3 menu-page-item">
-                                        </div>
-                                        <div
-                                            class="col-xs-12 col-sm-12 col-md-12 col-lg-3 menu-page-item">
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                            <li
-                                class="menu-item  menu-item-has-children">
-                                <a href="inblog_right-siderbar.html"
-                                    class="stelina-menu-item-title"
-                                    title="Blogs">Blogs</a>
+                                    title="{{ translate('brands') }}">{{ translate('brands') }}</a>
                                 <span class="toggle-submenu"></span>
                                 <ul class="submenu">
-                                    <li
-                                        class="menu-item menu-item-has-children">
-                                        <a href="#"
-                                            class="stelina-menu-item-title"
-                                            title="Blog Style">Blog
-                                            Style</a>
-                                        <span
-                                            class="toggle-submenu"></span>
-                                        <ul class="submenu">
-                                            <li class="menu-item">
-                                                <a
-                                                    href="bloggrid.html">Grid</a>
-                                            </li>
-                                            <li class="menu-item">
-                                                <a
-                                                    href="bloglist.html">List</a>
-                                            </li>
-                                            <li class="menu-item">
-                                                <a
-                                                    href="bloglist-leftsidebar.html">List
-                                                    Sidebar</a>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li
-                                        class="menu-item menu-item-has-children">
-                                        <a href="#"
-                                            class="stelina-menu-item-title"
-                                            title="Post Layout">Post
-                                            Layout</a>
-                                        <span
-                                            class="toggle-submenu"></span>
-                                        <ul class="submenu">
-                                            <li class="menu-item">
-                                                <a
-                                                    href="inblog_left-siderbar.html">Left
-                                                    Sidebar</a>
-                                            </li>
-                                            <li class="menu-item">
-                                                <a
-                                                    href="inblog_right-siderbar.html">Right
-                                                    Sidebar</a>
-                                            </li>
-                                        </ul>
+                                    @foreach ($brands->take(5) as $brand)
+                                        <li
+                                            class="menu-item">
+                                            <a href="{{ route('products', ['brand_id' => $brand['id'], 'data_from' => 'brand', 'page' => 1]) }}">
+                                                {{ $brand->name }}
+                                            </a>
+                                        </li>
+                                    @endforeach
+                                    <li class="menu-item">
+                                        <a href="{{ route('brands') }}"
+                                            class="fw-bold text-primary d-flex justify-content-center">{{ translate('view_all') . '...' }}
+                                        </a>
                                     </li>
                                 </ul>
-                            </li>
-                            <li class="menu-item">
-                                <a href="about.html"
-                                    class="stelina-menu-item-title"
-                                    title="About">About</a>
                             </li>
                         </ul>
                     </div>

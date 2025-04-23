@@ -1,8 +1,7 @@
-{{-- @php
-dd($topRatedProducts);
-    print_r(json_encode($topRatedProducts));
-    return 0;
-@endphp --}}
+@php
+    // print_r(json_encode($web_config['shops']));
+    // return 0;
+@endphp
 @extends('theme-views.layouts.app')
 
 @section('title', $web_config['company_name'].' '.translate('Online_Shopping').' | '.$web_config['company_name'].' '.translate('ecommerce'))
@@ -29,29 +28,36 @@ dd($topRatedProducts);
                         class="slider-owl owl-slick equal-container nav-center"
                         data-slick='{"autoplay":true, "autoplaySpeed":9000, "arrows":true, "dots":false, "infinite":true, "speed":1000, "rows":1}'
                         data-responsive='[{"breakpoint":"2000","settings":{"slidesToShow":1}}]'>
-                        <div class="slider-item style1">
-                            <div class="slider-inner equal-element">
-                                <div class="slider-infor">
-                                    <h5 class="title-small">
-                                        New Arrivals!
-                                    </h5>
-                                    <h3 class="title-big">
-                                        Scandinavians<br />
-                                        Collection
-                                    </h3>
-                                    <div class="price">
-                                        Price from:
-                                        <span class="number-price">
-                                            $75.00
-                                        </span>
+                        @foreach ($bannerTypeMainBanner as $banner)
+                            <div class="slider-item style1">
+                                <div class="slider-inner equal-element" style="background-image: url({{ $banner->photo_full_url['path'] }})">
+                                    <div class="slider-infor">
+                                        <h5 class="title-small">
+                                            {{ $banner->resource_type }}
+                                        </h5>
+                                        @if ($banner->resource_type == 'product')
+                                            <h3 class="title-big">
+                                                {{ $banner->product->name }}
+                                            </h3>
+                                            <div class="price">
+                                                Price from:
+                                                <span class="number-price">
+                                                    ${{ $banner->product->unit_price }}
+                                                </span>
+                                            </div>
+                                        @elseif ($banner->resource_type == 'category')
+                                        @elseif ($banner->resource_type == 'shop')
+                                        @elseif ($banner->resource_type == 'brand')
+
+                                        @endif
+                                        <a href="{{ $banner->url }}"
+                                            class="button btn-shop-the-look bgroud-style">Shop
+                                            now</a>
                                     </div>
-                                    <a href="#"
-                                        class="button btn-shop-the-look bgroud-style">Shop
-                                        now</a>
                                 </div>
                             </div>
-                        </div>
-                        <div class="slider-item style2">
+                        @endforeach
+                        {{-- <div class="slider-item style2">
                             <div class="slider-inner equal-element">
                                 <div class="slider-infor">
                                     <h5 class="title-small">
@@ -94,7 +100,7 @@ dd($topRatedProducts);
                                         now</a>
                                 </div>
                             </div>
-                        </div>
+                        </div> --}}
                     </div>
                 </div>
             </div>
@@ -182,6 +188,12 @@ dd($topRatedProducts);
                     </div>
                     <div class="tab-container">
                         <div id="bestseller" class="tab-panel active">
+                            <div class="d-flex flex-wrap justify-content-end gap-3 " style="margin-bottom: 15px">
+                                <i class="fa fa-angle-double-{{Session::get('direction') === "rtl" ? 'right ml-1' : 'left mr-1 ml-n1 mt-1 '}} view-all-text"></i>
+                                <a href="{{route('products',['data_from'=>'best-selling'])}}" class="view-all-text text-right  text-capitalize">
+                                    <span>{{ translate('view_all') }}</span>
+                                </a>
+                            </div>
                             <div class="stelina-product">
                                 <ul class="row list-products auto-clear equal-container product-grid">
                                     @foreach($bestSellProduct->take(8) as $product)
@@ -273,6 +285,12 @@ dd($topRatedProducts);
                             </div>
                         </div>
                         <div id="new_arrivals" class="tab-panel">
+                            <div class="d-flex flex-wrap justify-content-end gap-3 " style="margin-bottom: 15px">
+                                <i class="fa fa-angle-double-{{Session::get('direction') === "rtl" ? 'right ml-1' : 'left mr-1 ml-n1 mt-1 '}} view-all-text"></i>
+                                <a href="{{route('products',['data_from'=>'latest'])}}" class="view-all-text text-right  text-capitalize">
+                                    <span>{{ translate('view_all') }}</span>
+                                </a>
+                            </div>
                             <div class="stelina-product">
                                 <ul
                                     class="row list-products auto-clear equal-container product-grid">
@@ -365,6 +383,12 @@ dd($topRatedProducts);
                             </div>
                         </div>
                         <div id="top-rated" class="tab-panel">
+                            <div class="d-flex flex-wrap justify-content-end gap-3 " style="margin-bottom: 15px">
+                                <i class="fa fa-angle-double-{{Session::get('direction') === "rtl" ? 'right ml-1' : 'left mr-1 ml-n1 mt-1 '}} view-all-text"></i>
+                                <a href="{{route('products',['data_from'=>'top-rated'])}}" class="view-all-text text-right  text-capitalize">
+                                    <span>{{ translate('view_all') }}</span>
+                                </a>
+                            </div>
                             <div class="stelina-product">
                                 <ul
                                     class="row list-products auto-clear equal-container product-grid">
