@@ -48,7 +48,7 @@
                         @foreach ($web_config['language'] as $data)
                             @if ($data['code'] == getDefaultLanguage())
                                 <img class="mr-2" width="20"
-                                    src="{{ asset('assets/front-end/img/flags/' . $data['code'] . '.png') }}"
+                                    src="{{ asset('public/assets/front-end/img/flags/' . $data['code'] . '.png') }}"
                                     alt="{{ $data['name'] }}">
                                 {{ $data['name'] }}
                             @endif
@@ -62,7 +62,7 @@
                                     data-language-code="{{ $data['code'] }}">
                                     <a class="dropdown-item pb-1" href="javascript:">
                                         <img class="mr-2" width="20"
-                                            src="{{ asset('assets/front-end/img/flags/' . $data['code'] . '.png') }}"
+                                            src="{{ asset('public/assets/front-end/img/flags/' . $data['code'] . '.png') }}"
                                             alt="{{ $data['name'] }}" />
                                         <span class="text-capitalize">{{ $data['name'] }}</span>
                                     </a>

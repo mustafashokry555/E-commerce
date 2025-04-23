@@ -3,7 +3,7 @@
 @section('title', translate('Update_Info'))
 
 @push('css_or_js')
-    <link rel="stylesheet" href="{{ asset('assets/front-end/plugin/intl-tel-input/css/intlTelInput.css') }}">
+    <link rel="stylesheet" href="{{ asset('public/assets/front-end/plugin/intl-tel-input/css/intlTelInput.css') }}">
 @endpush
 
 @section('content')
@@ -15,7 +15,7 @@
                         <div>
                             <div class="text-center">
                                 <div class="py-3">
-                                    <img src="{{asset('assets/front-end/img/icons/otp-login-icon.svg') }}" alt="" width="50">
+                                    <img src="{{asset('public/assets/front-end/img/icons/otp-login-icon.svg') }}" alt="" width="50">
                                 </div>
                                 <div class="my-3">
                                     <p class="text-muted">
@@ -84,8 +84,8 @@
 @endsection
 
 @push('script')
-    <script src="{{ asset('assets/front-end/plugin/intl-tel-input/js/intlTelInput.js') }}"></script>
-    <script src="{{ asset('assets/front-end/js/country-picker-init.js') }}"></script>
+    <script src="{{ asset('public/assets/front-end/plugin/intl-tel-input/js/intlTelInput.js') }}"></script>
+    <script src="{{ asset('public/assets/front-end/js/country-picker-init.js') }}"></script>
     @if($user)
         <script>
             $(document).ready(function() {
