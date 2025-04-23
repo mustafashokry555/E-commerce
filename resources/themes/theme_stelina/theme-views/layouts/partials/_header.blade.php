@@ -45,7 +45,9 @@
                 </div>
                 <ul class="header-user-links">
                     <li>
-                        <a href="login.html">{{translate ("Login or Register") }}</a>
+                        <a href="{{ route('customer.auth.login') }}">{{translate ("Login") }}</a>
+                        |
+                        <a href="{{ route('customer.auth.sign-up') }}">{{translate ("Register") }}</a>
                     </li>
                 </ul>
             </div>
@@ -57,34 +59,29 @@
                 <div
                     class="col-lg-3 col-sm-4 col-md-3 col-xs-7 col-ts-12 header-element">
                     <div class="logo">
-                        <a href="index.html">
-                            <img src="assets/images/logo.png" alt="img">
+                        <a class="navbar-brand d-none d-sm-block mr-3 flex-shrink-0 __min-w-7rem" href="{{ route('home') }}">
+                            <img class="__inline-11" style="position: relative; top: -10px; height: 40px !important;" src="{{ getStorageImages(path: $web_config['web_logo'], type: 'logo') }}"
+                                alt="{{ $web_config['company_name'] }}">
                         </a>
                     </div>
                 </div>
                 <div
                     class="col-lg-7 col-sm-8 col-md-6 col-xs-5 col-ts-12">
                     <div class="block-search-block">
-                        <form
+                        <form action="{{ route('products') }}" type="submit"
                             class="form-search form-search-width-category">
                             <div class="form-content">
                                 <div class="category">
                                     <select title="cate"
-                                        data-placeholder="All Categories"
+                                        {{-- data-placeholder="All Categories" --}}
                                         class="chosen-select"
                                         tabindex="1">
-                                        <option
-                                            value="United States">Accessories</option>
-                                        <option
-                                            value="United Kingdom">Accents</option>
-                                        <option
-                                            value="Afghanistan">Desks</option>
-                                        <option
-                                            value="Aland Islands">Sofas</option>
-                                        <option value="Albania">New
-                                            Arrivals</option>
-                                        <option
-                                            value="Algeria">Bedroom</option>
+                                        <option value="all">{{ translate('all_categories') }}</option>
+                                        @if ($categories)
+                                            @foreach ($categories as $category)
+                                                <option value="{{ $category->id }}">{{ $category['name'] }}</option>
+                                            @endforeach
+                                        @endif
                                     </select>
                                 </div>
                                 <div class="inner">
@@ -501,8 +498,10 @@
     <div class="wapper">
         <div class="item mobile-logo">
             <div class="logo">
-                <a href="#">
-                    <img src="assets/images/logo.png" alt="img">
+                <a class=" d-sm-none" href="{{ route('home') }}">
+                    <img class="mobile-logo-img" style="height: 60px !important"
+                        src="{{ getStorageImages(path: $web_config['mob_logo'], type: 'logo') }}"
+                        alt="{{ $web_config['company_name'] }}" />
                 </a>
             </div>
         </div>

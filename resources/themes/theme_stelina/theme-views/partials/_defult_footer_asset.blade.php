@@ -1,0 +1,17 @@
+<script src="{{ asset('assets/front-end/vendor/jquery/dist/jquery-2.2.4.min.js') }}"></script>
+<script src="{{ asset('assets/front-end/vendor/bootstrap/dist/js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ asset('assets/front-end/vendor/bs-custom-file-input/dist/bs-custom-file-input.min.js') }}"></script>
+<script src="{{ asset('assets/front-end/vendor/simplebar/dist/simplebar.min.js') }}"></script>
+<script src="{{ asset('assets/front-end/vendor/tiny-slider/dist/min/tiny-slider.js') }}"></script>
+<script src="{{ asset('assets/front-end/vendor/smooth-scroll/dist/smooth-scroll.polyfills.min.js') }}"></script>
+<script src="{{ asset('js/lightbox.min.js') }}"></script>
+<script src="{{ asset('assets/front-end/vendor/drift-zoom/dist/Drift.min.js') }}"></script>
+<script src="{{ asset('assets/front-end/vendor/lightgallery.js/dist/js/lightgallery.min.js') }}"></script>
+<script src="{{ asset('assets/front-end/vendor/lg-video.js/dist/lg-video.min.js') }}"></script>
+<script src="{{ asset('assets/front-end/js/owl.carousel.min.js')}}"></script>
+<script src="{{ asset("assets/back-end/js/toa/str.js" )}}"></script>
+<script src="{{ asset('assets/front-end/js/theme.js') }}"></script>
+<script src="{{ asset('assets/front-end/js/slick.js') }}"></script>
+<script src="{{ asset('assets/front-end/js/sweet_alert.js') }}"></script>
+<script src="{{ asset('assets/back-end/js/toastr.js') }}"></script>
+<script src="{{ asset('assets/front-end/js/custom.js') }}"></script>

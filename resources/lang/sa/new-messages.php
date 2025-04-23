@@ -8920,4 +8920,9 @@ return [
 	"Login or Register" => "تسجيل او تسجيل الدخول",
 	"Instagram Feed" => "الانستغرام",
 	"want_to_clear_all_stock_clearance_products?" => "Want to clear all stock clearance products ",
+	"_again_,_you_will_see_the_saved_data." => " again   you will see the saved data.",
+	"The_phone_number_must_be_at_least_4_characters" => "The phone number must be at least 4 characters",
+	"Phone number is required" => "Phone number is required",
+	"The phone number must be at least 4 characters" => "The phone number must be at least 4 characters",
+	"1000" => "1000",
 ];

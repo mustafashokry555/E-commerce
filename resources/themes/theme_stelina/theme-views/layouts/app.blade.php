@@ -17,6 +17,7 @@
     <meta name="_token" content="{{csrf_token()}}">
     <link rel="shortcut icon" href="{{$web_config['fav_icon']['path']}}"/>
 
+    @stack('css_or_js')
     <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ theme_asset('assets/css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ theme_asset('assets/css/font-awesome.min.css') }}">
@@ -33,15 +34,14 @@
     <link rel="stylesheet" href="{{ theme_asset('assets/css/mobile-menu.css') }}">
     <link rel="stylesheet" href="{{ theme_asset('assets/fonts/flaticon/flaticon.css') }}">
     <link rel="stylesheet" href="{{ theme_asset('assets/css/style.css') }}">
-    @stack('css_or_js')
     <title>@yield('title')</title>
 
     {{-- {!! getSystemDynamicPartials(type: 'analytics_script') !!} --}}
 </head>
 <body class="toolbar-enabled">
-{{-- @include('theme-views.layouts.partials._alert-message') --}}
-@include('theme-views.layouts.partials._header')
-{{-- @include('theme-views.layouts.partials._settings-sidebar') --}}
+    {{-- @include('theme-views.layouts.partials._alert-message') --}}
+    @include('theme-views.layouts.partials._header')
+    {{-- @include('theme-views.layouts.partials._settings-sidebar') --}}
 @yield('content')
 {{-- @include('theme-views.layouts.partials._feature') --}}
 @include('theme-views.layouts.partials._footer')
@@ -91,7 +91,7 @@
         <div class="">
             <a href="https://wa.me/{{ $whatsapp['phone'] }}?text=Hello%20there!" target="_blank">
                 <img src="{{theme_asset('assets/img/whatsapp.svg')}}" width="35" class="chat-image-shadow"
-                     alt="Chat with us on WhatsApp">
+                    alt="Chat with us on WhatsApp">
             </a>
         </div>
     @endif
@@ -99,10 +99,12 @@
 
 @include('theme-views.layouts.partials._translate-text-for-js')
 {{-- @include('theme-views.layouts.partials._route-for-js') --}}
+@stack('script')
 @include('theme-views.layouts.main-script')
 {{-- @include('theme-views.layouts._firebase-script') --}}
 
 {!! Toastr::message() !!}
+
 {{-- <script>
     function route_alert(route, message) {
         Swal.fire({
@@ -122,7 +124,7 @@
         })
     }
 </script> --}}
-@stack('script')
+
 
 </body>
 </html>

@@ -28,6 +28,7 @@ class ProductListController extends Controller
         return match ($themeName) {
             'default' => self::default_theme($request),
             'theme_aster' => self::theme_aster($request),
+            'theme_stelina' => self::theme_aster($request),
             'theme_fashion' => self::theme_fashion($request),
         };
     }

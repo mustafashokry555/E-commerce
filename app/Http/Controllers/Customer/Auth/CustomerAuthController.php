@@ -41,7 +41,7 @@ class CustomerAuthController extends Controller
     public function loginView(): View|RedirectResponse
     {
         session()->put('keep_return_url', url()->previous());
-        return theme_root_path() == 'default' ? view('web-views.customer-views.auth.login') : redirect()->route('home');
+        return in_array(theme_root_path(), ['default', 'theme_stelina']) ? view('web-views.customer-views.auth.login') : redirect()->route('home');
     }
 
     public function loginSubmit(Request $request): JsonResponse|RedirectResponse

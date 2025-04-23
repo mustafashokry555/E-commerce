@@ -1,3 +1,8 @@
+{{-- @php
+dd($topRatedProducts);
+    print_r(json_encode($topRatedProducts));
+    return 0;
+@endphp --}}
 @extends('theme-views.layouts.app')
 
 @section('title', $web_config['company_name'].' '.translate('Online_Shopping').' | '.$web_config['company_name'].' '.translate('ecommerce'))
@@ -17,6 +22,7 @@
 @section('content')
     <div class="main-content">
         <div class="fullwidth-template">
+
             <div class="home-slider style1 rows-space-30" dir="ltr">
                 <div class="container">
                     <div
@@ -92,6 +98,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="banner-wrapp rows-space-35">
                 <div class="container">
                     <div class="row">
@@ -154,6 +161,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="stelina-tabs  default rows-space-40">
                 <div class="container">
                     <div class="tab-head">
@@ -175,616 +183,92 @@
                     <div class="tab-container">
                         <div id="bestseller" class="tab-panel active">
                             <div class="stelina-product">
-                                <ul
-                                    class="row list-products auto-clear equal-container product-grid">
-                                    <li
-                                        class="product-item  col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
+                                <ul class="row list-products auto-clear equal-container product-grid">
+                                    @foreach($bestSellProduct->take(8) as $product)
+                                        @php($overallRating = $product->reviews ? getOverallRating($product->reviews) : 0)
+                                        <li
+                                            class="product-item  col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
+                                            <div
+                                                class="product-inner equal-element">
+                                                {{-- <div class="product-top">
+                                                    <div class="flash">
+                                                        <span class="onnew">
+                                                            <span class="text">
+                                                                new
+                                                            </span>
                                                         </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-1.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
+                                                    </div>
+                                                </div> --}}
+                                                <div class="product-thumb">
+                                                    <div class="thumb-inner">
+                                                        <a href="{{ route('product', $product->slug) }}">
+                                                            <img src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'product') }}" alt="">
+                                                        </a>
                                                         <div
-                                                            class="yith-wcwl-add-to-wishlist">
+                                                            class="thumb-group">
                                                             <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
+                                                                class="yith-wcwl-add-to-wishlist">
+                                                                <div
+                                                                    class="yith-wcwl-add-button">
+                                                                    <a
+                                                                        href="#">Add
+                                                                        to
+                                                                        Wishlist</a>
+                                                                </div>
+                                                            </div>
+                                                            <a href="#"
+                                                                class="button quick-wiew-button">Quick
+                                                                View</a>
+                                                            <div
+                                                                class="loop-form-add-to-cart">
+                                                                <button
+                                                                    class="single_add_to_cart_button button">Add
+                                                                    to cart
+                                                                </button>
                                                             </div>
                                                         </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Super
-                                                        Tweeter</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
+                                                <div class="product-info">
+                                                    <h5
+                                                        class="product-name product_title">
+                                                        <a href="{{route('product',$product->slug)}}" class="text-capitalize fw-semibold">
+                                                            {{ $product['name'] }}
+                                                        </a>
+                                                    </h5>
+                                                    <div class="group-info">
                                                         <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item product-type-variable col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-2.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
+                                                            class="stars-rating">
                                                             <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
+                                                                class="star-rating">
+                                                                @for ($index = 1; $index <= 5; $index++)
+                                                                    @if ($index <= (int)$overallRating[0])
+                                                                        <i class="bi bi-star-fill"></i>
+                                                                    @elseif ($overallRating[0] != 0 && $index <= (int)$overallRating[0] + 1.1 && $overallRating[0] > ((int)$overallRating[0]))
+                                                                        <i class="bi bi-star-half"></i>
+                                                                    @else
+                                                                        <i class="bi bi-star"></i>
+                                                                    @endif
+                                                                @endfor
+                                                            </div>
+                                                            <div
+                                                                class="count-star">
+                                                                ( {{count($product->reviews)}} )
                                                             </div>
                                                         </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
+                                                        <div class="price">
+                                                            @if(getProductPriceByType(product: $product, type: 'discount', result: 'value') > 0)
+                                                                <del class="product__old-price">{{webCurrencyConverter($product->unit_price)}}</del>
+                                                            @endif
+                                                            <ins class="product__new-price">
+                                                                {{ getProductPriceByType(product: $product, type: 'discounted_unit_price', result: 'string') }}
+                                                            </ins>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Auto
-                                                        Accentss</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item product-type-variable col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-3.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
-                                                            <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
-                                                            </div>
-                                                        </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Rose
-                                                        Elixir</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item product-type-variable col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-4.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
-                                                            <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
-                                                            </div>
-                                                        </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Aoud Queen
-                                                        Roses</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item  col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-5.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
-                                                            <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
-                                                            </div>
-                                                        </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Series
-                                                        Chrome</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item product-type-variable col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-6.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
-                                                            <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
-                                                            </div>
-                                                        </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Shift
-                                                        Knob</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item product-type-variable col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-7.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
-                                                            <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
-                                                            </div>
-                                                        </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Tuscan
-                                                        Creations</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item  col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-8.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
-                                                            <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
-                                                            </div>
-                                                        </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Patiala
-                                                        Eau</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
+                                        </li>
+                                    @endforeach
                                 </ul>
                             </div>
                         </div>
@@ -792,613 +276,91 @@
                             <div class="stelina-product">
                                 <ul
                                     class="row list-products auto-clear equal-container product-grid">
-                                    <li
-                                        class="product-item  col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
+                                    @foreach($latestProductsList->take(8) as $product)
+                                        @php($overallRating = $product->reviews ? getOverallRating($product->reviews) : 0)
+                                        <li
+                                            class="product-item  col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
+                                            <div
+                                                class="product-inner equal-element">
+                                                <div class="product-top">
+                                                    <div class="flash">
+                                                        <span class="onnew">
+                                                            <span class="text">
+                                                                {{ translate('new') }}
+                                                            </span>
                                                         </span>
-                                                    </span>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-9.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
+                                                <div class="product-thumb">
+                                                    <div class="thumb-inner">
+                                                        <a href="{{ route('product', $product->slug) }}">
+                                                            <img src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'product') }}" alt="">
+                                                        </a>
                                                         <div
-                                                            class="yith-wcwl-add-to-wishlist">
+                                                            class="thumb-group">
                                                             <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
+                                                                class="yith-wcwl-add-to-wishlist">
+                                                                <div
+                                                                    class="yith-wcwl-add-button">
+                                                                    <a
+                                                                        href="#">Add
+                                                                        to
+                                                                        Wishlist</a>
+                                                                </div>
+                                                            </div>
+                                                            <a href="#"
+                                                                class="button quick-wiew-button">Quick
+                                                                View</a>
+                                                            <div
+                                                                class="loop-form-add-to-cart">
+                                                                <button
+                                                                    class="single_add_to_cart_button button">Add
+                                                                    to cart
+                                                                </button>
                                                             </div>
                                                         </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Bal
-                                                        Afrique</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
+                                                <div class="product-info">
+                                                    <h5
+                                                        class="product-name product_title">
+                                                        <a href="{{route('product',$product->slug)}}" class="text-capitalize fw-semibold">
+                                                            {{ $product['name'] }}
+                                                        </a>
+                                                    </h5>
+                                                    <div class="group-info">
                                                         <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item product-type-variable col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-10.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
+                                                            class="stars-rating">
                                                             <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
+                                                                class="star-rating">
+                                                                @for ($index = 1; $index <= 5; $index++)
+                                                                    @if ($index <= (int)$overallRating[0])
+                                                                        <i class="bi bi-star-fill"></i>
+                                                                    @elseif ($overallRating[0] != 0 && $index <= (int)$overallRating[0] + 1.1 && $overallRating[0] > ((int)$overallRating[0]))
+                                                                        <i class="bi bi-star-half"></i>
+                                                                    @else
+                                                                        <i class="bi bi-star"></i>
+                                                                    @endif
+                                                                @endfor
+                                                            </div>
+                                                            <div
+                                                                class="count-star">
+                                                                ( {{count($product->reviews)}} )
                                                             </div>
                                                         </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
+                                                        <div class="price">
+                                                            @if(getProductPriceByType(product: $product, type: 'discount', result: 'value') > 0)
+                                                                <del class="product__old-price">{{webCurrencyConverter($product->unit_price)}}</del>
+                                                            @endif
+                                                            <ins class="product__new-price">
+                                                                {{ getProductPriceByType(product: $product, type: 'discounted_unit_price', result: 'string') }}
+                                                            </ins>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Exotic
-                                                        Diamond</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item product-type-variable col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-11.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
-                                                            <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
-                                                            </div>
-                                                        </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Mon Guerlain
-                                                    </a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item product-type-variable col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-13.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
-                                                            <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
-                                                            </div>
-                                                        </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Dainty
-                                                        Diamond</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item  col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-14.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
-                                                            <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
-                                                            </div>
-                                                        </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Florale</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item product-type-variable col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-15.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
-                                                            <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
-                                                            </div>
-                                                        </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">OE
-                                                        Specialty</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item product-type-variable col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-16.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
-                                                            <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
-                                                            </div>
-                                                        </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Iridium
-                                                        Spark Plug</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item  col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-2.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
-                                                            <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
-                                                            </div>
-                                                        </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Ambre
-                                                        Royal</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
+                                        </li>
+                                    @endforeach
                                 </ul>
                             </div>
                         </div>
@@ -1406,620 +368,98 @@
                             <div class="stelina-product">
                                 <ul
                                     class="row list-products auto-clear equal-container product-grid">
-                                    <li
-                                        class="product-item  col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
+                                    @foreach($topRatedProducts->take(8) as $product)
+                                        @php($overallRating = $product->reviews ? getOverallRating($product->reviews) : 0)
+                                        <li
+                                            class="product-item  col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
+                                            <div
+                                                class="product-inner equal-element">
+                                                {{-- <div class="product-top">
+                                                    <div class="flash">
+                                                        <span class="onnew">
+                                                            <span class="text">
+                                                                {{ translate('new') }}
+                                                            </span>
                                                         </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-10.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
+                                                    </div>
+                                                </div> --}}
+                                                <div class="product-thumb">
+                                                    <div class="thumb-inner">
+                                                        <a href="{{ route('product', $product->slug) }}">
+                                                            <img src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'product') }}" alt="">
+                                                        </a>
                                                         <div
-                                                            class="yith-wcwl-add-to-wishlist">
+                                                            class="thumb-group">
                                                             <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
+                                                                class="yith-wcwl-add-to-wishlist">
+                                                                <div
+                                                                    class="yith-wcwl-add-button">
+                                                                    <a
+                                                                        href="#">Add
+                                                                        to
+                                                                        Wishlist</a>
+                                                                </div>
+                                                            </div>
+                                                            <a href="#"
+                                                                class="button quick-wiew-button">Quick
+                                                                View</a>
+                                                            <div
+                                                                class="loop-form-add-to-cart">
+                                                                <button
+                                                                    class="single_add_to_cart_button button">Add
+                                                                    to cart
+                                                                </button>
                                                             </div>
                                                         </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Sport
-                                                        Seats</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
+                                                <div class="product-info">
+                                                    <h5
+                                                        class="product-name product_title">
+                                                        <a href="{{route('product',$product->slug)}}" class="text-capitalize fw-semibold">
+                                                            {{ $product['name'] }}
+                                                        </a>
+                                                    </h5>
+                                                    <div class="group-info">
                                                         <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item product-type-variable col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-12.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
+                                                            class="stars-rating">
                                                             <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
+                                                                class="star-rating">
+                                                                @for ($index = 1; $index <= 5; $index++)
+                                                                    @if ($index <= (int)$overallRating[0])
+                                                                        <i class="bi bi-star-fill"></i>
+                                                                    @elseif ($overallRating[0] != 0 && $index <= (int)$overallRating[0] + 1.1 && $overallRating[0] > ((int)$overallRating[0]))
+                                                                        <i class="bi bi-star-half"></i>
+                                                                    @else
+                                                                        <i class="bi bi-star"></i>
+                                                                    @endif
+                                                                @endfor
+                                                            </div>
+                                                            <div
+                                                                class="count-star">
+                                                                ( {{count($product->reviews)}} )
                                                             </div>
                                                         </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
+                                                        <div class="price">
+                                                            @if(getProductPriceByType(product: $product, type: 'discount', result: 'value') > 0)
+                                                                <del class="product__old-price">{{webCurrencyConverter($product->unit_price)}}</del>
+                                                            @endif
+                                                            <ins class="product__new-price">
+                                                                {{ getProductPriceByType(product: $product, type: 'discounted_unit_price', result: 'string') }}
+                                                            </ins>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Cross
-                                                        Drilled</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item product-type-variable col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-8.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
-                                                            <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
-                                                            </div>
-                                                        </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Big Brake
-                                                        Kit</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item product-type-variable col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-4.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
-                                                            <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
-                                                            </div>
-                                                        </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Throttle
-                                                        Bodies</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item  col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-9.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
-                                                            <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
-                                                            </div>
-                                                        </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Sparta
-                                                        Evolution</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item product-type-variable col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-13.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
-                                                            <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
-                                                            </div>
-                                                        </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">Series
-                                                        Slotted</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item product-type-variable col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-16.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
-                                                            <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
-                                                            </div>
-                                                        </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#"> Brake
-                                                        Rotors</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
-                                    <li
-                                        class="product-item  col-lg-3 col-md-4 col-sm-6 col-xs-6 col-ts-12 style-1">
-                                        <div
-                                            class="product-inner equal-element">
-                                            <div class="product-top">
-                                                <div class="flash">
-                                                    <span class="onnew">
-                                                        <span class="text">
-                                                            new
-                                                        </span>
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            <div class="product-thumb">
-                                                <div class="thumb-inner">
-                                                    <a href="#">
-                                                        <img
-                                                            src="assets/images/product-item-8.jpg"
-                                                            alt="img">
-                                                    </a>
-                                                    <div
-                                                        class="thumb-group">
-                                                        <div
-                                                            class="yith-wcwl-add-to-wishlist">
-                                                            <div
-                                                                class="yith-wcwl-add-button">
-                                                                <a
-                                                                    href="#">Add
-                                                                    to
-                                                                    Wishlist</a>
-                                                            </div>
-                                                        </div>
-                                                        <a href="#"
-                                                            class="button quick-wiew-button">Quick
-                                                            View</a>
-                                                        <div
-                                                            class="loop-form-add-to-cart">
-                                                            <button
-                                                                class="single_add_to_cart_button button">Add
-                                                                to cart
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="product-info">
-                                                <h5
-                                                    class="product-name product_title">
-                                                    <a href="#">DRL Bar
-                                                        Headlights</a>
-                                                </h5>
-                                                <div class="group-info">
-                                                    <div
-                                                        class="stars-rating">
-                                                        <div
-                                                            class="star-rating">
-                                                            <span
-                                                                class="star-3"></span>
-                                                        </div>
-                                                        <div
-                                                            class="count-star">
-                                                            (3)
-                                                        </div>
-                                                    </div>
-                                                    <div class="price">
-                                                        <del>
-                                                            $65
-                                                        </del>
-                                                        <ins>
-                                                            $45
-                                                        </ins>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </li>
+                                        </li>
+                                    @endforeach
                                 </ul>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
             <div class="banner-wrapp rows-space-60">
                 <div>
                     <div class="row">
@@ -2049,486 +489,123 @@
                     </div>
                 </div>
             </div>
+
             <div class="product-in-stock-wrapp">
                 <div class="container">
                     <h3 class="custommenu-title-blog white">
                         {{ translate('featured_Products') }}
                     </h3>
                     <div class="stelina-product style3">
+                        <div class="d-flex flex-wrap justify-content-end gap-3 " style="margin-bottom: 15px">
+                            <i class="fa fa-angle-double-{{Session::get('direction') === "rtl" ? 'right ml-1' : 'left mr-1 ml-n1 mt-1 '}} view-all-text"></i>
+                            <a href="{{route('products',['data_from'=>'featured'])}}" class="view-all-text text-right  text-capitalize">
+                                <span>{{ translate('view_all') }}</span>
+                            </a>
+                        </div>
                         <ul
                             class="row list-products auto-clear equal-container product-grid">
-                            <li
-                                class="product-item  col-lg-4 col-md-6 col-sm-6 col-xs-6 col-ts-12 style-3">
-                                <div class="product-inner equal-element">
-                                    <div class="product-thumb">
-                                        <div class="product-top">
-                                            <div class="flash">
-                                                <span class="onnew">
-                                                    <span class="text">
-                                                        new
+                            @foreach($featuredProductsList->take(9) as $product)
+                                @php($overallRating = $product->reviews ? getOverallRating($product->reviews) : 0)
+                                <li
+                                    class="product-item  col-lg-4 col-md-6 col-sm-6 col-xs-6 col-ts-12 style-3">
+                                    <div class="product-inner equal-element">
+                                        <div class="product-thumb">
+                                            <div class="product-top">
+                                                <div class="flash">
+                                                    <span class="onnew">
+                                                        <span class="text">
+                                                            new
+                                                        </span>
                                                     </span>
-                                                </span>
-                                            </div>
-                                            <div
-                                                class="yith-wcwl-add-to-wishlist">
+                                                </div>
                                                 <div
-                                                    class="yith-wcwl-add-button">
-                                                    <a href="#"
-                                                        tabindex="0">Add to
-                                                        Wishlist</a>
+                                                    class="yith-wcwl-add-to-wishlist">
+                                                    <div
+                                                        class="yith-wcwl-add-button">
+                                                        <a href="#"
+                                                            tabindex="0">Add to
+                                                            Wishlist</a>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="thumb-inner">
-                                            <a href="#" tabindex="0">
-                                                <img
-                                                    src="assets/images/product-item-black-7.jpg"
-                                                    alt="img">
+                                            <div class="thumb-inner">
+                                                <a href="{{ route('product', $product->slug) }}">
+                                                    <img src="{{ getStorageImages(path: $product->thumbnail_full_url, type: 'product') }}" alt="">
+                                                </a>
+                                            </div>
+                                            <a href=""
+                                                class="button quick-wiew-button"
+                                                tabindex="0">Quick View
                                             </a>
                                         </div>
-                                        <a href="#"
-                                            class="button quick-wiew-button"
-                                            tabindex="0">Quick View</a>
-                                    </div>
-                                    <div class="product-info">
-                                        <h5
-                                            class="product-name product_title">
-                                            <a href="#" tabindex="0">Suction
-                                                Return</a>
-                                        </h5>
-                                        <div class="group-info">
-                                            <div class="stars-rating">
-                                                <div class="star-rating">
-                                                    <span
-                                                        class="star-3"></span>
+                                        <div class="product-info">
+
+                                            <h5
+                                                class="product-name product_title">
+                                                <a href="{{route('product',$product->slug)}}" class="text-capitalize fw-semibold">
+                                                    {{ $product['name'] }}
+                                                </a>
+                                            </h5>
+
+                                            <div class="group-info">
+                                                <div class="stars-rating">
+                                                    <div class="star-rating">
+                                                        @for ($index = 1; $index <= 5; $index++)
+                                                            @if ($index <= (int)$overallRating[0])
+                                                                <i class="bi bi-star-fill"></i>
+                                                            @elseif ($overallRating[0] != 0 && $index <= (int)$overallRating[0] + 1.1 && $overallRating[0] > ((int)$overallRating[0]))
+                                                                <i class="bi bi-star-half"></i>
+                                                            @else
+                                                                <i class="bi bi-star"></i>
+                                                            @endif
+                                                        @endfor
+                                                    </div>
+                                                    <div class="count-star">
+                                                        ( {{count($product->reviews)}} )
+                                                    </div>
                                                 </div>
-                                                <div class="count-star">
-                                                    (3)
-                                                </div>
-                                            </div>
-                                            <div class="price">
-                                                <span>$375</span>
-                                            </div>
-                                        </div>
-                                        <div class="group-buttons">
-                                            <div class="quantity">
-                                                <div class="control">
-                                                    <a
-                                                        class="btn-number qtyminus quantity-minus"
-                                                        href="#">-</a>
-                                                    <input type="text"
-                                                        data-step="1"
-                                                        data-min="0"
-                                                        value="1"
-                                                        title="Qty"
-                                                        class="input-qty qty"
-                                                        size="4">
-                                                    <a href="#"
-                                                        class="btn-number qtyplus quantity-plus">+</a>
+                                                <div class="price">
+                                                    @if(getProductPriceByType(product: $product, type: 'discount', result: 'value') > 0)
+                                                        <del class="product__old-price">{{webCurrencyConverter($product->unit_price)}}</del>
+                                                    @endif
+                                                    <ins class="product__new-price">
+                                                        {{ getProductPriceByType(product: $product, type: 'discounted_unit_price', result: 'string') }}
+                                                    </ins>
                                                 </div>
                                             </div>
-                                            <button
-                                                class="add_to_cart_button button"
-                                                tabindex="0">Shop
-                                                now</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                            <li
-                                class="product-item style-3 col-lg-4 col-md-6 col-sm-6 col-xs-6 col-ts-12">
-                                <div class="product-inner equal-element">
-                                    <div class="product-thumb">
-                                        <div class="product-top">
-                                            <div class="flash">
-                                                <span class="onnew">
-                                                    <span class="text">
-                                                        new
-                                                    </span>
-                                                </span>
-                                            </div>
-                                            <div
-                                                class="yith-wcwl-add-to-wishlist">
-                                                <div
-                                                    class="yith-wcwl-add-button">
-                                                    <a href="#"
-                                                        tabindex="0">Add to
-                                                        Wishlist</a>
+
+                                            {{-- <div class="group-buttons">
+                                                <div class="quantity">
+                                                    <div class="control">
+                                                        <a
+                                                            class="btn-number qtyminus quantity-minus"
+                                                            href="#">-</a>
+                                                        <input type="text"
+                                                            data-step="1"
+                                                            data-min="0"
+                                                            value="1"
+                                                            title="Qty"
+                                                            class="input-qty qty"
+                                                            size="4">
+                                                        <a href="#"
+                                                            class="btn-number qtyplus quantity-plus">+</a>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                        <div class="thumb-inner">
-                                            <a href="#" tabindex="0">
-                                                <img
-                                                    src="assets/images/product-item-black-2.jpg"
-                                                    alt="img">
-                                            </a>
-                                        </div>
-                                        <a href="#"
-                                            class="button quick-wiew-button"
-                                            tabindex="0">Quick View</a>
-                                    </div>
-                                    <div class="product-info">
-                                        <h5
-                                            class="product-name product_title">
-                                            <a href="#" tabindex="0">Blowoff
-                                                Valve Kit</a>
-                                        </h5>
-                                        <div class="group-info">
-                                            <div class="stars-rating">
-                                                <div class="star-rating">
-                                                    <span
-                                                        class="star-3"></span>
-                                                </div>
-                                                <div class="count-star">
-                                                    (3)
-                                                </div>
-                                            </div>
-                                            <div class="price">
-                                                <span>$375</span>
-                                            </div>
-                                        </div>
-                                        <div class="group-buttons">
-                                            <div class="quantity">
-                                                <div class="control">
-                                                    <a
-                                                        class="btn-number qtyminus quantity-minus"
-                                                        href="#">-</a>
-                                                    <input type="text"
-                                                        data-step="1"
-                                                        data-min="0"
-                                                        value="1"
-                                                        title="Qty"
-                                                        class="input-qty qty"
-                                                        size="4">
-                                                    <a href="#"
-                                                        class="btn-number qtyplus quantity-plus">+</a>
-                                                </div>
-                                            </div>
-                                            <button
-                                                class="add_to_cart_button button"
-                                                tabindex="0">Shop
-                                                now</button>
+                                                <button
+                                                    class="add_to_cart_button button"
+                                                    tabindex="0">Shop
+                                                    now</button>
+                                            </div> --}}
+
                                         </div>
                                     </div>
-                                </div>
-                            </li>
-                            <li
-                                class="product-item style-3 col-lg-4 col-md-6 col-sm-6 col-xs-6 col-ts-12">
-                                <div class="product-inner equal-element">
-                                    <div class="product-thumb">
-                                        <div class="product-top">
-                                            <div class="flash">
-                                                <span class="onnew">
-                                                    <span class="text">
-                                                        new
-                                                    </span>
-                                                </span>
-                                            </div>
-                                            <div
-                                                class="yith-wcwl-add-to-wishlist">
-                                                <div
-                                                    class="yith-wcwl-add-button">
-                                                    <a href="#"
-                                                        tabindex="0">Add to
-                                                        Wishlist</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="thumb-inner">
-                                            <a href="#" tabindex="0">
-                                                <img
-                                                    src="assets/images/product-item-black-3.jpg"
-                                                    alt="img">
-                                            </a>
-                                        </div>
-                                        <a href="#"
-                                            class="button quick-wiew-button"
-                                            tabindex="0">Quick View</a>
-                                    </div>
-                                    <div class="product-info">
-                                        <h5
-                                            class="product-name product_title">
-                                            <a href="#" tabindex="0">Attack
-                                                Stage</a>
-                                        </h5>
-                                        <div class="group-info">
-                                            <div class="stars-rating">
-                                                <div class="star-rating">
-                                                    <span
-                                                        class="star-3"></span>
-                                                </div>
-                                                <div class="count-star">
-                                                    (3)
-                                                </div>
-                                            </div>
-                                            <div class="price">
-                                                <span>$375</span>
-                                            </div>
-                                        </div>
-                                        <div class="group-buttons">
-                                            <div class="quantity">
-                                                <div class="control">
-                                                    <a
-                                                        class="btn-number qtyminus quantity-minus"
-                                                        href="#">-</a>
-                                                    <input type="text"
-                                                        data-step="1"
-                                                        data-min="0"
-                                                        value="1"
-                                                        title="Qty"
-                                                        class="input-qty qty"
-                                                        size="4">
-                                                    <a href="#"
-                                                        class="btn-number qtyplus quantity-plus">+</a>
-                                                </div>
-                                            </div>
-                                            <button
-                                                class="add_to_cart_button button"
-                                                tabindex="0">Shop
-                                                now</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                            <li
-                                class="product-item  col-lg-4 col-md-6 col-sm-6 col-xs-6 col-ts-12 style-3">
-                                <div class="product-inner equal-element">
-                                    <div class="product-thumb">
-                                        <div class="product-top">
-                                            <div class="flash">
-                                                <span class="onnew">
-                                                    <span class="text">
-                                                        new
-                                                    </span>
-                                                </span>
-                                            </div>
-                                            <div
-                                                class="yith-wcwl-add-to-wishlist">
-                                                <div
-                                                    class="yith-wcwl-add-button">
-                                                    <a href="#"
-                                                        tabindex="0">Add to
-                                                        Wishlist</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="thumb-inner">
-                                            <a href="#" tabindex="0">
-                                                <img
-                                                    src="assets/images/product-item-black-4.jpg"
-                                                    alt="img">
-                                            </a>
-                                        </div>
-                                        <a href="#"
-                                            class="button quick-wiew-button"
-                                            tabindex="0">Quick View</a>
-                                    </div>
-                                    <div class="product-info">
-                                        <h5
-                                            class="product-name product_title">
-                                            <a href="#" tabindex="0">Cold
-                                                Intake System</a>
-                                        </h5>
-                                        <div class="group-info">
-                                            <div class="stars-rating">
-                                                <div class="star-rating">
-                                                    <span
-                                                        class="star-3"></span>
-                                                </div>
-                                                <div class="count-star">
-                                                    (3)
-                                                </div>
-                                            </div>
-                                            <div class="price">
-                                                <span>$375</span>
-                                            </div>
-                                        </div>
-                                        <div class="group-buttons">
-                                            <div class="quantity">
-                                                <div class="control">
-                                                    <a
-                                                        class="btn-number qtyminus quantity-minus"
-                                                        href="#">-</a>
-                                                    <input type="text"
-                                                        data-step="1"
-                                                        data-min="0"
-                                                        value="1"
-                                                        title="Qty"
-                                                        class="input-qty qty"
-                                                        size="4">
-                                                    <a href="#"
-                                                        class="btn-number qtyplus quantity-plus">+</a>
-                                                </div>
-                                            </div>
-                                            <button
-                                                class="add_to_cart_button button"
-                                                tabindex="0">Shop
-                                                now</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                            <li
-                                class="product-item style-3 col-lg-4 col-md-6 col-sm-6 col-xs-6 col-ts-12">
-                                <div class="product-inner equal-element">
-                                    <div class="product-thumb">
-                                        <div class="product-top">
-                                            <div class="flash">
-                                                <span class="onnew">
-                                                    <span class="text">
-                                                        new
-                                                    </span>
-                                                </span>
-                                            </div>
-                                            <div
-                                                class="yith-wcwl-add-to-wishlist">
-                                                <div
-                                                    class="yith-wcwl-add-button">
-                                                    <a href="#"
-                                                        tabindex="0">Add to
-                                                        Wishlist</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="thumb-inner">
-                                            <a href="#" tabindex="0">
-                                                <img
-                                                    src="assets/images/product-item-black-5.jpg"
-                                                    alt="img">
-                                            </a>
-                                        </div>
-                                        <a href="#"
-                                            class="button quick-wiew-button"
-                                            tabindex="0">Quick View</a>
-                                    </div>
-                                    <div class="product-info">
-                                        <h5
-                                            class="product-name product_title">
-                                            <a href="#" tabindex="0">Bottle
-                                                Melody Eau</a>
-                                        </h5>
-                                        <div class="group-info">
-                                            <div class="stars-rating">
-                                                <div class="star-rating">
-                                                    <span
-                                                        class="star-3"></span>
-                                                </div>
-                                                <div class="count-star">
-                                                    (3)
-                                                </div>
-                                            </div>
-                                            <div class="price">
-                                                <span>$375</span>
-                                            </div>
-                                        </div>
-                                        <div class="group-buttons">
-                                            <div class="quantity">
-                                                <div class="control">
-                                                    <a
-                                                        class="btn-number qtyminus quantity-minus"
-                                                        href="#">-</a>
-                                                    <input type="text"
-                                                        data-step="1"
-                                                        data-min="0"
-                                                        value="1"
-                                                        title="Qty"
-                                                        class="input-qty qty"
-                                                        size="4">
-                                                    <a href="#"
-                                                        class="btn-number qtyplus quantity-plus">+</a>
-                                                </div>
-                                            </div>
-                                            <button
-                                                class="add_to_cart_button button"
-                                                tabindex="0">Shop
-                                                now</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                            <li
-                                class="product-item style-3 col-lg-4 col-md-6 col-sm-6 col-xs-6 col-ts-12">
-                                <div class="product-inner equal-element">
-                                    <div class="product-thumb">
-                                        <div class="product-top">
-                                            <div class="flash">
-                                                <span class="onnew">
-                                                    <span class="text">
-                                                        new
-                                                    </span>
-                                                </span>
-                                            </div>
-                                            <div
-                                                class="yith-wcwl-add-to-wishlist">
-                                                <div
-                                                    class="yith-wcwl-add-button">
-                                                    <a href="#"
-                                                        tabindex="0">Add to
-                                                        Wishlist</a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="thumb-inner">
-                                            <a href="#" tabindex="0">
-                                                <img
-                                                    src="assets/images/product-item-black-6.jpg"
-                                                    alt="img">
-                                            </a>
-                                        </div>
-                                        <a href="#"
-                                            class="button quick-wiew-button"
-                                            tabindex="0">Quick View</a>
-                                    </div>
-                                    <div class="product-info">
-                                        <h5
-                                            class="product-name product_title">
-                                            <a href="#" tabindex="0">Toyota
-                                                Switchback</a>
-                                        </h5>
-                                        <div class="group-info">
-                                            <div class="stars-rating">
-                                                <div class="star-rating">
-                                                    <span
-                                                        class="star-3"></span>
-                                                </div>
-                                                <div class="count-star">
-                                                    (3)
-                                                </div>
-                                            </div>
-                                            <div class="price">
-                                                <span>$375</span>
-                                            </div>
-                                        </div>
-                                        <div class="group-buttons">
-                                            <div class="quantity">
-                                                <div class="control">
-                                                    <a
-                                                        class="btn-number qtyminus quantity-minus"
-                                                        href="#">-</a>
-                                                    <input type="text"
-                                                        data-step="1"
-                                                        data-min="0"
-                                                        value="1"
-                                                        title="Qty"
-                                                        class="input-qty qty"
-                                                        size="4">
-                                                    <a href="#"
-                                                        class="btn-number qtyplus quantity-plus">+</a>
-                                                </div>
-                                            </div>
-                                            <button
-                                                class="add_to_cart_button button"
-                                                tabindex="0">Shop
-                                                now</button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
+                                </li>
+                            @endforeach
                         </ul>
                     </div>
                 </div>
             </div>
+
             <div class="banner-wrapp rows-space-30">
                 <div class="container">
                     <div class="row">
@@ -2575,6 +652,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="stelina-blog-wraap">
                 <div class="container">
                     <h3 class="custommenu-title-blog">
@@ -2897,8 +975,10 @@
                     </div>
                 </div>
             </div>
+
         </div>
     </div>
+
     <div class="instagram-wrapp">
         <div>
             <h3 class="custommenu-title-blog">
