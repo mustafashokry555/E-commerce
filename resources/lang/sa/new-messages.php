@@ -8925,4 +8925,6 @@ return [
 	"Phone number is required" => "Phone number is required",
 	"The phone number must be at least 4 characters" => "The phone number must be at least 4 characters",
 	"1000" => "1000",
+	"Show Offer in home page ?" => "Show Offer in home page  ",
+	"Alongside with your in-house product , you can highlight vendor’s product who has activate their clearance offer." => "Alongside with your in-house product   you can highlight vendor’s product who has activate their clearance offer.",
 ];
