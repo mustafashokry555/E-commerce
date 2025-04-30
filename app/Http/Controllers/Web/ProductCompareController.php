@@ -39,7 +39,7 @@ class ProductCompareController extends BaseController
      */
     public function index(?Request $request, string $type = null): View|Collection|LengthAwarePaginator|null|callable|RedirectResponse
     {
-       return $this->getProductCompareListView();
+        return $this->getProductCompareListView();
     }
 
     /**

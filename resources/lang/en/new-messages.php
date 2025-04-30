@@ -3,6 +3,8 @@
 return [
 	"A sitemap for an e-commerce website organises product pages  categories  and other essential URLs in a structured format. It helps search engines crawl and index the site efficiently  improving its visibility and search engine rankings. Additionally  a well-designed sitemap enhances user experience by providing easy navigation and access to all parts of the online store." => "A sitemap for an e-commerce website organises product pages  categories  and other essential URLs in a structured format. It helps search engines crawl and index the site efficiently  improving its visibility and search engine rankings. Additionally  a well-designed sitemap enhances user experience by providing easy navigation and access to all parts of the online store.",
 	"A-Z" => "A-Z",
+	"Price from" => "Price from",
+	"Shop now" => "Shop now",
 	"A/C_No" => "A/C No",
 	"ABC" => "ABC",
 	"ADD URI" => "ADD URI",

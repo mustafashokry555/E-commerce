@@ -74,6 +74,7 @@ class ShopViewController extends Controller
         return match ($themeName) {
             'default' => self::default_theme($request, $id),
             'theme_aster' => self::theme_aster($request, $id),
+            'theme_stelina' => self::theme_stelina($request, $id),
             'theme_fashion' => self::theme_fashion($request, $id),
         };
     }
@@ -113,6 +114,122 @@ class ShopViewController extends Controller
     }
 
     public function theme_aster($request, $id): View|JsonResponse|Redirector|RedirectResponse
+    {
+        self::checkShopExistence($id);
+        $productAddedBy = $id == 0 ? 'admin' : 'seller';
+        $productUserID = $id == 0 ? $id : Shop::where('id', $id)->first()->seller_id;
+        $shopAllProducts = ProductManager::getAllProductsData($request, $productUserID, $productAddedBy);
+        $productListData = ProductManager::getProductListData($request, $productUserID, $productAddedBy);
+        $categories = self::getShopCategoriesList(products: $shopAllProducts);
+        $brands = self::getShopBrandsList(request: $request,products: $shopAllProducts, sellerType: $productAddedBy, sellerId: $productUserID);
+        $shopPublishingHouses = ProductManager::getPublishingHouseList(productIds: $shopAllProducts->pluck('id')->toArray(), vendorId: $productUserID);
+        $digitalProductAuthors = ProductManager::getProductAuthorList(productIds: $shopAllProducts->pluck('id')->toArray(), vendorId: $productUserID);
+        $shopInfoArray = self::getShopInfoArray(shopId: $id, shopProducts: $shopAllProducts, sellerType: $productAddedBy, sellerId: $productUserID);
+
+        $ratings = [
+            'rating_1' => 0,
+            'rating_2' => 0,
+            'rating_3' => 0,
+            'rating_4' => 0,
+            'rating_5' => 0,
+        ];
+
+        foreach ($shopAllProducts as $product) {
+            if (isset($product->rating[0]['average'])) {
+                $average = $product->rating[0]['average'];
+                if ($average > 0 && $average < 2) {
+                    $ratings['rating_1']++;
+                } elseif ($average >= 2 && $average < 3) {
+                    $ratings['rating_2']++;
+                } elseif ($average >= 3 && $average < 4) {
+                    $ratings['rating_3']++;
+                } elseif ($average >= 4 && $average < 5) {
+                    $ratings['rating_4']++;
+                } elseif ($average == 5) {
+                    $ratings['rating_5']++;
+                }
+            }
+        }
+
+        $reviewData = Review::active()->whereIn('product_id', $shopAllProducts->pluck('id')->toArray());
+        $averageRating = $reviewData->avg('rating');
+        $totalReviews = $reviewData->count();
+
+        $rattingStatusPositive = 0;
+        $rattingStatusGood = 0;
+        $rattingStatusNeutral = 0;
+        $rattingStatusNegative = 0;
+        foreach ($reviewData->pluck('rating') as $singleRating) {
+            ($singleRating >= 4 ? ($rattingStatusPositive++) : '');
+            ($singleRating == 3 ? ($rattingStatusGood++) : '');
+            ($singleRating == 2 ? ($rattingStatusNeutral++) : '');
+            ($singleRating == 1 ? ($rattingStatusNegative++) : '');
+        }
+        $rattingStatusArray = [
+            'positive' => $totalReviews != 0 ? ($rattingStatusPositive * 100) / $totalReviews : 0,
+            'good' => $totalReviews != 0 ? ($rattingStatusGood * 100) / $totalReviews : 0,
+            'neutral' => $totalReviews != 0 ? ($rattingStatusNeutral * 100) / $totalReviews : 0,
+            'negative' => $totalReviews != 0 ? ($rattingStatusNegative * 100) / $totalReviews : 0,
+        ];
+
+        $featuredProductQuery = Product::active()->with([
+            'seller.shop',
+            'wishList' => function ($query) {
+                return $query->where('customer_id', Auth::guard('customer')->user()->id ?? 0);
+            },
+            'compareList' => function ($query) {
+                return $query->where('user_id', Auth::guard('customer')->user()->id ?? 0);
+            }
+        ])->when($id == 0, function ($query) {
+            return $query->where(['added_by' => 'admin']);
+        })->when($id != 0, function ($query) use ($id) {
+            $seller = Seller::find($id);
+            return $query->where(['added_by' => 'seller', 'user_id' => $seller->id]);
+        });
+
+        if ($id == 0) {
+            $totalOrder = Order::where('seller_is', 'admin')->where('order_type', 'default_type')->count();
+            $products_for_review = Product::active()->where('added_by', 'admin')->withCount('reviews')->count();
+        } else {
+            $seller = Seller::find($id);
+            $totalOrder = $seller->orders->where('seller_is', 'seller')->where('order_type', 'default_type')->count();
+            $products_for_review = Product::active()->where('added_by', 'seller')->where('user_id', $seller->id)->withCount('reviews')->count();
+        }
+
+        $featuredProductsList = ProductManager::getPriorityWiseFeaturedProductsQuery(query: $featuredProductQuery, dataLimit: 'all');
+        $products = $productListData->paginate(20)->appends($request->all());
+        $stockClearanceProducts = StockClearanceProduct::active()->where('shop_id', $id)->count();
+        $stockClearanceSetup = StockClearanceSetup::where(['shop_id'=> $id])->first()?->is_active ?? 0;
+
+        $data = [
+            'id' => $request['id'],
+            'name' => $request['name'],
+            'data_from' => $request['data_from'],
+            'sort_by' => $request['sort_by'],
+            'page_no' => $request['page'],
+            'min_price' => $request['min_price'],
+            'max_price' => $request['max_price'],
+        ];
+
+        if ($request->ajax()) {
+            return response()->json([
+                'total_product' => $products->total(),
+                'view' => view(VIEW_FILE_NAMES['products__ajax_partials'], compact('products'))->render(),
+            ], 200);
+        }
+
+        return view(VIEW_FILE_NAMES['shop_view_page'], compact('products',  'categories',
+            'products_for_review', 'featuredProductsList', 'brands', 'data', 'ratings', 'rattingStatusArray', 'stockClearanceProducts', 'stockClearanceSetup'))
+            ->with('seller_id', $id)
+            ->with('total_review', $totalReviews)
+            ->with('avg_rating', $averageRating)
+            ->with('shopInfoArray', $shopInfoArray)
+            ->with('shopPublishingHouses', $shopPublishingHouses)
+            ->with('digitalProductAuthors', $digitalProductAuthors)
+            ->with('total_order', $totalOrder);
+    }
+
+    public function theme_stelina($request, $id): View|JsonResponse|Redirector|RedirectResponse
     {
         self::checkShopExistence($id);
         $productAddedBy = $id == 0 ? 'admin' : 'seller';
