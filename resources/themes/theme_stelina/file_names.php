@@ -57,6 +57,7 @@ return [
     'contacts' => 'theme-views.pages.contact-us',
     'flash_deals' => 'theme-views.product.flash-deals',
     'shop_view_page' => 'theme-views.seller-views.shopview',
+    'quickOneProductView' => 'theme-views.partials.quickOneProductView',
     'faq' => 'theme-views.pages.help-topics',
     'about_us' => 'theme-views.pages.about-us',
     'recover_password' => 'theme-views.customer-views.auth.recover-password',

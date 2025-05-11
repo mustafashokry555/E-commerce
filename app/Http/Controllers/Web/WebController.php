@@ -897,6 +897,12 @@ class WebController extends Controller
         return view(VIEW_FILE_NAMES['shop_view_page'], compact('products', 'shop'))->with('seller_id', $id);
     }
 
+    public function quickProductView($id)
+    {
+        $product = Product::findOrFail($id);
+        return view(VIEW_FILE_NAMES['quickOneProductView'], compact('product'));
+    }
+
     public function getQuickView(Request $request): JsonResponse
     {
         $product = ProductManager::get_product($request['product_id']);

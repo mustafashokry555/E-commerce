@@ -8929,4 +8929,7 @@ return [
 	"Alongside with your in-house product , you can highlight vendor’s product who has activate their clearance offer." => "Alongside with your in-house product   you can highlight vendor’s product who has activate their clearance offer.",
 	"Price from" => "Price from",
 	"Shop now" => "Shop now",
+	"Shopping_Cart" => "Shopping Cart",
+	"best selling" => "Best selling",
+	"best-selling" => "Best-selling",
 ];

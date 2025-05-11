@@ -18,6 +18,20 @@
 @endpush
 
 @section('content')
+    <style>
+        .product-item .yith-wcwl-add-to-wishlist.in-wishlist > div a:before {
+            content: "\f004";
+        }
+        .product-item .yith-wcwl-add-to-wishlist.not-in-wishlist > div a:before {
+            content: "\f08a";
+        }
+        .product-item .thumb-group .quick-wiew-button::before {
+            content: "\f12e";
+        }
+        .product-item.style-3 .button.quick-wiew-button::before {
+            content: "\f12e";
+        }
+    </style>
     <div class="main-content">
         <div class="fullwidth-template">
 
@@ -140,20 +154,19 @@
                                                                 alt="" style="height: 300px !important">
                                                         </a>
                                                         <div class="thumb-group">
-                                                            <div class="yith-wcwl-add-to-wishlist">
+                                                            <div class="yith-wcwl-add-to-wishlist {{ isProductInWishList($product->id) ? 'in-wishlist' : 'not-in-wishlist' }}">
                                                                 <div class="yith-wcwl-add-button">
                                                                     <a href="#">Add
                                                                         to
                                                                         Wishlist</a>
                                                                 </div>
                                                             </div>
-                                                            <a href="#" class="button quick-wiew-button">Quick
-                                                                View</a>
-                                                            <div class="loop-form-add-to-cart">
+                                                            <a href="#" class="button quick-wiew-button" data-product-id="{{ $product->id }}">Quick View</a>
+                                                            {{-- <div class="loop-form-add-to-cart">
                                                                 <button class="single_add_to_cart_button button">Add
                                                                     to cart
                                                                 </button>
-                                                            </div>
+                                                            </div> --}}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -229,20 +242,19 @@
                                                                 alt="" style="height: 300px !important">
                                                         </a>
                                                         <div class="thumb-group">
-                                                            <div class="yith-wcwl-add-to-wishlist">
+                                                            <div class="yith-wcwl-add-to-wishlist {{ isProductInWishList($product->id) ? 'in-wishlist' : 'not-in-wishlist' }}">
                                                                 <div class="yith-wcwl-add-button">
                                                                     <a href="#">Add
                                                                         to
                                                                         Wishlist</a>
                                                                 </div>
                                                             </div>
-                                                            <a href="#" class="button quick-wiew-button">Quick
-                                                                View</a>
-                                                            <div class="loop-form-add-to-cart">
+                                                            <a href="#" class="button quick-wiew-button" data-product-id="{{ $product->id }}">Quick View</a>
+                                                            {{-- <div class="loop-form-add-to-cart">
                                                                 <button class="single_add_to_cart_button button">Add
                                                                     to cart
                                                                 </button>
-                                                            </div>
+                                                            </div> --}}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -309,20 +321,21 @@
                                                                 alt="" style="height: 300px !important">
                                                         </a>
                                                         <div class="thumb-group">
-                                                            <div class="yith-wcwl-add-to-wishlist">
+
+                                                            <div class="yith-wcwl-add-to-wishlist {{ isProductInWishList($product->id) ? 'in-wishlist' : 'not-in-wishlist' }}">
                                                                 <div class="yith-wcwl-add-button">
                                                                     <a href="#">Add
                                                                         to
                                                                         Wishlist</a>
                                                                 </div>
                                                             </div>
-                                                            <a href="#" class="button quick-wiew-button">Quick
-                                                                View</a>
-                                                            <div class="loop-form-add-to-cart">
+
+                                                            <a href="#" class="button quick-wiew-button" data-product-id="{{ $product->id }}">Quick View</a>
+                                                            {{-- <div class="loop-form-add-to-cart">
                                                                 <button class="single_add_to_cart_button button">Add
                                                                     to cart
                                                                 </button>
-                                                            </div>
+                                                            </div> --}}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -427,12 +440,13 @@
                                                         </span>
                                                     </span>
                                                 </div>
-                                                <div class="yith-wcwl-add-to-wishlist">
+                                                {{-- <div class="yith-wcwl-add-to-wishlist {{ isProductInWishList($product->id) ? 'in-wishlist' : 'not-in-wishlist' }}">
                                                     <div class="yith-wcwl-add-button">
-                                                        <a href="#" tabindex="0">Add to
+                                                        <a href="#">Add
+                                                            to
                                                             Wishlist</a>
                                                     </div>
-                                                </div>
+                                                </div> --}}
                                             </div>
                                             <div class="thumb-inner">
                                                 <a href="{{ route('product', $product->slug) }}">
@@ -440,8 +454,7 @@
                                                         alt="">
                                                 </a>
                                             </div>
-                                            <a href="" class="button quick-wiew-button" tabindex="0">Quick View
-                                            </a>
+                                            <a href="#" class="button quick-wiew-button" data-product-id="{{ $product->id }}">Quick View</a>
                                         </div>
                                         <div class="product-info">
 

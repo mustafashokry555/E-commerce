@@ -16,6 +16,7 @@ return [
 	"APP_NAME" => "APP NAME",
 	"APP_URL" => "APP URL",
 	"ARRIVALS" => "ARRIVALS",
+    "Shopping_Cart" => "Shopping Cart",
 	"ASE/DESC" => "ASE/DESC",
 	"AVC" => "AVC",
 	"AVC_bank" => "AVC bank",

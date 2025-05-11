@@ -53,11 +53,15 @@
                             <div class="list">
                                 {{ translate('subscribe_to_our_new_channel_to_get_latest_updates')}}
                             </div>
-                            <input type="email"
+                        <form class="newsletter-form" action="{{ route('subscription') }}" method="post">
+                            @csrf
+                            <input type="text" name="subscription_email" required
                                 class="input-text email email-newsletter"
-                                placeholder="{{ translate('your_Email_Address')}}">
-                            <button
-                                class="button btn-submit submit-newsletter">{{ translate('subscribe')}}</button>
+                                placeholder="{{ translate('enter_your_email') }}">
+                            <button type="submit" class="button btn-submit submit-newsletter">
+                                {{ translate('subscribe')}}
+                            </button>
+                        </form>
                         </div>
                     </div>
                 </div>
