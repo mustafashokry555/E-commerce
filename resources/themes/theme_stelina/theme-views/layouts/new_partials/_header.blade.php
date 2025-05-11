@@ -49,11 +49,27 @@
                 </div>
                 <ul class="header-user-links">
                     <li>
+                        {{-- <style>
+                            #phone-header::before {
+                                content: "\f4e1"; /* Unicode for phone icon in Bootstrap Icons */
+                                font-family: "bootstrap-icons"; /* Must match the font name used in the CSS */
+                                font-style: normal;
+                                font-weight: normal;
+                                display: inline-block;
+                                margin-right: 8px;
+                                font-size: 1rem;
+                                line-height: 1;
+                            }
+                        </style> --}}
                         {{-- <a href="{{ route('vendor.auth.registration.index') }}">{{ translate('become_a_vendor')
                             }}</a> --}}
-                        <a href="{{ route('customer.auth.login') }}">{{ translate('Login') }}</a>
+                        {{-- <a href="{{ route('customer.auth.login') }}">{{ translate('Login') }}</a>
                         |
-                        <a href="{{ route('customer.auth.sign-up') }}">{{ translate('Register') }}</a>
+                        <a href="{{ route('customer.auth.sign-up') }}">{{ translate('Register') }}</a> --}}
+                        <a href="tel:+{{ $web_config['phone'] }}" id="phone-header" class="d-flex gap-2 align-items-center direction-ltr">
+                            {{-- <i class="bi bi-telephone-fill"></i> --}}
+                            {{ $web_config['phone'] }}
+                        </a>
                     </li>
                 </ul>
             </div>

@@ -57,6 +57,5 @@
 {!! Toastr::message() !!}
 
 
-
 </body>
 </html>

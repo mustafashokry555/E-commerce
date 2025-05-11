@@ -19,11 +19,15 @@
 
 @section('content')
     <style>
-        .product-item .yith-wcwl-add-to-wishlist.in-wishlist > div a:before {
-            content: "\f004";
+        .in-wishlist:before {
+            content: "\f004" !important;
         }
-        .product-item .yith-wcwl-add-to-wishlist.not-in-wishlist > div a:before {
-            content: "\f08a";
+        .in-wishlist-cart:before {
+            content: "\f004" !important;
+            color: #ab8e66 !important
+        }
+        .not-in-wishlist:before {
+            content: "\f08a" !important;
         }
         .product-item .thumb-group .quick-wiew-button::before {
             content: "\f12e";
@@ -154,11 +158,20 @@
                                                                 alt="" style="height: 300px !important">
                                                         </a>
                                                         <div class="thumb-group">
-                                                            <div class="yith-wcwl-add-to-wishlist {{ isProductInWishList($product->id) ? 'in-wishlist' : 'not-in-wishlist' }}">
+                                                            <div class="yith-wcwl-add-to-wishlist">
                                                                 <div class="yith-wcwl-add-button">
-                                                                    <a href="#">Add
-                                                                        to
-                                                                        Wishlist</a>
+                                                                    @if($web_config['guest_checkout_status'] || auth('customer')->check())
+                                                                        <a href="javascript:void(0);"
+                                                                            data-product-id="{{ $product->id }}"
+                                                                            data-url="{{ route('store-wishlist') }}"
+                                                                            class="wishlist-toggle {{ isProductInWishList($product->id) ? 'in-wishlist' : 'not-in-wishlist' }}">
+                                                                            Add to Wishlist
+                                                                        </a>
+                                                                    @else
+                                                                        <a href="{{ route('customer.auth.login') }}">
+                                                                            Add to Wishlist
+                                                                        </a>
+                                                                    @endif
                                                                 </div>
                                                             </div>
                                                             <a href="#" class="button quick-wiew-button" data-product-id="{{ $product->id }}">Quick View</a>
@@ -242,11 +255,20 @@
                                                                 alt="" style="height: 300px !important">
                                                         </a>
                                                         <div class="thumb-group">
-                                                            <div class="yith-wcwl-add-to-wishlist {{ isProductInWishList($product->id) ? 'in-wishlist' : 'not-in-wishlist' }}">
+                                                            <div class="yith-wcwl-add-to-wishlist ">
                                                                 <div class="yith-wcwl-add-button">
-                                                                    <a href="#">Add
-                                                                        to
-                                                                        Wishlist</a>
+                                                                    @if($web_config['guest_checkout_status'] || auth('customer')->check())
+                                                                        <a href="javascript:void(0);"
+                                                                            data-product-id="{{ $product->id }}"
+                                                                            data-url="{{ route('store-wishlist') }}"
+                                                                            class="wishlist-toggle {{ isProductInWishList($product->id) ? 'in-wishlist' : 'not-in-wishlist' }}">
+                                                                            Add to Wishlist
+                                                                        </a>
+                                                                    @else
+                                                                        <a href="{{ route('customer.auth.login') }}">
+                                                                            Add to Wishlist
+                                                                        </a>
+                                                                    @endif
                                                                 </div>
                                                             </div>
                                                             <a href="#" class="button quick-wiew-button" data-product-id="{{ $product->id }}">Quick View</a>
@@ -322,11 +344,20 @@
                                                         </a>
                                                         <div class="thumb-group">
 
-                                                            <div class="yith-wcwl-add-to-wishlist {{ isProductInWishList($product->id) ? 'in-wishlist' : 'not-in-wishlist' }}">
+                                                            <div class="yith-wcwl-add-to-wishlist ">
                                                                 <div class="yith-wcwl-add-button">
-                                                                    <a href="#">Add
-                                                                        to
-                                                                        Wishlist</a>
+                                                                    @if($web_config['guest_checkout_status'] || auth('customer')->check())
+                                                                        <a href="javascript:void(0);"
+                                                                            data-product-id="{{ $product->id }}"
+                                                                            data-url="{{ route('store-wishlist') }}"
+                                                                            class="wishlist-toggle {{ isProductInWishList($product->id) ? 'in-wishlist' : 'not-in-wishlist' }}">
+                                                                            Add to Wishlist
+                                                                        </a>
+                                                                    @else
+                                                                        <a href="{{ route('customer.auth.login') }}">
+                                                                            Add to Wishlist
+                                                                        </a>
+                                                                    @endif
                                                                 </div>
                                                             </div>
 
@@ -454,7 +485,7 @@
                                                         alt="">
                                                 </a>
                                             </div>
-                                            <a href="#" class="button quick-wiew-button" data-product-id="{{ $product->id }}">Quick View</a>
+                                            <a href="" class="button quick-wiew-button" data-product-id="{{ $product->id }}">Quick View</a>
                                         </div>
                                         <div class="product-info">
 
@@ -657,4 +688,22 @@
             </div>
         </div>
     </div>
+<script>
+    $(document).on('click', '.wishlist-toggle', function (e) {
+        e.preventDefault();
+
+        let $this = $(this);
+        let url = $this.data('url');
+        let productId = $this.data('product-id');
+
+        $.post(url, {
+            product_id: productId,
+            _token: '{{ csrf_token() }}'
+        }, function () {
+            // Toggle classes
+            $this.toggleClass('in-wishlist not-in-wishlist');
+            $('.kt-popup-quickview .details-infor .group-button .yith-wcwl-add-to-wishlist > div a').toggleClass('in-wishlist-cart not-in-wishlist');
+        });
+    });
+</script>
 @endsection

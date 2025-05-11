@@ -8932,4 +8932,5 @@ return [
 	"Shopping_Cart" => "Shopping Cart",
 	"best selling" => "Best selling",
 	"best-selling" => "Best-selling",
+	"availability" => "Availability",
 ];

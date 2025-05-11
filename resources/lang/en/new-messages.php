@@ -7650,6 +7650,7 @@ return [
 	"the_port_field_is_required!" => "The port field is required!",
 	"the_product_field_is_required" => "The product field is required",
 	"the_product_is_good" => "The product is good",
+    "availability" => "Availability",
 	"the_product_list_(Search_Bar)_is_the_list_of_those_products_which_appear_during_search_based_on_product_availability" => "The product list (Search Bar) is the list of those products which appear during search based on product availability",
 	"the_product_report_will_show_based_on_the_product_added_date" => "The product report will show based on the product added date",
 	"the_products_are_shown_in_this_list _which_quantity_is_below" => "The products are shown in this list  which quantity is below",
